@@ -27,6 +27,24 @@ public:
         return v_[i];
     }
 
+    vec<Real, dimension>& operator+=(const vec<Real, dimension> &w) {
+        for (size_t i = 0; i < dimension; ++i) {
+            v_[i] += w.v_[i];
+        }
+        return *this;
+    }
+
+    vec<Real, dimension>& operator*=(const Real t) {
+        for (size_t i = 0; i < dimension; ++i) {
+            v_[i] *= t;
+        }
+        return *this;
+    }
+
+    vec<Real, dimension>& operator/=(const Real t) {
+        return *this *= (1/t);
+    }
+
     friend std::ostream& operator<<(std::ostream & os, const vec<Real, dimension> & v)
     {
         os << "[";

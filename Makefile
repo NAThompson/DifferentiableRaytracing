@@ -1,6 +1,6 @@
 CXX = g++
 CXXFLAGS = -g -Wall --std=gnu++17 -fno-finite-math-only -march=native -Wfatal-errors -MMD -fno-omit-frame-pointer
-INCFLAGS = -I./include
+INCFLAGS = -I./include -I./lodepng
 
 ifdef DEBUG
 	CXXFLAGS += -O2 -fsanitize=address -fsanitize=undefined
@@ -15,7 +15,7 @@ all: $(EXECS)
 
 #This builds all .cpp files into separate executables:
 %.x: src/%.cpp
-	$(CXX) $(CXXFLAGS) $(INCFLAGS) -o $@ $< $(LINKFLAGS)
+	$(CXX) $(CXXFLAGS) $(INCFLAGS) -o $@ $< lodepng/lodepng.cpp $(LINKFLAGS)
 
 -include $(SRCS:.cpp=.d)
 
