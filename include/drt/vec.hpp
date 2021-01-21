@@ -15,6 +15,10 @@ public:
         static_assert(dimension >= 1, "Dimension >=1 is required.");
     }
 
+    vec(std::array<Real, dimension>&& v) : v_(std::move(v)) {};
+
+    vec() {};
+
     vec(Real x, Real y, Real z)
     {
         static_assert(dimension == 3, "Must have dimension = 3 to call this constructor");
@@ -25,6 +29,18 @@ public:
 
     Real operator[](size_t i) const {
         return v_[i];
+    }
+
+    Real& operator[](size_t i) {
+        return v_[i];
+    }
+
+    vec<Real, dimension> operator-() const {
+        vec<Real, dimension> w = *this;
+        for (size_t i = 0; i < dimension; ++i) {
+            w[i] = -w[i];
+        }
+        return w;
     }
 
     vec<Real, dimension>& operator+=(const vec<Real, dimension> &w) {
@@ -75,13 +91,12 @@ Real norm(vec<Real, dimension> const & v) {
 }
 
 template<typename Real, size_t dimension>
-Real normalize(vec<Real, dimension> & v) {
+void normalize(vec<Real, dimension> & v) {
     Real t = norm(v);
     for (size_t i = 0; i < dimension; ++i) {
         v[i] /= t;
     }
 }
-
 
 template<typename Real, size_t dimension>
 Real dot(vec<Real, dimension> const & v1, vec<Real, dimension> const & v2) {
@@ -90,6 +105,48 @@ Real dot(vec<Real, dimension> const & v1, vec<Real, dimension> const & v2) {
         d += v1[i]*v2[i];
     }
     return d;
+}
+
+template<typename Real, size_t dimension>
+inline vec<Real, dimension> operator+(const vec<Real, dimension> &u, const vec<Real, dimension> &v) {
+    std::array<Real, dimension> w;
+    for (size_t i = 0; i < dimension; ++i) {
+        w[i] = u[i] + v[i];
+    }
+    return vec<Real, dimension>(std::move(w));
+}
+
+template<typename Real, size_t dimension>
+inline vec<Real, dimension> operator-(const vec<Real, dimension> &u, const vec<Real, dimension> &v) {
+    std::array<Real, dimension> w;
+    for (size_t i = 0; i < dimension; ++i) {
+        w[i] = u[i] - v[i];
+    }
+    return vec<Real, dimension>(std::move(w));
+
+}
+
+template<typename Real, size_t dimension>
+inline vec<Real, dimension> operator/(vec<Real, dimension> const & v, Real t) {
+    vec<Real, dimension> w;
+    for (size_t i = 0; i < dimension; ++i) {
+        w[i] = v[i]/t;
+    }
+    return w;
+}
+
+template<typename Real, size_t dimension>
+inline vec<Real, dimension> operator*(Real t, const vec<Real, dimension> &v) {
+    vec<Real, dimension> w;
+    for (size_t i = 0; i < dimension; ++i) {
+        w[i] = t*v[i];
+    }
+    return w;
+}
+
+template<typename Real, size_t dimension>
+inline vec<Real, dimension> operator*(const vec<Real, dimension> &v, Real t) {
+    return t * v;
 }
 
 }

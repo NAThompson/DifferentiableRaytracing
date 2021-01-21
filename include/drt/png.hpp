@@ -16,8 +16,9 @@ std::array<uint8_t, 4> to_8bit_rgba(vec<Real, dimension> const & v)
     }
 
     if constexpr (dimension == 3) {
-        pixel[3] = 0;
+        pixel[3] = 255;
     }
+    return pixel;
 }
 
 // In lodepng, the vector is expected to be row major, with the top row specified first.

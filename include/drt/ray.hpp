@@ -17,7 +17,7 @@ public:
         return direction_;
     }
 
-    vec<Real, 3> operator()(Real t) {
+    vec<Real, 3> operator()(Real t) const {
         return origin_ + t*direction_;
     }
 
