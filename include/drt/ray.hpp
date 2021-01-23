@@ -9,6 +9,9 @@ public:
     ray(vec<Real, 3> const & origin, vec<Real,3> const & direction) : origin_{origin}, direction_{direction}
     {}
 
+    ray()
+    {}
+
     vec<Real, 3> origin() const {
         return origin_;
     }

@@ -10,11 +10,6 @@ namespace drt {
 template<typename Real, std::size_t dimension = 3>
 class vec {
 public:
-    vec(std::initializer_list<Real> l) : v_(l)
-    {
-        static_assert(dimension >= 1, "Dimension >=1 is required.");
-    }
-
     vec(std::array<Real, dimension>&& v) : v_(std::move(v)) {};
 
     vec() {};
@@ -148,6 +143,13 @@ template<typename Real, size_t dimension>
 inline vec<Real, dimension> operator*(const vec<Real, dimension> &v, Real t) {
     return t * v;
 }
+
+template<typename Real>
+vec<Real> reflect(const vec<Real>& v, const vec<Real>& n)
+{
+    return v - 2*dot(v,n)*n;
+}
+
 
 }
 #endif
