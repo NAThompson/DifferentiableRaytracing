@@ -12,6 +12,67 @@
 #include <drt/dielectric.hpp>
 #include <drt/metal.hpp>
 
+template<typename Real>
+drt::hittable_list<Real> random_scene() {
+    std::uniform_real_distribution<Real> dis(0,1);
+    std::random_device gen;
+    using std::make_shared;
+    using drt::lambertian;
+    using drt::vec;
+    using drt::sphere;
+    using drt::material;
+    using drt::metal;
+    using drt::dielectric;
+
+    drt::hittable_list<Real> world;
+
+    auto ground_material = make_shared<lambertian<Real>>(vec<Real>(0.5, 0.5, 0.5));
+    world.add(make_shared<sphere<Real>>(vec<Real>(0,-1000,0), 1000, ground_material));
+
+    for (int a = -11; a < 11; a++) {
+        for (int b = -11; b < 11; b++) {
+            auto choose_mat = dis(gen);
+            vec<Real> center(a + 0.9*dis(gen), 0.2, b + 0.9*dis(gen));
+
+            if (norm(center - vec<Real>(4, 0.2, 0)) > 0.9) {
+                std::shared_ptr<material<Real>> sphere_material;
+
+                if (choose_mat < 0.5) {
+                    // diffuse
+                    vec<Real> albedo;
+                    albedo[0] = dis(gen)*dis(gen);
+                    albedo[1] = dis(gen)*dis(gen);
+                    albedo[2] = dis(gen)*dis(gen);
+                    sphere_material = make_shared<lambertian<Real>>(albedo);
+                    world.add(make_shared<sphere<Real>>(center, 0.2, sphere_material));
+                } else if (choose_mat < 0.75) {
+                    // metal
+                    vec<Real> albedo;
+                    albedo[0] = dis(gen)/2 + 0.5;
+                    albedo[1] = dis(gen)/2 + 0.5;
+                    albedo[2] = dis(gen)/2 + 0.5;
+                    sphere_material = make_shared<metal<Real>>(albedo);
+                    world.add(make_shared<sphere<Real>>(center, 0.2, sphere_material));
+                } else {
+                    // glass
+                    sphere_material = make_shared<dielectric<Real>>(1.5);
+                    world.add(make_shared<sphere<Real>>(center, 0.2, sphere_material));
+                }
+            }
+        }
+    }
+
+    auto material1 = make_shared<dielectric<Real>>(1.5);
+    world.add(make_shared<sphere<Real>>(vec<Real>(0, 1, 0), 1.0, material1));
+
+    auto material2 = make_shared<lambertian<Real>>(vec<Real>(0.4, 0.2, 0.1));
+    world.add(make_shared<sphere<Real>>(vec<Real>(-4, 1, 0), 1.0, material2));
+
+    auto material3 = make_shared<metal<Real>>(vec<Real>(0.7, 0.6, 0.5));
+    world.add(make_shared<sphere<Real>>(vec<Real>(4, 1, 0), 1.0, material3));
+
+    return world;
+}
 
 template<typename Real>
 drt::vec<Real, 3> ray_color(const drt::ray<Real>& r, const drt::hittable<Real> & world, int depth) {
@@ -48,26 +109,21 @@ int main() {
     const auto aspect_ratio = 16.0 / 9.0;
     const int64_t image_width = 1880;
     const int64_t image_height = static_cast<int>(image_width / aspect_ratio);
-    const int64_t samples_per_pixel = 16;
+    const int64_t samples_per_pixel = 32;
 
-    drt::hittable_list<Real> world;
+    drt::hittable_list<Real> world = random_scene<Real>();
 
-    auto material_ground = std::make_shared<drt::lambertian<Real>>(drt::vec<Real>(0.8, 0.8, 0.0));
-    auto material_center = std::make_shared<drt::lambertian<Real>>(drt::vec<Real>(0.1, 0.2, 0.5));
-    auto material_left   = std::make_shared<drt::dielectric<Real>>(1.5);
-    auto material_right  = std::make_shared<drt::metal<Real>>(drt::vec<Real>(0.8, 0.6, 0.2));
+    drt::vec<Real> lookfrom(13,2,3);
+    drt::vec<Real> lookat(0,0,0);
+    drt::vec<Real> vup(0,1,0);
 
-    world.add(std::make_shared<drt::sphere<Real>>(drt::vec<Real>( 0.0, -100.5, -1.0), 100.0, material_ground));
-    world.add(std::make_shared<drt::sphere<Real>>(drt::vec<Real>( 0.0,    0.0, -1.0),   0.5, material_center));
-    world.add(std::make_shared<drt::sphere<Real>>(drt::vec<Real>(-1.0,    0.0, -1.0),   0.5, material_left));
-    world.add(std::make_shared<drt::sphere<Real>>(drt::vec<Real>( 1.0,    0.0, -1.0),   0.5, material_right));
-
-    drt::camera<Real> cam;
+    drt::camera cam(lookfrom, lookat, vup, 20.0, aspect_ratio);
     std::uniform_real_distribution<Real> dis(0,1);
     std::mt19937 gen;
-    int max_depth = 5;
+    int max_depth = 8;
     std::vector<uint8_t> img(4*image_width*image_height, 0);
     for (int64_t j = 0; j < image_height; ++j) {
+        std::cerr << j << "/" << image_height << "\r";
         for (int64_t i = 0; i < image_width; ++i) {
             drt::vec<Real, 3> color(0,0,0);
             for (int64_t s = 0; s < samples_per_pixel; ++s) {

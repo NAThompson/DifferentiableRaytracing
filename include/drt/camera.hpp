@@ -8,16 +8,25 @@ namespace drt {
 template<typename Real>
 class camera {
 public:
-    camera() {
-        Real aspect_ratio = 16.0 / 9.0;
-        Real viewport_height = 2.0;
+    camera(vec<Real> lookfrom,
+           vec<Real> lookat,
+           vec<Real> view_up,
+           Real vfov, // vertical field-of-view in degrees
+           Real aspect_ratio = 16.0/9.0) : origin_(lookfrom) {
+        Real theta = vfov*M_PI/180.0;
+        Real h = std::tan(theta/2);
+        Real viewport_height = 2.0 * h;
         Real viewport_width = aspect_ratio * viewport_height;
-        Real focal_length = 1.0;
 
-        origin_ = vec<Real, 3>(0, 0, 0);
-        horizontal_ = vec<Real, 3>(viewport_width, 0.0, 0.0);
-        vertical_ = vec<Real, 3>(0.0, viewport_height, 0.0);
-        lower_left_corner_ = origin_ - horizontal_/Real(2) - vertical_/Real(2) - vec<Real, 3>(0, 0, focal_length);
+        auto w = lookfrom - lookat;
+        normalize(w);
+        auto u = cross(view_up, w);
+        normalize(u);
+        auto v = cross(w, u);
+
+        horizontal_ = viewport_width*u;
+        vertical_ = viewport_height*v;
+        lower_left_corner_ = origin_ - horizontal_/Real(2) - vertical_/Real(2) - w;
     }
 
     ray<Real> get_ray(Real u, Real v) const {

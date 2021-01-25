@@ -144,10 +144,19 @@ inline vec<Real, dimension> operator*(const vec<Real, dimension> &v, Real t) {
     return t * v;
 }
 
-template<typename Real>
-vec<Real> reflect(const vec<Real>& v, const vec<Real>& n)
+template<typename Real, size_t dimension>
+vec<Real, dimension> reflect(const vec<Real, dimension>& v, const vec<Real, dimension>& n)
 {
     return v - 2*dot(v,n)*n;
+}
+
+template<typename Real>
+vec<Real> cross(const vec<Real>& u, const vec<Real>& v) {
+    vec<Real> w;
+    w[0] = u[1]*v[2] - u[2]*v[1];
+    w[1] = u[2]*v[0] - u[0]*v[2];
+    w[2] = u[0]*v[1] - u[1]*v[0];
+    return w;
 }
 
 
