@@ -20,6 +20,7 @@ public:
     virtual bool hit(
         const ray<Real>& r, Real t_min, Real t_max, hit_record<Real>& rec) const override;
 
+    virtual bool bounding_box(aabb<Real>& output_box) const override;
 public:
     std::vector<std::shared_ptr<hittable<Real>>> objects;
 };
@@ -41,5 +42,19 @@ bool hittable_list<Real>::hit(const ray<Real>& r, Real t_min, Real t_max, hit_re
     return hit_anything;
 }
 
+template<typename Real>
+bool hittable_list<Real>::bounding_box(aabb<Real>& output_box) const {
+    if (objects.empty()) return false;
+
+    aabb<Real> temp_box;
+    bool first_box = true;
+    for (const auto& object : objects) {
+        if (!object->bounding_box(temp_box)) return false;
+        output_box = first_box ? temp_box : surrounding_box(output_box, temp_box);
+        first_box = false;
+    }
+
+    return true;
+}
 }
 #endif

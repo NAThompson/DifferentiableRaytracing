@@ -3,7 +3,7 @@
 
 #include <drt/ray.hpp>
 #include <drt/vec.hpp>
-
+#include <drt/aabb.hpp>
 
 
 namespace drt {
@@ -27,8 +27,10 @@ struct hit_record {
 
 template<typename Real>
 class hittable {
-    public:
-        virtual bool hit(const ray<Real>& r, Real t_min, Real t_max, hit_record<Real>& rec) const = 0;
+public:
+    virtual bool hit(const ray<Real>& r, Real t_min, Real t_max, hit_record<Real>& rec) const = 0;
+
+    virtual bool bounding_box(aabb<Real>& output_box) const = 0;
 };
 
 }

@@ -16,6 +16,8 @@ public:
 
     virtual bool hit(const ray<Real>& r, Real t_min, Real t_max, hit_record<Real>& rec) const override;
 
+    virtual bool bounding_box(aabb<Real>& output_box) const override;
+
     virtual ~sphere() = default;
 public:
     vec<Real, 3> center_;
@@ -47,6 +49,14 @@ bool sphere<Real>::hit(const ray<Real>& r, Real t_min, Real t_max, hit_record<Re
     auto outward_normal = (rec.p - center_) / radius_;
     rec.set_face_normal(r, outward_normal);
     rec.mat_ptr = mat_ptr_;
+    return true;
+}
+
+template<typename Real>
+bool sphere<Real>::bounding_box(aabb<Real>& output_box) const {
+    output_box = aabb<Real>(
+        center_ - vec<Real>(radius_, radius_, radius_),
+        center_ + vec<Real>(radius_, radius_, radius_));
     return true;
 }
 

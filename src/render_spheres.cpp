@@ -11,6 +11,8 @@
 #include <drt/lambertian.hpp>
 #include <drt/dielectric.hpp>
 #include <drt/metal.hpp>
+#include <drt/aabb.hpp>
+#include <drt/bvh.hpp>
 
 template<typename Real>
 drt::hittable_list<Real> random_scene() {
@@ -106,12 +108,13 @@ drt::vec<Real, 3> ray_color(const drt::ray<Real>& r, const drt::hittable<Real> &
 int main() {
     using Real = double;
 
-    const auto aspect_ratio = 16.0 / 9.0;
-    const int64_t image_width = 1880;
+    const Real aspect_ratio = 1.6;
+    const int64_t image_width = 1800;
     const int64_t image_height = static_cast<int>(image_width / aspect_ratio);
-    const int64_t samples_per_pixel = 32;
+    const int64_t samples_per_pixel = 64;
 
-    drt::hittable_list<Real> world = random_scene<Real>();
+    drt::hittable_list<Real> world1 = random_scene<Real>();
+    drt::bvh_node<Real> world(world1);
 
     drt::vec<Real> lookfrom(13,2,3);
     drt::vec<Real> lookat(0,0,0);
@@ -141,5 +144,5 @@ int main() {
         }
     }
 
-    drt::write_png("first.png", img, image_width, image_height);
+    drt::write_png("spheres.png", img, image_width, image_height);
 }

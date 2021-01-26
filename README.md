@@ -110,3 +110,6 @@ Barring that, render the data to the same order of accuracy that the solver prod
 
 ---
 
+References:
+
+- [_Ray Tracing in One Weekend_](https://raytracing.github.io/books/RayTracingInOneWeekend.html)
