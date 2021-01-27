@@ -8,11 +8,11 @@
 namespace drt {
 
 template<typename Real>
-vec<Real> refract(const vec<Real>& uv, const vec<Real>& n, double etai_over_etat) {
+vec<Real> refract(const vec<Real>& uv, const vec<Real>& n, Real etai_over_etat) {
     using std::sqrt;
-    auto cos_theta = std::min(dot(-uv, n), 1.0);
+    Real cos_theta = std::min(dot(-uv, n), Real(1));
     vec<Real> r_out_perp =  etai_over_etat * (uv + cos_theta*n);
-    vec<Real> r_out_parallel = -sqrt(fabs(1.0 - squared_norm(r_out_perp))) * n;
+    vec<Real> r_out_parallel = -sqrt(fabs(Real(1) - squared_norm(r_out_perp))) * n;
     return r_out_perp + r_out_parallel;
 }
 
@@ -28,7 +28,7 @@ public:
     {
         using std::sqrt;
         attenuation = vec<Real>(1.0, 1.0, 1.0);
-        double refraction_ratio = rec.front_face ? (1.0/ir_) : ir_;
+        Real refraction_ratio = rec.front_face ? (1/ir_) : ir_;
 
         vec<Real> unit_direction = r_in.direction();
         normalize(unit_direction);

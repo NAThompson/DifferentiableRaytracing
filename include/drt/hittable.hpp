@@ -1,6 +1,6 @@
 #ifndef DRT_HITTABLE_HPP
 #define DRT_HITTABLE_HPP
-
+#include <limits>
 #include <drt/ray.hpp>
 #include <drt/vec.hpp>
 #include <drt/aabb.hpp>
@@ -16,6 +16,10 @@ struct hit_record {
     vec<Real, 3> p;
     vec<Real, 3> normal;
     Real t;
+    // Parametric coordinates on the surface.
+    // Not used by everything:
+    Real u = std::numeric_limits<Real>::quiet_NaN();
+    Real v = std::numeric_limits<Real>::quiet_NaN();
     bool front_face;
     std::shared_ptr<material<Real>> mat_ptr;
 

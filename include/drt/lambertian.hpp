@@ -4,15 +4,19 @@
 #include <random>
 #include <drt/material.hpp>
 #include <drt/ray.hpp>
+#include <drt/texture.hpp>
 
 namespace drt {
 
 template<typename Real>
 class lambertian : public material<Real> {
 public:
-    lambertian(vec<Real, 3> const & color) : albedo_(color) {
+
+    lambertian(std::shared_ptr<texture<Real>> a) : albedo_(a) {
         dis_ = std::uniform_real_distribution<Real>(-1,1);
     }
+
+    lambertian(vec<Real, 3> const & color) : lambertian(std::make_shared<solid_color<Real>>(color)) {}
 
     virtual bool scatter([[maybe_unused]] const ray<Real>& r_in, const hit_record<Real>& rec,
                          vec<Real, 3>& attenuation, ray<Real>& scattered) override
@@ -23,7 +27,7 @@ public:
         }
 
         scattered = ray(rec.p, scatter_direction);
-        attenuation = albedo_;
+        attenuation = albedo_->value(rec.u, rec.v, rec.p);
         return true;
     }
 
@@ -48,7 +52,7 @@ public:
     virtual ~lambertian() = default;
 
 private:
-    vec<Real, 3> albedo_;
+    std::shared_ptr<texture<Real>> albedo_;
     std::uniform_real_distribution<Real> dis_;
     std::mt19937 gen_;
 };

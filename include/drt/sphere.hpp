@@ -20,6 +20,15 @@ public:
 
     virtual ~sphere() = default;
 public:
+
+    static void get_sphere_uv(const vec<Real>& p, Real& u, Real& v) {
+        auto theta = std::acos(-p[1]);
+        auto phi = std::atan2(-p[2], p[0]) + M_PI;
+
+        u = phi / (2*M_PI);
+        v = theta / M_PI;
+    }
+
     vec<Real, 3> center_;
     Real radius_;
     std::shared_ptr<material<Real>> mat_ptr_;
@@ -48,6 +57,7 @@ bool sphere<Real>::hit(const ray<Real>& r, Real t_min, Real t_max, hit_record<Re
     rec.p = r(root);
     auto outward_normal = (rec.p - center_) / radius_;
     rec.set_face_normal(r, outward_normal);
+    get_sphere_uv(outward_normal, rec.u, rec.v);
     rec.mat_ptr = mat_ptr_;
     return true;
 }

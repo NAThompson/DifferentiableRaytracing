@@ -13,6 +13,8 @@
 #include <drt/metal.hpp>
 #include <drt/aabb.hpp>
 #include <drt/bvh.hpp>
+#include <drt/texture.hpp>
+#include <drt/checker_texture.hpp>
 
 template<typename Real>
 drt::hittable_list<Real> random_scene() {
@@ -28,8 +30,8 @@ drt::hittable_list<Real> random_scene() {
 
     drt::hittable_list<Real> world;
 
-    auto ground_material = make_shared<lambertian<Real>>(vec<Real>(0.5, 0.5, 0.5));
-    world.add(make_shared<sphere<Real>>(vec<Real>(0,-1000,0), 1000, ground_material));
+    auto checker = std::make_shared<drt::checker_texture<Real>>(vec<Real>(0.2, 0.3, 0.1), vec<Real>(0.9, 0.9, 0.9));
+    world.add(std::make_shared<drt::sphere<Real>>(vec<Real>(0,-1000,0), 1000, std::make_shared<lambertian<Real>>(checker)));
 
     for (int a = -11; a < 11; a++) {
         for (int b = -11; b < 11; b++) {
@@ -106,12 +108,12 @@ drt::vec<Real, 3> ray_color(const drt::ray<Real>& r, const drt::hittable<Real> &
 }
 
 int main() {
-    using Real = double;
+    using Real = float;
 
     const Real aspect_ratio = 1.6;
     const int64_t image_width = 1800;
     const int64_t image_height = static_cast<int>(image_width / aspect_ratio);
-    const int64_t samples_per_pixel = 64;
+    const int64_t samples_per_pixel = 16;
 
     drt::hittable_list<Real> world1 = random_scene<Real>();
     drt::bvh_node<Real> world(world1);
@@ -120,7 +122,7 @@ int main() {
     drt::vec<Real> lookat(0,0,0);
     drt::vec<Real> vup(0,1,0);
 
-    drt::camera cam(lookfrom, lookat, vup, 20.0, aspect_ratio);
+    drt::camera cam(lookfrom, lookat, vup, Real(20), aspect_ratio);
     std::uniform_real_distribution<Real> dis(0,1);
     std::mt19937 gen;
     int max_depth = 8;
