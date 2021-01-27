@@ -9,7 +9,11 @@ namespace drt {
 template<typename Real>
 class metal : public material<Real> {
 public:
-    metal(const vec<Real>& a) : albedo_(a) {}
+
+    metal(std::shared_ptr<texture<Real>> a) : albedo_(a) {
+    }
+
+    metal(const vec<Real, 3> & color) : metal(std::make_shared<solid_color<Real>>(color)) {}
 
     virtual bool scatter(const ray<Real>& r_in, const hit_record<Real>& rec,
                          vec<Real>& attenuation, ray<Real>& scattered) override
@@ -18,14 +22,14 @@ public:
         normalize(in);
         vec<Real> reflected = reflect(in, rec.normal);
         scattered = ray(rec.p, reflected);
-        attenuation = albedo_;
+        attenuation = albedo_->value(rec.u, rec.v, rec.p);
         return (dot(scattered.direction(), rec.normal) > 0);
     }
 
     virtual ~metal() = default;
 
 private:
-    vec<Real> albedo_;
+    std::shared_ptr<texture<Real>> albedo_;
 };
 
 }

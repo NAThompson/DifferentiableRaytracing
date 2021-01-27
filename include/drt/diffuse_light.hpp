@@ -24,6 +24,8 @@ public:
         return emit_->value(u, v, p);
     }
 
+    virtual ~diffuse_light() = default;
+
 public:
     std::shared_ptr<texture<Real>> emit_;
 };
