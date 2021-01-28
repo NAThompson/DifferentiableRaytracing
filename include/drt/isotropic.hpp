@@ -4,6 +4,7 @@
 #include <drt/material.hpp>
 #include <drt/texture.hpp>
 #include <drt/ray.hpp>
+#include <drt/vec.hpp>
 
 namespace drt {
 
@@ -16,14 +17,16 @@ public:
         dis_ = std::normal_distribution<Real>(0,1);
     }
 
-    virtual bool scatter(const ray<Real>& r_in, const hit_record<Real>& rec,
-                         vec<Real>& attenuation, ray<Real>& scattered) const override
+    virtual bool scatter([[maybe_unused]] const ray<Real>& r_in, const hit_record<Real>& rec,
+                         vec<Real>& attenuation, ray<Real>& scattered) override
     {
 
-        scattered = ray(rec.p, random_in_unit_sphere(), r_in.time());
+        scattered = ray(rec.p, random_in_unit_sphere());
         attenuation = albedo_->value(rec.u, rec.v, rec.p);
         return true;
     }
+
+    virtual ~isotropic() = default;
 
 private:
     std::shared_ptr<texture<Real>> albedo_;
