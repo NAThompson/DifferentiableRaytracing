@@ -35,11 +35,12 @@ drt::hittable_list<Real> ellipsoid_scene() {
     drt::hittable_list<Real> objects;
     auto light = make_shared<drt::diffuse_light<Real>>(vec<Real>(7, 7, 7));
     objects.add(make_shared<drt::xz_rect<Real>>(123, 423, 147, 412, 700, light));
-
+    // Add another light below so we can see the bottom:
+    //objects.add(make_shared<drt::xz_rect<Real>>(123, 423, 147, 412, -700, light));
     Real scale = 3.5;
     auto boundary = make_shared<ellipsoid<Real>>(vec<Real>(260, 250, 45), Real(scale*60), Real(scale*55), Real(scale*40), make_shared<dielectric<Real>>(1.5));
     objects.add(boundary);
-    objects.add(make_shared<constant_medium<Real>>(boundary, 0.2, vec<Real>(0.2, 0.4, 0.9)));
+    objects.add(make_shared<constant_medium<Real>>(boundary, 0.02, vec<Real>(0.02, 0.4, 0.9)));
     return objects;
 }
 
@@ -49,7 +50,7 @@ drt::vec<Real, 3> ray_color(const drt::ray<Real>& r, const drt::vec<Real>& backg
         return drt::vec<Real>(0,0,0);
     }
     drt::hit_record<Real> rec;
-    if (!world.hit(r, std::sqrt(std::numeric_limits<Real>::epsilon()), std::numeric_limits<Real>::infinity(), rec)) {
+    if (!world.hit(r, 1000*std::numeric_limits<Real>::epsilon(), std::numeric_limits<Real>::infinity(), rec)) {
         return background_color;
     }
     drt::ray<Real> scattered;
@@ -70,12 +71,12 @@ drt::vec<Real, 3> ray_color(const drt::ray<Real>& r, const drt::vec<Real>& backg
 }
 
 int main() {
-    using Real = float;
+    using Real = double;
 
     const Real aspect_ratio = 1.0;
     const int64_t image_width = 2880;
     const int64_t image_height = static_cast<int>(image_width / 1.6);
-    const int64_t samples_per_pixel = 8;
+    const int64_t samples_per_pixel = 256;
 
     drt::hittable_list<Real> world1 = ellipsoid_scene<Real>();
     drt::bvh_node<Real> world(world1);

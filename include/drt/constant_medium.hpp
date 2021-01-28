@@ -48,7 +48,7 @@ bool constant_medium<Real>::hit(const ray<Real>& r, Real t_min, Real t_max, hit_
     if (!boundary_->hit(r, -std::numeric_limits<Real>::infinity(), std::numeric_limits<Real>::infinity(), rec1))
         return false;
 
-    if (!boundary_->hit(r, rec1.t*(1 + 10*std::numeric_limits<Real>::epsilon()), std::numeric_limits<Real>::infinity(), rec2))
+    if (!boundary_->hit(r, rec1.t + 100*std::numeric_limits<Real>::epsilon(), std::numeric_limits<Real>::infinity(), rec2))
         return false;
 
 
@@ -78,8 +78,6 @@ bool constant_medium<Real>::hit(const ray<Real>& r, Real t_min, Real t_max, hit_
 
     return true;
 }
-
-
 
 }
 #endif

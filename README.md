@@ -112,6 +112,17 @@ Barring that, render the data to the same order of accuracy that the solver prod
 
 ## Sphere -> Ellipsoid
 
+Ellipsoids are just affine transformations of spheres. For an ellipsoid
+$$\sum_{i = 0}^{2} \left( \frac{x_i - c_i}{s_i} \right)^2 = 1$$
+and a ray $$P(t) = \mathbf{O} + t\mathrm{D}$$, the ray intersects at
+$$
+\sum_{i=0}^{2} \left( \frac{o_{i} + td_{i} - c_i}{s_i}  \right)^2 = 1
+$$
+
+Again, just a quadratic.
+
+---
+
 ![inline](figures/ellipsoid.png)
 
 
