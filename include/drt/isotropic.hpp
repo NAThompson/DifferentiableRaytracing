@@ -31,14 +31,14 @@ public:
 private:
     std::shared_ptr<texture<Real>> albedo_;
     std::normal_distribution<Real> dis_;
-    std::mt19937 gen_;
+    std::mt19937_64 gen_;
 
     vec<Real> random_in_unit_sphere() {
         vec<Real> v;
         v[0] = dis_(gen_);
         v[1] = dis_(gen_);
         v[2] = dis_(gen_);
-        Real lambda = squared_norm(v);
+        Real lambda = norm(v);
         v /= lambda;
         return v;
     }

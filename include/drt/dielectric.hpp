@@ -63,7 +63,7 @@ private:
 
     Real ir_; // Index of Refraction
     std::uniform_real_distribution<Real> dis_;
-    std::mt19937 gen_;
+    std::mt19937_64 gen_;
 };
 
 }

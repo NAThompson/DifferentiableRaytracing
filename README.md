@@ -104,9 +104,16 @@ Barring that, render the data to the same order of accuracy that the solver prod
 
 - Read [Raytracing in a Weekend](https://raytracing.github.io/) by Peter Shirley.
 
-- Compute intersection of ray $$\mathbf{P}(t) = \mathbf{O} + t\mathrm{D}$$ with object: $$\mathbf{P}(t) = f(x,y,z)$$.
+- Compute intersection of ray $$\mathbf{P}(t) = \mathbf{O} + t\mathrm{D}$$ with parametric surface $$f(u,v)$$, or implicit surface $$f(x,y,z) = 0$$.
 
 - Determine axis aligned bounding box of objects to place it in the bounding volume hierarchy.
+
+---
+
+## Sphere -> Ellipsoid
+
+![inline](figures/ellipsoid.png)
+
 
 ---
 

@@ -111,7 +111,7 @@ int main() {
     const Real aspect_ratio = 1.6;
     const int64_t image_width = 1800;
     const int64_t image_height = static_cast<int>(image_width / aspect_ratio);
-    const int64_t samples_per_pixel = 32;
+    const int64_t samples_per_pixel = 128;
 
     drt::hittable_list<Real> world1 = random_scene<Real>();
     drt::bvh_node<Real> world(world1);

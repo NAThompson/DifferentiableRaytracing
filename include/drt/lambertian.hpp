@@ -54,7 +54,7 @@ public:
 private:
     std::shared_ptr<texture<Real>> albedo_;
     std::uniform_real_distribution<Real> dis_;
-    std::mt19937 gen_;
+    std::mt19937_64 gen_;
 };
 
 }

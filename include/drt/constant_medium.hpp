@@ -37,7 +37,7 @@ public:
     Real neg_inv_density_;
     std::shared_ptr<material<Real>> phase_function_;
     mutable std::uniform_real_distribution<Real> dis_;
-    mutable std::mt19937 gen_;
+    mutable std::mt19937_64 gen_;
 };
 
 template<typename Real>
