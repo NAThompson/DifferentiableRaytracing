@@ -30,9 +30,13 @@ public:
 
 
     Real gaussian_curvature(const vec<Real>& p) {
-        Real numerator = a_*a_*b_*b_*c_*c_;
-        Real cos_u_sq = p[2]*p[2]/(c_*c_);
-        return std::numeric_limits<Real>::quiet_NaN();
+        Real asq = a_*a_;
+        Real bsq = b_*b_;
+        Real csq = c_*c_;
+        // https://mathworld.wolfram.com/Ellipsoid.html, equation 14:s
+        Real numerator = asq*bsq*bsq*bsq*csq*csq*csq;
+        Real sqrt_denom = csq*csq*bsq*bsq + csq*csq*(asq - bsq)*(p[1]-center_[1])*(p[1] -center_[1]) + bsq*bsq*(asq-csq)*(p[2] -center_[2])*(p[2] -center_[2]);
+        return numerator/(sqrt_denom*sqrt_denom);
     }
 
     virtual ~ellipsoid() = default;

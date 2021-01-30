@@ -128,6 +128,39 @@ Again, just a quadratic.
 
 ---
 
+Ok, but: In SciViz, we need to display scalar fields on 3D objects to represent properties or phenomenom we have no sensory apparatus for. This is called pseudocoloring.
+
+e.g., flow fields, radiation, curvature.
+
+So we need a color map: $$f\colon \mathbb{R} \to [0,255]\times [0,255] \times [0,255]$$.
+
+---
+
+In movies and game engines, colors are chosen to maximize aesthetics.
+
+There's nothing wrong with aesthetics in sciviz, but our first allegiance is to scientific insight.
+
+---
+
+## Criteria for SciViz colormaps
+
+> The efficacy of a pseudocolor visualization is contingent on the ability of a human observer to translate the colors back into the numeric values they represent.
+-- Ken Moreland
+
+---
+
+## Sensible color maps for raytraced surfaces.
+
+See [kennethmoreland.com/color-advice](https://www.kennethmoreland.com/color-advice/)
+
+![inline](figures/plasma_map.png)
+
+---
+
 References:
 
 - [_Ray Tracing in One Weekend_](https://raytracing.github.io/books/RayTracingInOneWeekend.html)
+
+- Moreland, Kenneth. "Diverging color maps for scientific visualization." International Symposium on Visual Computing. Springer, Berlin, Heidelberg, 2009.
+
+- Moreland, Kenneth. "Why we use bad color maps and what you can do about it." Electronic Imaging 2016.16 (2016): 1-6.

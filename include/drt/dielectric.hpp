@@ -4,6 +4,7 @@
 #include <cmath>
 #include <drt/ray.hpp>
 #include <drt/material.hpp>
+#include <drt/texture.hpp>
 
 namespace drt {
 
@@ -19,9 +20,13 @@ vec<Real> refract(const vec<Real>& uv, const vec<Real>& n, Real etai_over_etat) 
 template<typename Real>
 class dielectric : public material<Real> {
 public:
-    dielectric(Real index_of_refraction) : ir_(index_of_refraction) {
+    dielectric(Real index_of_refraction, std::shared_ptr<texture<Real>> emitted) : ir_(index_of_refraction), emit_(emitted)
+    {
         dis_ = std::uniform_real_distribution<Real>(0,1);
     }
+
+    dielectric(Real index_of_refraction) : dielectric(index_of_refraction, std::make_shared<solid_color<Real>>(vec<Real>(0,0,0)))
+    {}
 
     virtual bool scatter(const ray<Real>& r_in, const hit_record<Real>& rec,
                          vec<Real>& attenuation, ray<Real>& scattered) override
@@ -48,6 +53,11 @@ public:
         return true;
     }
 
+    virtual vec<Real> emitted([[maybe_unused]] Real u, [[maybe_unused]] Real v, [[maybe_unused]] const vec<Real>& p) const override
+    {
+        return emit_->value(u, v, p);
+    }
+
     virtual ~dielectric() = default;
 
 private:
@@ -64,6 +74,7 @@ private:
     Real ir_; // Index of Refraction
     std::uniform_real_distribution<Real> dis_;
     std::mt19937_64 gen_;
+    std::shared_ptr<texture<Real>> emit_;
 };
 
 }

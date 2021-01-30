@@ -15,7 +15,7 @@ all: $(EXECS)
 
 #This builds all .cpp files into separate executables:
 %.x: src/%.cpp
-	$(CXX) $(CXXFLAGS) $(INCFLAGS) -o $@ $< lodepng/lodepng.cpp $(LINKFLAGS)
+	$(CXX) $(CXXFLAGS) $(INCFLAGS) -o $@ lodepng/lodepng.cpp $< $(LINKFLAGS)
 
 -include $(SRCS:.cpp=.d)
 
