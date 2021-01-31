@@ -34,14 +34,16 @@ drt::hittable_list<Real> ellipsoid_scene() {
     using drt::ellipsoid;
 
     drt::hittable_list<Real> objects;
-    auto light = make_shared<drt::diffuse_light<Real>>(vec<Real>(3, 3, 3));
-    objects.add(make_shared<drt::xz_rect<Real>>(100, 423, 100, 412, 700, light));
+    auto light = make_shared<drt::diffuse_light<Real>>(vec<Real>(1, 1, 1));
+    objects.add(make_shared<drt::xy_rect<Real>>(-30, 30, -30, 30, -15, light));
+    objects.add(make_shared<drt::xz_rect<Real>>(-30, 30, -30, 30, -30, light));
+    objects.add(make_shared<drt::yz_rect<Real>>(-30, 30, -30, 30, 30, light));
 
-    Real scale = 3.0;
-    Real a = Real(scale*40);
-    Real b = Real(scale*70);
-    Real c = Real(scale*60);
-    vec<Real> center = vec<Real>(260, 250, 45);
+    Real scale = 1.5;
+    Real a = Real(scale*1.3);
+    Real b = Real(scale*1);
+    Real c = Real(scale*1.6);
+    vec<Real> center = vec<Real>(0, 0, 0);
     std::function<vec<Real>(Real, Real, const vec<Real> &)> gaussian_curvature = [a,b,c, center]([[maybe_unused]] Real u, [[maybe_unused]] Real v, vec<Real> const & p) -> vec<Real> {
         Real asq = a*a;
         Real bsq = b*b;
@@ -52,15 +54,9 @@ drt::hittable_list<Real> ellipsoid_scene() {
         Real kappa = numerator/(sqrt_denom*sqrt_denom);
         Real kappa_min = std::min({csq/(asq*bsq), asq/(csq*bsq), bsq/(asq*csq)});
         Real kappa_max = std::max({csq/(asq*bsq), asq/(csq*bsq), bsq/(asq*csq)});
-        if (kappa < kappa_min) {
-            std::cout << "kappa is small = " << kappa << ", kappa/kappa_min = " << kappa/kappa_min << "\n";
-        }
-        if (kappa > kappa_max) {
-            std::cout << "kappa is big = " << kappa << "\n";
-        }
 
         Real scalar = (kappa - kappa_min)/(kappa_max - kappa_min);
-        vec<Real, 3> w = drt::plasma(scalar);
+        vec<Real, 3> w = drt::viridis(scalar);
         return w;
     };
 
@@ -68,7 +64,7 @@ drt::hittable_list<Real> ellipsoid_scene() {
     auto ltext = drt::lambda_texture(ptr);
     auto ltext_ptr = std::make_shared<decltype(ltext)>(ltext);
 
-    auto mat = make_shared<metal<Real>>(ltext_ptr);
+    auto mat = make_shared<lambertian<Real>>(ltext_ptr);
     auto boundary = make_shared<ellipsoid<Real>>(center, a, b, c, mat);
     objects.add(boundary);
     return objects;
@@ -106,13 +102,13 @@ int main() {
     const Real aspect_ratio = 1.0;
     const int64_t image_width = 2880;
     const int64_t image_height = static_cast<int>(image_width / 1.6);
-    const int64_t samples_per_pixel = 32;
+    const int64_t samples_per_pixel = 64;
 
     drt::hittable_list<Real> world1 = ellipsoid_scene<Real>();
     drt::bvh_node<Real> world(world1);
 
-    drt::vec<Real> lookfrom(359, 278, -600);
-    drt::vec<Real> lookat(260, 250,45);
+    drt::vec<Real> lookfrom(5, 0, -5);
+    drt::vec<Real> lookat(0, 0, 0);
     drt::vec<Real> vup(0,1,0);
 
     drt::camera cam(lookfrom, lookat, vup, Real(40), aspect_ratio);
@@ -120,8 +116,7 @@ int main() {
     std::mt19937_64 gen;
     int max_depth = 8;
     std::vector<uint8_t> img(4*image_width*image_height, 0);
-    //drt::vec<Real> background(1.0, 1.0, 1.0);
-    drt::vec<Real> background(0.8, 0.8, 0.8);
+    drt::vec<Real> background(0.0, 0.0, 0.0);
     for (int64_t j = 0; j < image_height; ++j) {
         std::cerr << j << "/" << image_height << "\r";
         for (int64_t i = 0; i < image_width; ++i) {

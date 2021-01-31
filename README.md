@@ -157,6 +157,11 @@ See [kennethmoreland.com/color-advice](https://www.kennethmoreland.com/color-adv
 
 ---
 
+
+![inline](figures/gaussian_curvature.png)
+
+---
+
 References:
 
 - [_Ray Tracing in One Weekend_](https://raytracing.github.io/books/RayTracingInOneWeekend.html)
