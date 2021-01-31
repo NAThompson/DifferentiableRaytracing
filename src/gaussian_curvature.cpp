@@ -36,8 +36,6 @@ drt::hittable_list<Real> ellipsoid_scene() {
     drt::hittable_list<Real> objects;
     auto light = make_shared<drt::diffuse_light<Real>>(vec<Real>(1, 1, 1));
     objects.add(make_shared<drt::xy_rect<Real>>(-30, 30, -30, 30, -15, light));
-    objects.add(make_shared<drt::xz_rect<Real>>(-30, 30, -30, 30, -30, light));
-    objects.add(make_shared<drt::yz_rect<Real>>(-30, 30, -30, 30, 30, light));
 
     Real scale = 1.5;
     Real a = Real(scale*1.3);
