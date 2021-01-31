@@ -1,5 +1,6 @@
 #ifndef DRT_COLOR_MAPS_HPP
 #define DRT_COLOR_MAPS_HPP
+#include <algorithm>
 #include <drt/vec.hpp>
 
 namespace drt {

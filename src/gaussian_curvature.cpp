@@ -34,13 +34,13 @@ drt::hittable_list<Real> ellipsoid_scene() {
     using drt::ellipsoid;
 
     drt::hittable_list<Real> objects;
-    auto light = make_shared<drt::diffuse_light<Real>>(vec<Real>(7, 7, 7));
-    objects.add(make_shared<drt::xz_rect<Real>>(123, 423, 147, 412, 700, light));
+    auto light = make_shared<drt::diffuse_light<Real>>(vec<Real>(3, 3, 3));
+    objects.add(make_shared<drt::xz_rect<Real>>(100, 423, 100, 412, 700, light));
 
-    Real scale = 3.5;
-    Real a = Real(scale*60);
-    Real b = Real(scale*55);
-    Real c = Real(scale*40);
+    Real scale = 3.0;
+    Real a = Real(scale*40);
+    Real b = Real(scale*70);
+    Real c = Real(scale*60);
     vec<Real> center = vec<Real>(260, 250, 45);
     std::function<vec<Real>(Real, Real, const vec<Real> &)> gaussian_curvature = [a,b,c, center]([[maybe_unused]] Real u, [[maybe_unused]] Real v, vec<Real> const & p) -> vec<Real> {
         Real asq = a*a;
@@ -61,7 +61,6 @@ drt::hittable_list<Real> ellipsoid_scene() {
 
         Real scalar = (kappa - kappa_min)/(kappa_max - kappa_min);
         vec<Real, 3> w = drt::plasma(scalar);
-        //std::cout << "color = " << v << "\n";
         return w;
     };
 
@@ -107,7 +106,7 @@ int main() {
     const Real aspect_ratio = 1.0;
     const int64_t image_width = 2880;
     const int64_t image_height = static_cast<int>(image_width / 1.6);
-    const int64_t samples_per_pixel = 8;
+    const int64_t samples_per_pixel = 32;
 
     drt::hittable_list<Real> world1 = ellipsoid_scene<Real>();
     drt::bvh_node<Real> world(world1);
@@ -121,7 +120,8 @@ int main() {
     std::mt19937_64 gen;
     int max_depth = 8;
     std::vector<uint8_t> img(4*image_width*image_height, 0);
-    drt::vec<Real> background(0.1, 0.1, 0.1);
+    //drt::vec<Real> background(1.0, 1.0, 1.0);
+    drt::vec<Real> background(0.8, 0.8, 0.8);
     for (int64_t j = 0; j < image_height; ++j) {
         std::cerr << j << "/" << image_height << "\r";
         for (int64_t i = 0; i < image_width; ++i) {
