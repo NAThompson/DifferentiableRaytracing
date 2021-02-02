@@ -54,11 +54,11 @@ drt::hittable_list<Real> ellipsoid_scene() {
     Real kappa_min = std::min({csq/(asq*bsq), asq/(csq*bsq), bsq/(asq*csq)});
     Real kappa_max = std::max({csq/(asq*bsq), asq/(csq*bsq), bsq/(asq*csq)});
 
-    std::function<vec<Real>(Real, Real, const vec<Real> &)> gaussian_curvature = [asq,bsq,csq, kappa_min, kappa_max, center]([[maybe_unused]] Real u, [[maybe_unused]] Real v, vec<Real> const & p) -> vec<Real> {
+    std::function<vec<Real>(Real, Real, const vec<Real> &)> gaussian_curvature = [=]([[maybe_unused]] Real u, [[maybe_unused]] Real v, vec<Real> const & p) {
         // https://mathworld.wolfram.com/Ellipsoid.html, equation 14:
         Real numerator = asq*bsq*bsq*bsq*csq*csq*csq;
-        Real y = p[1] -center[1];
-        Real z = p[2] -center[2];
+        Real y = p[1] - center[1];
+        Real z = p[2] - center[2];
         Real sqrt_denom = csq*csq*bsq*bsq + csq*csq*(asq - bsq)*y*y + bsq*bsq*(asq-csq)*z*z;
         Real kappa = numerator/(sqrt_denom*sqrt_denom);
 
@@ -107,7 +107,7 @@ int main() {
     using Real = double;
 
     const Real aspect_ratio = 1.0;
-    const int64_t image_width = 2880;
+    const int64_t image_width = 800;
     const int64_t image_height = static_cast<int>(image_width / 1.6);
     const int64_t samples_per_pixel = 64;
 
