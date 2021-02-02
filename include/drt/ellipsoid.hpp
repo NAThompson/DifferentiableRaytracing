@@ -1,6 +1,7 @@
 #ifndef DRT_ELLIPSOID_HPP
 #define DRT_ELLIPSOID_HPP
-
+#include <utility>
+#include <algorithm>
 #include <drt/hittable.hpp>
 #include <drt/vec.hpp>
 #include <drt/material.hpp>
@@ -10,16 +11,16 @@ template<typename Real>
 class ellipsoid : public hittable<Real> {
 public:
     ellipsoid() {}
-    ellipsoid(vec<Real, 3> const & center, Real a, Real b, Real c, std::shared_ptr<material<Real>> mat_ptr)
-       : center_(center), a_(a), b_(b), c_(c), mat_ptr_(mat_ptr)
+    ellipsoid(vec<Real, 3> const & center, vec<Real, 3> const & scales, std::shared_ptr<material<Real>> mat_ptr)
+       : center_(center), scales_(scales), mat_ptr_(mat_ptr)
     {
-        if (a_ <= 0) {
+        if (scales_[0] <= 0) {
             std::cerr << "a <= 0 is not allowed for an ellipsoid.\n";
         }
-        if (b_ <= 0) {
+        if (scales_[1] <= 0) {
             std::cerr << "b <= 0 is not allowed for an ellipsoid.\n";
         }
-        if (c_ <= 0) {
+        if (scales_[2] <= 0) {
             std::cerr << "c <= 0 is not allowed for an ellipsoid.\n";
         }
     };
@@ -28,43 +29,46 @@ public:
 
     virtual bool bounding_box(aabb<Real>& output_box) const override;
 
-
     Real gaussian_curvature(const vec<Real>& p) {
-        Real asq = a_*a_;
-        Real bsq = b_*b_;
-        Real csq = c_*c_;
+        Real asq = scales_[0]*scales_[0];
+        Real bsq = scales_[1]*scales_[1];
+        Real csq = scales_[2]*scales_[2];
+        Real ysq = (p[1]-center_[1])*(p[1] -center_[1]);
+        Real zsq = (p[2] -center_[2])*(p[2] -center_[2]);
         // https://mathworld.wolfram.com/Ellipsoid.html, equation 14:s
         Real numerator = asq*bsq*bsq*bsq*csq*csq*csq;
-        Real sqrt_denom = csq*csq*bsq*bsq + csq*csq*(asq - bsq)*(p[1]-center_[1])*(p[1] -center_[1]) + bsq*bsq*(asq-csq)*(p[2] -center_[2])*(p[2] -center_[2]);
+        Real sqrt_denom = csq*csq*bsq*bsq + csq*csq*(asq - bsq)*ysq + bsq*bsq*(asq-csq)*zsq;
         return numerator/(sqrt_denom*sqrt_denom);
     }
 
-    virtual ~ellipsoid() = default;
-public:
+    std::pair<Real, Real> gaussian_curvature_bounds() const {
+        Real asq = scales_[0]*scales_[0];
+        Real bsq = scales_[1]*scales_[1];
+        Real csq = scales_[2]*scales_[2];
 
-    static void get_sphere_uv(const vec<Real>& p, Real& u, Real& v) {
-        auto theta = std::acos(-p[1]);
-        auto phi = std::atan2(-p[2], p[0]) + M_PI;
-
-        u = phi / (2*M_PI);
-        v = theta / M_PI;
+        Real kappa_min = std::min({csq/(asq*bsq), asq/(csq*bsq), bsq/(asq*csq)});
+        Real kappa_max = std::max({csq/(asq*bsq), asq/(csq*bsq), bsq/(asq*csq)});
+        return std::make_pair<Real,Real>(kappa_min, kappa_max);
     }
 
+    virtual ~ellipsoid() = default;
+
+private:
     vec<Real, 3> center_;
-    Real a_, b_, c_;
+    vec<Real, 3> scales_;
     std::shared_ptr<material<Real>> mat_ptr_;
 };
 
 template<typename Real>
 bool ellipsoid<Real>::hit(const ray<Real>& r, Real t_min, Real t_max, hit_record<Real>& rec) const {
     vec<Real, 3> oc = r.origin() - center_;
-    oc[0] /= a_;
-    oc[1] /= b_;
-    oc[2] /= c_;
+    oc[0] /= scales_[0];
+    oc[1] /= scales_[1];
+    oc[2] /= scales_[2];
     vec<Real> sd = r.direction();
-    sd[0] /= a_;
-    sd[1] /= b_;
-    sd[2] /= c_;
+    sd[0] /= scales_[0];
+    sd[1] /= scales_[1];
+    sd[2] /= scales_[2];
 
     Real a = drt::squared_norm(sd);
     Real half_b = drt::dot(oc, sd);
@@ -85,22 +89,19 @@ bool ellipsoid<Real>::hit(const ray<Real>& r, Real t_min, Real t_max, hit_record
     rec.t = root;
     rec.p = r(root);
     vec<Real> outward_normal = (rec.p - center_);
-    outward_normal[0] *= 2/(a_*a_);
-    outward_normal[1] *= 2/(b_*b_);
-    outward_normal[2] *= 2/(c_*c_);
+    outward_normal[0] *= 2/(scales_[0]*scales_[0]);
+    outward_normal[1] *= 2/(scales_[1]*scales_[1]);
+    outward_normal[2] *= 2/(scales_[2]*scales_[2]);
     normalize(outward_normal);
 
     rec.set_face_normal(r, outward_normal);
-    get_sphere_uv(outward_normal, rec.u, rec.v);
     rec.mat_ptr = mat_ptr_;
     return true;
 }
 
 template<typename Real>
 bool ellipsoid<Real>::bounding_box(aabb<Real>& output_box) const {
-    output_box = aabb<Real>(
-        center_ - vec<Real>(a_, b_, c_),
-        center_ + vec<Real>(a_, b_, c_));
+    output_box = aabb<Real>(center_ - scales_, center_ + scales_);
     return true;
 }
 

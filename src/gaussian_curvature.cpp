@@ -22,48 +22,57 @@
 #include <drt/ellipsoid.hpp>
 #include <drt/color_maps.hpp>
 
+using std::make_shared;
+using drt::lambertian;
+using drt::vec;
+using drt::sphere;
+using drt::dielectric;
+using drt::constant_medium;
+using drt::metal;
+using drt::ellipsoid;
+using drt::diffuse_light;
+using drt::xy_rect;
+using drt::viridis;
+using drt::lambda_texture;
+
 template<typename Real>
 drt::hittable_list<Real> ellipsoid_scene() {
-    using std::make_shared;
-    using drt::lambertian;
-    using drt::vec;
-    using drt::sphere;
-    using drt::dielectric;
-    using drt::constant_medium;
-    using drt::metal;
-    using drt::ellipsoid;
 
     drt::hittable_list<Real> objects;
-    auto light = make_shared<drt::diffuse_light<Real>>(vec<Real>(1, 1, 1));
-    objects.add(make_shared<drt::xy_rect<Real>>(-30, 30, -30, 30, -15, light));
+    auto light = make_shared<diffuse_light<Real>>(vec<Real>(1, 1, 1));
+    objects.add(make_shared<xy_rect<Real>>(-30, 30, -30, 30, -15, light));
 
     Real scale = 1.5;
     Real a = Real(scale*1.3);
     Real b = Real(scale*1);
     Real c = Real(scale*1.6);
+    vec<Real> scales(a,b,c);
     vec<Real> center = vec<Real>(0, 0, 0);
-    std::function<vec<Real>(Real, Real, const vec<Real> &)> gaussian_curvature = [a,b,c, center]([[maybe_unused]] Real u, [[maybe_unused]] Real v, vec<Real> const & p) -> vec<Real> {
-        Real asq = a*a;
-        Real bsq = b*b;
-        Real csq = c*c;
+    Real asq = a*a;
+    Real bsq = b*b;
+    Real csq = c*c;
+    Real kappa_min = std::min({csq/(asq*bsq), asq/(csq*bsq), bsq/(asq*csq)});
+    Real kappa_max = std::max({csq/(asq*bsq), asq/(csq*bsq), bsq/(asq*csq)});
+
+    std::function<vec<Real>(Real, Real, const vec<Real> &)> gaussian_curvature = [asq,bsq,csq, kappa_min, kappa_max, center]([[maybe_unused]] Real u, [[maybe_unused]] Real v, vec<Real> const & p) -> vec<Real> {
         // https://mathworld.wolfram.com/Ellipsoid.html, equation 14:
         Real numerator = asq*bsq*bsq*bsq*csq*csq*csq;
-        Real sqrt_denom = csq*csq*bsq*bsq + csq*csq*(asq - bsq)*(p[1] -center[1])*(p[1] -center[1]) + bsq*bsq*(asq-csq)*(p[2]-center[2])*(p[2]-center[2]);
+        Real y = p[1] -center[1];
+        Real z = p[2] -center[2];
+        Real sqrt_denom = csq*csq*bsq*bsq + csq*csq*(asq - bsq)*y*y + bsq*bsq*(asq-csq)*z*z;
         Real kappa = numerator/(sqrt_denom*sqrt_denom);
-        Real kappa_min = std::min({csq/(asq*bsq), asq/(csq*bsq), bsq/(asq*csq)});
-        Real kappa_max = std::max({csq/(asq*bsq), asq/(csq*bsq), bsq/(asq*csq)});
 
         Real scalar = (kappa - kappa_min)/(kappa_max - kappa_min);
-        vec<Real, 3> w = drt::viridis(scalar);
+        vec<Real, 3> w = viridis(scalar);
         return w;
     };
 
-    auto ptr = std::make_shared<decltype(gaussian_curvature)>(gaussian_curvature);
+    auto ptr = make_shared<decltype(gaussian_curvature)>(gaussian_curvature);
     auto ltext = drt::lambda_texture(ptr);
-    auto ltext_ptr = std::make_shared<decltype(ltext)>(ltext);
+    auto ltext_ptr = make_shared<decltype(ltext)>(ltext);
 
     auto mat = make_shared<lambertian<Real>>(ltext_ptr);
-    auto boundary = make_shared<ellipsoid<Real>>(center, a, b, c, mat);
+    auto boundary = make_shared<ellipsoid<Real>>(center, scales, mat);
     objects.add(boundary);
     return objects;
 }

@@ -21,24 +21,27 @@
 #include <drt/box.hpp>
 #include <drt/ellipsoid.hpp>
 
-template<typename Real>
-drt::hittable_list<Real> ellipsoid_scene() {
-    using std::make_shared;
-    using drt::lambertian;
-    using drt::vec;
-    using drt::sphere;
-    using drt::dielectric;
-    using drt::constant_medium;
-    using drt::metal;
-    using drt::ellipsoid;
+using std::make_shared;
+using drt::lambertian;
+using drt::vec;
+using drt::sphere;
+using drt::dielectric;
+using drt::constant_medium;
+using drt::metal;
+using drt::ellipsoid;
+using drt::diffuse_light;
+using drt::xz_rect;
+using drt::hittable_list;
 
-    drt::hittable_list<Real> objects;
-    auto light = make_shared<drt::diffuse_light<Real>>(vec<Real>(7, 7, 7));
-    objects.add(make_shared<drt::xz_rect<Real>>(123, 423, 147, 412, 700, light));
-    // Add another light below so we can see the bottom:
-    //objects.add(make_shared<drt::xz_rect<Real>>(123, 423, 147, 412, -700, light));
+template<typename Real>
+hittable_list<Real> ellipsoid_scene() {
+    hittable_list<Real> objects;
+    auto light = make_shared<diffuse_light<Real>>(vec<Real>(7, 7, 7));
+    objects.add(make_shared<xz_rect<Real>>(123, 423, 147, 412, 700, light));
     Real scale = 3.5;
-    auto boundary = make_shared<ellipsoid<Real>>(vec<Real>(260, 250, 45), Real(scale*60), Real(scale*55), Real(scale*40), make_shared<dielectric<Real>>(1.5));
+    vec<Real> scales(scale*60, scale*55, scale*40);
+    vec<Real> center(260, 250,45);
+    auto boundary = make_shared<ellipsoid<Real>>(center, scales, make_shared<dielectric<Real>>(1.5));
     objects.add(boundary);
     objects.add(make_shared<constant_medium<Real>>(boundary, 0.015, vec<Real>(0.02, 0.4, 0.9)));
     return objects;
