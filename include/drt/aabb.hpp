@@ -30,6 +30,12 @@ public:
         return true;
     }
 
+    friend std::ostream& operator<<(std::ostream & os, const aabb<Real> & v)
+    {
+        os << "{" << v.min_ << ", " << v.max_ << "}";
+        return os;
+    }
+
     vec<Real> min_;
     vec<Real> max_;
 };

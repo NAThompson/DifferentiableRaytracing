@@ -166,10 +166,50 @@ TEST(Torus, Intersection)
 
     hit_record<Real> rec;
     bool hits = tor.hit(r, std::numeric_limits<Real>::lowest(), std::numeric_limits<Real>::infinity(), rec);
-
     EXPECT_FALSE(hits);
 
+    // We should get two solutions here:
+    origin[0] = 3;
+    r = ray<Real>(origin, direction);
+    hits = tor.hit(r, std::numeric_limits<Real>::lowest(), std::numeric_limits<Real>::infinity(), rec);
+    EXPECT_TRUE(hits);
+    EXPECT_FLOAT_EQ(rec.p[0], 3);
+    EXPECT_FLOAT_EQ(rec.p[1], 0);
+    EXPECT_FLOAT_EQ(rec.p[2], -1);
+    EXPECT_FLOAT_EQ(rec.t, 4);
 
+    EXPECT_FLOAT_EQ(rec.normal[0], 0);
+    EXPECT_FLOAT_EQ(rec.normal[1], 0);
+    EXPECT_FLOAT_EQ(rec.normal[2], -1);
+
+    // We should get no solutions here:
+    origin[0] = 5;
+    r = ray<Real>(origin, direction);
+    hits = tor.hit(r, std::numeric_limits<Real>::lowest(), std::numeric_limits<Real>::infinity(), rec);
+    EXPECT_FALSE(hits);
+
+    origin[0] = -5;
+    r = ray<Real>(origin, direction);
+    hits = tor.hit(r, std::numeric_limits<Real>::lowest(), std::numeric_limits<Real>::infinity(), rec);
+    EXPECT_FALSE(hits);
+
+}
+
+TEST(Torus, AABB)
+{
+    using Real = double;
+    auto mat = std::make_shared<lambertian<Real>>(vec<Real>(1,0,0));
+    vec<Real> center(0,0,0);
+    auto tor = torus<Real>(center, 3.0, 1.0, mat);
+    aabb<Real> box;
+    EXPECT_TRUE(tor.bounding_box(box));
+    EXPECT_EQ(box.min_[0], -4);
+    EXPECT_EQ(box.min_[1], -4);
+    EXPECT_EQ(box.min_[2], -1);
+
+    EXPECT_EQ(box.max_[0], 4);
+    EXPECT_EQ(box.max_[1], 4);
+    EXPECT_EQ(box.max_[2], 1);
 }
 
 
