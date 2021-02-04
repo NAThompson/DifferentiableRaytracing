@@ -1,5 +1,5 @@
 CXX = g++
-CXXFLAGS = -g -Wall -Wextra --std=gnu++17 -fno-finite-math-only -march=native -Wfatal-errors -MMD -fno-omit-frame-pointer
+CXXFLAGS = -g -Wall -Wextra --std=gnu++17 -fno-finite-math-only -ffast-math -march=native -Wfatal-errors -MMD -fno-omit-frame-pointer
 INCFLAGS = -I./include -I./lodepng
 
 ifdef DEBUG
@@ -18,6 +18,10 @@ all: $(EXECS)
 	$(CXX) $(CXXFLAGS) $(INCFLAGS) -o $@ lodepng/lodepng.cpp $< $(LINKFLAGS)
 
 -include $(SRCS:.cpp=.d)
+
+test: tests/tests.cpp
+	$(CXX) $(CXXFLAGS) $(INCFLAGS) -o tests.x lodepng/lodepng.cpp $< $(LINKFLAGS) -lgtest -lgtest_main
+	./tests.x
 
 .PHONY: clean
 clean:

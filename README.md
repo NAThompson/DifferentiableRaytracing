@@ -157,8 +157,23 @@ See [kennethmoreland.com/color-advice](https://www.kennethmoreland.com/color-adv
 
 ---
 
+## Ellipsoid colored by Gaussian Curvature
 
 ![inline](figures/gaussian_curvature.png)
+
+---
+
+## Parametric Equation of a Torus
+
+$$((x-x_c)^2 + (y-y_c)^2 + (z-z_c)^2 + R^2 - r^2)^2 - 4R^2((x-x_c)^2+(y-y_c)^2) = 0$$
+
+Ray $$\mathbf{O} + t\mathbf{D}$$ intersects torus when $$x = o_x + td_x, y = o_y + td_y, z = o_z + td_z$$, which gives a quartic equation for $$t$$.
+
+---
+
+## Gaussian Curvature of Torus in Paraview
+
+![inline](figures/pv_torus_curvature.png)
 
 ---
 
@@ -169,3 +184,5 @@ References:
 - Moreland, Kenneth. "Diverging color maps for scientific visualization." International Symposium on Visual Computing. Springer, Berlin, Heidelberg, 2009.
 
 - Moreland, Kenneth. "Why we use bad color maps and what you can do about it." Electronic Imaging 2016.16 (2016): 1-6.
+
+- Pharr, Matt, Wenzel Jakob, and Greg Humphreys. Physically based rendering: From theory to implementation. Morgan Kaufmann, 2016.
