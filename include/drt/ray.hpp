@@ -24,6 +24,12 @@ public:
         return origin_ + t*direction_;
     }
 
+    friend std::ostream& operator<<(std::ostream & os, const ray<Real> & r) {
+        os << r.origin() << " + t" << r.direction();
+        return os;
+    }
+
+
 private:
     vec<Real, 3> origin_;
     vec<Real, 3> direction_;

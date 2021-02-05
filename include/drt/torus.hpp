@@ -132,6 +132,9 @@ bool torus<Real>::hit(const ray<Real>& r, Real t_min, Real t_max, hit_record<Rea
 
     rec.t = t;
     rec.p = r(rec.t);
+    vec<Real> outward_normal = this->normal(rec.p);
+    rec.set_face_normal(r, outward_normal);
+    rec.mat_ptr = mat_ptr_;
 #ifdef DEBUG
     using std::abs;
     Real res = this->residual(rec.p);
@@ -139,12 +142,17 @@ bool torus<Real>::hit(const ray<Real>& r, Real t_min, Real t_max, hit_record<Rea
     if (abs(res) > expected_res) {
         std::cerr << __FILE__ << ":" << __LINE__ << " Residual for torus intersection unexpectedly high. ";
         std::cerr << "Residual is " << res << ", but expected residual is " << expected_res << ".\n";
+        std::cerr << rec << "\n";
+        std::cerr << "[t_min, t_max] = [" << t_min << ", " << t_max << "]\n";
+        std::cerr << "Ray: " << r << "\n";
+        std::cerr << "Roots are {";
+        for (auto r : roots) {
+            std::cerr << r << ", ";
+        }
+        std::cerr << "}\n";
     }
 #endif
-    vec<Real> outward_normal = this->normal(rec.p);
 
-    rec.set_face_normal(r, outward_normal);
-    rec.mat_ptr = mat_ptr_;
     return true;
 }
 

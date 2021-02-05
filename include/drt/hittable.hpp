@@ -29,14 +29,15 @@ struct hit_record {
     }
 
     friend std::ostream& operator<<(std::ostream & os, const hit_record<Real> & rec) {
-        os << "Ray intersects object at " << rec.p << " and time " << rec.t << "\n";
-        os << "Normal is " << rec.normal << "\n";
-        os << "Parametric coordinates: (u,v) = (" << rec.u << ", " << rec.v << ")\n";
+        os << "Ray intersects ";
         if (rec.front_face) {
-            os << "Ray intersects front face.\n";
+            os << "front face";
         } else {
-            os << "Ray intersects back face.\n";
+            os << "back face";
         }
+        os << " of object at " << rec.p << " and time " << rec.t << "\n";
+        os << "Normal is " << rec.normal << "\n";
+        os << "Parametric coordinates: (u,v) = (" << rec.u << ", " << rec.v << ")";
         return os;
     }
 };
