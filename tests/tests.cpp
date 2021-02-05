@@ -176,8 +176,58 @@ TEST(Torus, Intersection)
     EXPECT_FLOAT_EQ(rec.p[0], 3);
     EXPECT_FLOAT_EQ(rec.p[1], 0);
     EXPECT_FLOAT_EQ(rec.p[2], -1);
+    Real res = tor.residual(rec.p);
+    Real ex_res = tor.expected_residual(rec.p);
+    EXPECT_LE(abs(res), ex_res);
     EXPECT_FLOAT_EQ(rec.t, 4);
+    EXPECT_FLOAT_EQ(rec.normal[0], 0);
+    EXPECT_FLOAT_EQ(rec.normal[1], 0);
+    EXPECT_FLOAT_EQ(rec.normal[2], -1);
 
+
+    origin[0] = -3;
+    r = ray<Real>(origin, direction);
+    hits = tor.hit(r, std::numeric_limits<Real>::lowest(), std::numeric_limits<Real>::infinity(), rec);
+    EXPECT_TRUE(hits);
+    EXPECT_FLOAT_EQ(rec.p[0], -3);
+    EXPECT_FLOAT_EQ(rec.p[1], 0);
+    EXPECT_FLOAT_EQ(rec.p[2], -1);
+    res = tor.residual(rec.p);
+    ex_res = tor.expected_residual(rec.p);
+    EXPECT_LE(abs(res), ex_res);
+    EXPECT_FLOAT_EQ(rec.t, 4);
+    EXPECT_FLOAT_EQ(rec.normal[0], 0);
+    EXPECT_FLOAT_EQ(rec.normal[1], 0);
+    EXPECT_FLOAT_EQ(rec.normal[2], -1);
+
+    origin[0] = 0;
+    origin[1] = 3;
+    r = ray<Real>(origin, direction);
+    hits = tor.hit(r, std::numeric_limits<Real>::lowest(), std::numeric_limits<Real>::infinity(), rec);
+    EXPECT_TRUE(hits);
+    EXPECT_FLOAT_EQ(rec.p[0], 0);
+    EXPECT_FLOAT_EQ(rec.p[1], 3);
+    EXPECT_FLOAT_EQ(rec.p[2], -1);
+    res = tor.residual(rec.p);
+    ex_res = tor.expected_residual(rec.p);
+    EXPECT_LE(abs(res), ex_res);
+    EXPECT_FLOAT_EQ(rec.t, 4);
+    EXPECT_FLOAT_EQ(rec.normal[0], 0);
+    EXPECT_FLOAT_EQ(rec.normal[1], 0);
+    EXPECT_FLOAT_EQ(rec.normal[2], -1);
+
+    origin[0] = 0;
+    origin[1] = -3;
+    r = ray<Real>(origin, direction);
+    hits = tor.hit(r, std::numeric_limits<Real>::lowest(), std::numeric_limits<Real>::infinity(), rec);
+    EXPECT_TRUE(hits);
+    EXPECT_FLOAT_EQ(rec.p[0], 0);
+    EXPECT_FLOAT_EQ(rec.p[1], -3);
+    EXPECT_FLOAT_EQ(rec.p[2], -1);
+    res = tor.residual(rec.p);
+    ex_res = tor.expected_residual(rec.p);
+    EXPECT_LE(abs(res), ex_res);
+    EXPECT_FLOAT_EQ(rec.t, 4);
     EXPECT_FLOAT_EQ(rec.normal[0], 0);
     EXPECT_FLOAT_EQ(rec.normal[1], 0);
     EXPECT_FLOAT_EQ(rec.normal[2], -1);
@@ -192,6 +242,27 @@ TEST(Torus, Intersection)
     r = ray<Real>(origin, direction);
     hits = tor.hit(r, std::numeric_limits<Real>::lowest(), std::numeric_limits<Real>::infinity(), rec);
     EXPECT_FALSE(hits);
+
+
+    origin[0] = 0;
+    origin[1] = -5;
+    origin[2] = 0;
+    direction[0] = 0;
+    direction[1] = 1;
+    direction[2] = 0;
+    r = ray<Real>(origin, direction);
+    hits = tor.hit(r, std::numeric_limits<Real>::lowest(), std::numeric_limits<Real>::infinity(), rec);
+    EXPECT_TRUE(hits);
+    EXPECT_FLOAT_EQ(rec.p[0], 0);
+    EXPECT_FLOAT_EQ(rec.p[1], -4);
+    EXPECT_FLOAT_EQ(rec.p[2], 0);
+    res = tor.residual(rec.p);
+    ex_res = tor.expected_residual(rec.p);
+    EXPECT_LE(abs(res), ex_res);
+    EXPECT_FLOAT_EQ(rec.t, 1);
+    EXPECT_FLOAT_EQ(rec.normal[0], 0);
+    EXPECT_FLOAT_EQ(rec.normal[1], -1);
+    EXPECT_FLOAT_EQ(rec.normal[2], 0);
 
 }
 
