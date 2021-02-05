@@ -3,7 +3,7 @@ CXXFLAGS = -g -Wall -Wextra --std=gnu++17 -fno-finite-math-only -ffast-math -mar
 INCFLAGS = -I./include -I./lodepng
 
 ifdef DEBUG
-	CXXFLAGS += -O2 -fsanitize=address -fsanitize=undefined
+	CXXFLAGS += -O2 -fsanitize=address -fsanitize=undefined -DDEBUG
 else
 	CXXFLAGS += -O3
 endif

@@ -27,6 +27,18 @@ struct hit_record {
         front_face = drt::dot(r.direction(), outward_normal) < 0;
         normal = front_face ? outward_normal : -outward_normal;
     }
+
+    friend std::ostream& operator<<(std::ostream & os, const hit_record<Real> & rec) {
+        os << "Ray intersects object at " << rec.p << " and time " << rec.t << "\n";
+        os << "Normal is " << rec.normal << "\n";
+        os << "Parametric coordinates: (u,v) = (" << rec.u << ", " << rec.v << ")\n";
+        if (rec.front_face) {
+            os << "Ray intersects front face.\n";
+        } else {
+            os << "Ray intersects back face.\n";
+        }
+        return os;
+    }
 };
 
 template<typename Real>
