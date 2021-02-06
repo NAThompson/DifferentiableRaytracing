@@ -1,6 +1,7 @@
 #include <iostream>
 #include <cmath>
 #include <cstring>
+#include <random>
 #include <gtest/gtest.h>
 #include <drt/roots.hpp>
 #include <drt/torus.hpp>
@@ -152,6 +153,41 @@ TEST(RootsTest, Quartic) {
     EXPECT_FLOAT_EQ(roots[1], 2);
     EXPECT_FLOAT_EQ(roots[2], 3);
     EXPECT_FLOAT_EQ(roots[3], 4);
+
+    // (x-1.5)(x+0.5)(x+1.5)(x+2) = -2.25 - 5.625 x - 1.25 x^2 + 2.5 x^3 + x^4
+    roots = drt::quartic_roots(Real(1), 2.5, -1.25, -5.625, -2.25);
+    EXPECT_EQ(roots.size(), size_t(4));
+    EXPECT_FLOAT_EQ(roots[0], -2);
+    EXPECT_FLOAT_EQ(roots[1], -1.5);
+    EXPECT_FLOAT_EQ(roots[2], -0.5);
+    EXPECT_FLOAT_EQ(roots[3], 1.5);
+
+    // TODO: Test the biquadratic branch!
+
+    std::uniform_real_distribution<Real> dis(-2,2);
+    std::mt19937 gen(12345);
+    // Expected roots
+    std::array<Real, 4> r;
+    int i = 0;
+    do {
+        // Mathematica:
+        // Expand[(x - r0)*(x - r1)*(x - r2)*(x - r3)]
+        // r0 r1 r2 r3 - (r0 r1 r2 + r0 r1 r3 + r0 r2 r3 + r1 r2 r3) x
+        // + (r0 r1 + r0 r2 + r1 r2 + r0 r3 + r1 r3 + r2 r3)x^2 - (r0 + r1 + r2 + r3) x^3 + x^4
+        for (auto & root : r) {
+            root = dis(gen);
+        }
+        std::sort(r.begin(), r.end());
+        Real a = 1;
+        Real b = -(r[0] + r[1] + r[2] + r[3]);
+        Real c = r[0]*r[1] + r[0]*r[2] + r[1]*r[2] + r[0]*r[3] + r[1]*r[3] + r[2]*r[3];
+        Real d = - (r[0]*r[1]*r[2] + r[0]*r[1]*r[3] + r[0]*r[2]*r[3] + r[1]*r[2]*r[3]);
+        Real e = r[0]*r[1]*r[2]*r[3];
+
+        std::cout << std::setprecision(std::numeric_limits<Real>::digits10);
+        auto roots = quartic_roots(a, b, c, d, e);
+        EXPECT_EQ(roots.size(), size_t(4));
+    } while (i++ < 500);
 }
 
 TEST(Torus, Intersection)

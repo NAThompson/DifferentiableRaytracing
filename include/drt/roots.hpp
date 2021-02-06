@@ -208,8 +208,8 @@ std::vector<Real> quartic_roots(Real a, Real b, Real c, Real d, Real e) {
     }
 
     // s is nonzero, because we took care of the biquadratic case.
-    Real v = (p + q/s)/2;
-    Real u = s - v;
+    Real v = (p + s*s + q/s)/2;
+    Real u = v - q/s;
     // Now solve y² + sy + u = 0:
     auto roots1 = quadratic_roots(Real(1), s, u);
 
