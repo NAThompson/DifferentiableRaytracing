@@ -25,4 +25,4 @@ test: tests/tests.cpp
 
 .PHONY: clean
 clean:
-	rm -rf *.x *.o *.d *.x.dSYM
+	rm -rf *.x *.o *.d *.x.dSYM *.png
