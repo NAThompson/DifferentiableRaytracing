@@ -333,6 +333,17 @@ TEST(Torus, AABB)
     EXPECT_EQ(box.max_[2], 1);
 }
 
+TEST(Torus, Curvature)
+{
+    using Real = double;
+    auto mat = std::make_shared<lambertian<Real>>(vec<Real>(1,0,0));
+    vec<Real> center(0,0,0);
+    auto tor = torus<Real>(center, 3.0, 1.0, mat);
+    auto [kappa_min, kappa_max] = tor.gaussian_curvature_bounds();
+    EXPECT_FLOAT_EQ(kappa_min, -0.5);
+    EXPECT_FLOAT_EQ(kappa_max, 0.25);
+}
+
 
 int main(int argc, char **argv) {
   ::testing::InitGoogleTest(&argc, argv);

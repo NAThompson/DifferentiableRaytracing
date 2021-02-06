@@ -2,7 +2,7 @@
 #define DRT_TORUS_HPP
 #include <utility>
 #include <algorithm>
-#include <atomic>
+#include <cmath>
 #include <drt/hittable.hpp>
 #include <drt/vec.hpp>
 #include <drt/material.hpp>
@@ -47,18 +47,19 @@ public:
     }
 
     Real gaussian_curvature(vec<Real, 3> const & p) const {
-        using std::asin;
-        using std::cos;
+        using std::sqrt;
+        Real zr = (p[2] - center_[2])/r_;
+        std::clamp(zr, -Real(1), Real(1));
+        // cos(v) = cos(arcsin(z/r)) = ±√(1-z²/r²).
+        Real cosv = sqrt(1-zr*zr);
+        // We need additional information to resolve the sign of the square root.
         Real x = p[0] - center_[0];
         Real y = p[1] - center_[1];
-        Real z = p[2] - center_[2];
-        Real xsqysq = x*x + y*y;
-        Real theta = asin(z/r_);
-        Real cost = cos(theta);
-        if (xsqysq > (R_ + r_*cost)*(R_+r_*cost)*(1+sqrt(std::numeric_limits<Real>::epsilon()))) {
-            cost = -cost;
+        // x² + y² = (R+rcos(v))² = R² + r²cos(v)² + 2rRcos(v)
+        if (x*x + y*y - (R_*R_ + r_*r_*cosv*cosv) < 0) {
+            cosv = -cosv;
         }
-        return cost/(r_*(R_ + r_*cost));
+        return cosv/(r_*(R_ + r_*cosv));
     }
 
     std::pair<Real, Real> gaussian_curvature_bounds() const {
@@ -94,6 +95,31 @@ public:
         // Factor of 100 just to save some annoyance:
         residual *= 100*std::sqrt(std::numeric_limits<Real>::epsilon());
         return residual;
+    }
+
+    // x = (R + r cos(v)) cos(u)
+    // y = (R + r cos(v)) sin(u)
+    // z = r sin(v)
+    std::pair<Real, Real> vec_to_uv(vec<Real> const & p)
+    {
+        using std::asin;
+        using std::atan2;
+        Real x = p[0] - center_[0];
+        Real y = p[1] - center_[1];
+        Real z = p[2] - center_[2];
+        // Bunch of clamps to stop nans:
+        std::clamp(x, -(R_+r_), (R_+r_));
+        std::clamp(y, -(R_+r_), (R_+r_));
+        std::clamp(z, -r_, r_);
+        Real u = atan2(x,y);
+        if(u < 0) {
+            u += 2*M_PI;
+        }
+        Real v = asin(z/r_);
+        if (v < 0) {
+            v += 2*M_PI;
+        }
+        return std::pair<Real, Real>(u,v);
     }
 
     virtual ~torus() = default;
