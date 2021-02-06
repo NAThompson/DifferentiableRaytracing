@@ -27,7 +27,7 @@ hittable_list<Real> torus_scene() {
     hittable_list<Real> objects;
     auto light = make_shared<diffuse_light<Real>>(vec<Real>(7, 7, 7));
     objects.add(make_shared<yz_rect<Real>>(-10, 10, -10, 10, 20, light));
-   // objects.add(make_shared<xy_rect<Real>>(-10, 10, -10, 10, -20, light));
+    objects.add(make_shared<xy_rect<Real>>(-10, 10, -10, 10, -20, light));
 
     auto dummy_mat = make_shared<lambertian<Real>>(vec<Real,3>(0,0,0));
     vec<Real> center(0,0,0);
@@ -40,6 +40,7 @@ hittable_list<Real> torus_scene() {
         if (std::isnan(kappa)) {
             return vec<Real, 3>(0,0,0);
         }
+        std::cout << kappa << ", ";
         Real scalar = (kappa - kappa_min)/(kappa_max - kappa_min);
         if (scalar < 0) {
             std::cerr << "Scalar = " << scalar << ", this bad.\n";
@@ -47,7 +48,7 @@ hittable_list<Real> torus_scene() {
         if (scalar > 1) {
             std::cerr << "Scalar = " << scalar << ", this bad.\n";
         }
-        return viridis(scalar);
+        return plasma(scalar);
     };
 
     auto ptr = make_shared<decltype(gaussian_curvature)>(gaussian_curvature);

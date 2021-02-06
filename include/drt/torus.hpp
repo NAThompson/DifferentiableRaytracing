@@ -2,11 +2,13 @@
 #define DRT_TORUS_HPP
 #include <utility>
 #include <algorithm>
+#include <atomic>
 #include <drt/hittable.hpp>
 #include <drt/vec.hpp>
 #include <drt/material.hpp>
 #include <drt/roots.hpp>
 
+static int64_t error_count = 0;
 namespace drt {
 template<typename Real>
 class torus : public hittable<Real> {
@@ -89,9 +91,9 @@ public:
         Real dfdz = 4*z*(length_sq + R_*R_ - r_*r_);
 
         Real residual = abs(x*dfdx) + abs(y*dfdy) + abs(z*dfdz);
-        // Factor of 1000 just to save some annoyance:
+        // Factor of 100 just to save some annoyance:
         residual *= 100*std::sqrt(std::numeric_limits<Real>::epsilon());
-        return 0.1;
+        return residual;
     }
 
     virtual ~torus() = default;
@@ -145,23 +147,27 @@ bool torus<Real>::hit(const ray<Real>& r, Real t_min, Real t_max, hit_record<Rea
     vec<Real> outward_normal = this->normal(rec.p);
     rec.set_face_normal(r, outward_normal);
     rec.mat_ptr = mat_ptr_;
-#ifdef DEBUG
     using std::abs;
     Real res = this->residual(rec.p);
     Real expected_res = this->expected_residual(rec.p);
     if (abs(res) > expected_res) {
+#ifdef DEBUG
+        error_count++;
         std::cerr << __FILE__ << ":" << __LINE__ << " Residual for torus intersection unexpectedly high. ";
         std::cerr << "Residual is " << res << ", but expected residual is " << expected_res << ".\n";
         std::cerr << rec << "\n";
         std::cerr << "[t_min, t_max] = [" << t_min << ", " << t_max << "]\n";
         std::cerr << "Ray: " << r << "\n";
+        std::cerr << "Error count = " << error_count << "\n";
         std::cerr << "Roots are {";
         for (auto r : roots) {
             std::cerr << r << ", ";
         }
         std::cerr << "}\n";
-    }
 #endif
+        return false;
+    }
+
 
     return true;
 }

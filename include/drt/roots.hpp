@@ -208,6 +208,7 @@ std::vector<Real> quartic_roots(Real a, Real b, Real c, Real d, Real e) {
     }
 
     // s is nonzero, because we took care of the biquadratic case.
+    // but I've seen it hit identically zero under ASAN!!!
     Real v = (p + s*s + q/s)/2;
     Real u = v - q/s;
     // Now solve y² + sy + u = 0:
@@ -222,6 +223,25 @@ std::vector<Real> quartic_roots(Real a, Real b, Real c, Real d, Real e) {
     for (auto& r : roots1) {
         r -= A/4;
     }
+
+    // This is not super accurate. Clean up the roots with a Halley iterate.
+    for (auto &r : roots1) {
+        Real df = 4*a*r + 3*b;
+        df = df*r + 2*c;
+        df = df*r + d;
+        Real d2f = 12*a*r + 6*b;
+        d2f = d2f*r + 2*c;
+        Real f = a*r + b;
+        f = f*r + c;
+        f = f*r + d;
+        f = f*r + e;
+        Real denom = 2*df*df - f*d2f;
+        if (std::abs(denom) > std::numeric_limits<Real>::min())
+        {
+            r -= 2*f*df/denom;
+        }
+    }
+
     std::sort(roots1.begin(), roots1.end());
     return roots1;
 }

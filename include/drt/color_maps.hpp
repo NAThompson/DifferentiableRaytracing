@@ -52,6 +52,12 @@ constexpr const std::array<Real, 256> viridis_b{0.3310101940118055,0.33703442738
 template<typename Real>
 vec<Real, 3> viridis(Real scalar) {
     scalar = std::clamp(scalar, Real(0), Real(1));
+    // Keep ASAN happy:
+    if (scalar == 1) {
+        return vec<Real>(viridis_r<Real>.back(),
+                   viridis_g<Real>.back(),
+                   viridis_b<Real>.back());
+    }
     constexpr const Real h = Real(1)/(viridis_r<Real>.size()-1);
     Real ii = std::floor(scalar/h);
     int i = static_cast<size_t>(ii);
