@@ -25,9 +25,9 @@ using namespace drt;
 template<typename Real>
 hittable_list<Real> torus_scene() {
     hittable_list<Real> objects;
-    auto light = make_shared<diffuse_light<Real>>(vec<Real>(2, 2, 2));
+    auto light = make_shared<diffuse_light<Real>>(vec<Real>(1, 1, 1));
     objects.add(make_shared<yz_rect<Real>>(-10, 10, -10, 10, 20, light));
-    objects.add(make_shared<xy_rect<Real>>(-10, 10, -10, 10, -20, light));
+    objects.add(make_shared<xy_rect<Real>>(-100, 100, -100, 100, -20, light));
 
     auto dummy_mat = make_shared<lambertian<Real>>(vec<Real,3>(0,0,0));
     vec<Real> center(0,0,0);

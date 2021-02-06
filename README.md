@@ -171,6 +171,13 @@ Ray $$\mathbf{O} + t\mathbf{D}$$ intersects torus when $$x = o_x + td_x, y = o_y
 
 ---
 
+## Gaussian Curvature of Torus
+
+![inline](figures/torus_curvature.png)
+
+
+---
+
 ## Gaussian Curvature of Torus in Paraview
 
 ![inline](figures/pv_torus_curvature.png)
