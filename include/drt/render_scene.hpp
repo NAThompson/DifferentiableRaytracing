@@ -5,12 +5,13 @@
 #include <drt/vec.hpp>
 #include <drt/camera.hpp>
 #include <drt/ray_color.hpp>
+#include <drt/png.hpp>
 
 namespace drt {
 
 void display_progress(double progress)
 {
-    int barWidth = 70;
+    int barWidth = 100;
 
     std::cout << "\033[0;32m[";
     int pos = static_cast<int>(barWidth * progress);

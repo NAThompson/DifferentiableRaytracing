@@ -162,7 +162,17 @@ TEST(RootsTest, Quartic) {
     EXPECT_FLOAT_EQ(roots[2], -0.5);
     EXPECT_FLOAT_EQ(roots[3], 1.5);
 
-    // TODO: Test the biquadratic branch!
+    // Test the biquadratic branch:
+    // Solve[1 - 6 z^2 + z^4 == 0, z]
+    // {{z -> -1 - Sqrt[2]}, {z -> 1 - Sqrt[2]}, {z -> -1 + Sqrt[2]}, {z -> 1 + Sqrt[2]}}
+    roots = drt::quartic_roots(Real(1), Real(0), Real(-6), Real(0), Real(1));
+    EXPECT_EQ(roots.size(), size_t(4));
+    Real rt2 = std::sqrt(2.0);
+    EXPECT_FLOAT_EQ(roots[0], -1 - rt2);
+    EXPECT_FLOAT_EQ(roots[1], 1 - rt2);
+    EXPECT_FLOAT_EQ(roots[2], -1 + rt2);
+    EXPECT_FLOAT_EQ(roots[3], 1 + rt2);
+
 
     std::uniform_real_distribution<Real> dis(-2,2);
     std::mt19937 gen(12345);
@@ -187,6 +197,10 @@ TEST(RootsTest, Quartic) {
         std::cout << std::setprecision(std::numeric_limits<Real>::digits10);
         auto roots = quartic_roots(a, b, c, d, e);
         EXPECT_EQ(roots.size(), size_t(4));
+        EXPECT_FLOAT_EQ(roots[0], r[0]);
+        EXPECT_FLOAT_EQ(roots[1], r[1]);
+        EXPECT_FLOAT_EQ(roots[2], r[2]);
+        EXPECT_FLOAT_EQ(roots[3], r[3]);
     } while (i++ < 500);
 }
 

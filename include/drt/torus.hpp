@@ -26,15 +26,6 @@ public:
 
     virtual bool bounding_box(aabb<Real>& output_box) const override;
 
-    Real gaussian_curvature(const vec<Real>& p) {
-        std::ignore(p);
-        return std::numeric_limits<Real>::quiet_NaN();
-    }
-
-    std::pair<Real, Real> gaussian_curvature_bounds() const {
-        return std::make_pair<Real,Real>(std::numeric_limits<Real>::quiet_NaN(), std::numeric_limits<Real>::quiet_NaN());
-    }
-
     Real area() const {
         return 4*M_PI*M_PI*R_*r_;
     }
@@ -51,6 +42,25 @@ public:
         vec<Real> n(4*x*(s- R_*R_), 4*y*(s - R_*R_), 4*z*(s + R_*R_));
         normalize(n);
         return n;
+    }
+
+    Real gaussian_curvature(vec<Real, 3> const & p) const {
+        using std::asin;
+        using std::cos;
+        Real x = p[0] - center_[0];
+        Real y = p[1] - center_[1];
+        Real z = p[2] - center_[2];
+        Real xsqysq = x*x + y*y;
+        Real theta = asin(z/r_);
+        Real cost = cos(theta);
+        if (xsqysq > (R_ + r_*cost)*(R_+r_*cost)*(1+sqrt(std::numeric_limits<Real>::epsilon()))) {
+            cost = -cost;
+        }
+        return cost/(r_*(R_ + r_*cost));
+    }
+
+    std::pair<Real, Real> gaussian_curvature_bounds() const {
+        return std::make_pair<Real,Real>(-1/(r_*(R_ - r_)), 1/(r_*(R_ + r_)));
     }
 
     // For a point p approximately on the torus,
@@ -80,8 +90,8 @@ public:
 
         Real residual = abs(x*dfdx) + abs(y*dfdy) + abs(z*dfdz);
         // Factor of 1000 just to save some annoyance:
-        residual *= std::sqrt(std::numeric_limits<Real>::epsilon());
-        return residual;
+        residual *= 100*std::sqrt(std::numeric_limits<Real>::epsilon());
+        return 0.1;
     }
 
     virtual ~torus() = default;
