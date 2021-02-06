@@ -19,6 +19,7 @@
 #include <drt/aarect.hpp>
 #include <drt/constant_medium.hpp>
 #include <drt/box.hpp>
+#include <drt/ray_color.hpp>
 
 template<typename Real>
 drt::hittable_list<Real> final_scene() {
@@ -52,10 +53,8 @@ drt::hittable_list<Real> final_scene() {
     drt::hittable_list<Real> objects;
     objects.add(make_shared<drt::bvh_node<Real>>(boxes1));
 
-
     auto light = make_shared<drt::diffuse_light<Real>>(vec<Real>(7, 7, 7));
     objects.add(make_shared<drt::xz_rect<Real>>(123, 423, 147, 412, 554, light));
-
 
     objects.add(make_shared<sphere<Real>>(vec<Real>(260, 150, 45), Real(50), make_shared<dielectric<Real>>(1.5)));
     auto m1 = std::make_shared<metal<Real>>(vec<Real>(0.8, 0.8, 0.9));
@@ -69,32 +68,6 @@ drt::hittable_list<Real> final_scene() {
     objects.add(make_shared<constant_medium<Real>>(boundary, .0001, vec<Real>(1,1,1)));
 
     return objects;
-}
-
-template<typename Real>
-drt::vec<Real, 3> ray_color(const drt::ray<Real>& r, const drt::vec<Real>& background_color, const drt::hittable<Real> & world, int depth) {
-    if (depth <= 0) {
-        return drt::vec<Real>(0,0,0);
-    }
-    drt::hit_record<Real> rec;
-    if (!world.hit(r, std::sqrt(std::numeric_limits<Real>::epsilon()), std::numeric_limits<Real>::infinity(), rec)) {
-        return background_color;
-    }
-    drt::ray<Real> scattered;
-    drt::vec<Real> attenuation;
-    drt::vec<Real> emitted = rec.mat_ptr->emitted(rec.u, rec.v, rec.p);
-
-    if (!rec.mat_ptr->scatter(r, rec, attenuation, scattered)) {
-        return emitted;
-    }
-    drt::vec<Real> color = ray_color(scattered, background_color, world, depth-1);
-    // Peter Shirley has an overload for componentwise vector multiplication.
-    // I'm avoiding that for now.
-    // It does make sense for this application: Independently attenuating each frequency.
-    for (size_t i = 0; i < 3; ++i) {
-        color[i] *= attenuation[i];
-    }
-    return emitted + color;
 }
 
 int main() {
