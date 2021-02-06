@@ -22,6 +22,7 @@
 #include <drt/ellipsoid.hpp>
 #include <drt/color_maps.hpp>
 #include <drt/ray_color.hpp>
+#include <drt/render_scene.hpp>
 
 using std::make_shared;
 using drt::lambertian;
@@ -38,7 +39,6 @@ using drt::lambda_texture;
 
 template<typename Real>
 drt::hittable_list<Real> ellipsoid_scene() {
-
     drt::hittable_list<Real> objects;
     auto light = make_shared<diffuse_light<Real>>(vec<Real>(1, 1, 1));
     objects.add(make_shared<xy_rect<Real>>(-30, 30, -30, 30, -15, light));
@@ -94,29 +94,6 @@ int main() {
     drt::vec<Real> vup(0,1,0);
 
     drt::camera cam(lookfrom, lookat, vup, Real(40), aspect_ratio);
-    std::uniform_real_distribution<Real> dis(0,1);
-    std::mt19937_64 gen;
-    int max_depth = 8;
-    std::vector<uint8_t> img(4*image_width*image_height, 0);
     drt::vec<Real> background(0.0, 0.0, 0.0);
-    for (int64_t j = 0; j < image_height; ++j) {
-        std::cerr << j << "/" << image_height << "\r";
-        for (int64_t i = 0; i < image_width; ++i) {
-            drt::vec<Real, 3> color(0,0,0);
-            for (int64_t s = 0; s < samples_per_pixel; ++s) {
-                Real u = (Real(i) + dis(gen)) / (image_width -1);
-                Real v = (Real(j) + dis(gen)) / (image_height -1);
-                auto r = cam.get_ray(u, v);
-                color += ray_color(r, background, world, max_depth);
-            }
-            auto c = drt::to_8bit_rgba(color/Real(samples_per_pixel));
-            int64_t idx = 4 * image_width * (image_height - 1 - j) + 4 * i;
-            img[idx + 0] = c[0];
-            img[idx + 1] = c[1];
-            img[idx + 2] = c[2];
-            img[idx + 3] = c[3];
-        }
-    }
-
-    drt::write_png("gaussian_curvature.png", img, image_width, image_height);
+    drt::render_scene<Real>("gaussian_curvature.png", image_width, image_height, background, cam, world, samples_per_pixel);
 }

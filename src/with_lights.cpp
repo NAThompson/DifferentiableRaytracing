@@ -19,6 +19,7 @@
 #include <drt/aarect.hpp>
 #include <drt/constant_medium.hpp>
 #include <drt/ray_color.hpp>
+#include <drt/render_scene.hpp>
 
 template<typename Real>
 drt::hittable_list<Real> simple_light() {
@@ -58,29 +59,6 @@ int main() {
     drt::vec<Real> vup(0,1,0);
 
     drt::camera cam(lookfrom, lookat, vup, Real(20), aspect_ratio);
-    std::uniform_real_distribution<Real> dis(0,1);
-    std::mt19937 gen;
-    int max_depth = 8;
-    std::vector<uint8_t> img(4*image_width*image_height, 0);
     drt::vec<Real> background(0.01, 0.02, 0.01);
-    for (int64_t j = 0; j < image_height; ++j) {
-        std::cerr << j << "/" << image_height << "\r";
-        for (int64_t i = 0; i < image_width; ++i) {
-            drt::vec<Real, 3> color(0,0,0);
-            for (int64_t s = 0; s < samples_per_pixel; ++s) {
-                Real u = (Real(i) + dis(gen)) / (image_width -1);
-                Real v = (Real(j) + dis(gen)) / (image_height -1);
-                auto r = cam.get_ray(u, v);
-                color += ray_color(r, background, world, max_depth);
-            }
-            auto c = drt::to_8bit_rgba(color/Real(samples_per_pixel));
-            int64_t idx = 4 * image_width * (image_height - 1 - j) + 4 * i;
-            img[idx + 0] = c[0];
-            img[idx + 1] = c[1];
-            img[idx + 2] = c[2];
-            img[idx + 3] = c[3];
-        }
-    }
-
-    drt::write_png("lights.png", img, image_width, image_height);
+    drt::render_scene<Real>("lights.png", image_width, image_height, background, cam, world, samples_per_pixel);
 }

@@ -79,8 +79,8 @@ public:
         Real dfdz = 4*z*(length_sq + R_*R_ - r_*r_);
 
         Real residual = abs(x*dfdx) + abs(y*dfdy) + abs(z*dfdz);
-        // Factor of 10 just to save some annoyance:
-        residual *= 10*std::numeric_limits<Real>::epsilon();
+        // Factor of 1000 just to save some annoyance:
+        residual *= std::sqrt(std::numeric_limits<Real>::epsilon());
         return residual;
     }
 
