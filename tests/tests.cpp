@@ -241,7 +241,7 @@ TEST(Torus, Intersection)
     auto r = ray<Real>(origin, direction);
     auto tor = torus<Real>(center, 3.0, 1.0, mat);
 
-    hit_record<Real> rec;
+    drt::hit_record<Real> rec;
     bool hits = tor.hit(r, std::numeric_limits<Real>::lowest(), std::numeric_limits<Real>::infinity(), rec);
     EXPECT_FALSE(hits);
 
