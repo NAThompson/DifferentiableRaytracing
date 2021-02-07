@@ -1,6 +1,6 @@
 slidenumbers: true
 
-## Intro to Raytracing Differentiable Objects
+## Raytracing Differentiable Surfaces
 
 ![inline](figures/ornl_logo.svg)
 
@@ -169,6 +169,9 @@ $$((x-x_c)^2 + (y-y_c)^2 + (z-z_c)^2 + R^2 - r^2)^2 - 4R^2((x-x_c)^2+(y-y_c)^2) 
 
 Ray $$\mathbf{O} + t\mathbf{D}$$ intersects torus when $$x = o_x + td_x, y = o_y + td_y, z = o_z + td_z$$, which gives a quartic equation for $$t$$.
 
+- No real roots implies no intersection of ray with torus
+- Multiple real roots implies multiple intersections; take the smallest real root (point of surface closest to camera)
+
 ---
 
 ## Gaussian Curvature of Torus
@@ -193,3 +196,7 @@ References:
 - Moreland, Kenneth. "Why we use bad color maps and what you can do about it." Electronic Imaging 2016.16 (2016): 1-6.
 
 - Pharr, Matt, Wenzel Jakob, and Greg Humphreys. Physically based rendering: From theory to implementation. Morgan Kaufmann, 2016.
+
+---
+
+- Barr, Alan H. "Ray tracing deformed surfaces." ACM SIGGRAPH Computer Graphics 20.4 (1986): 287-296.

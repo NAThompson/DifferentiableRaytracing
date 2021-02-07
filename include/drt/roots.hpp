@@ -37,7 +37,7 @@ std::vector<Real> quadratic_roots(Real const a, Real const b, Real const c)
             else
             {
                 // Technically there are infinitely many roots.
-                // Hopefully this interacts gracefully with intended use.s
+                // Hopefully this interacts gracefully with intended use.
                 roots[0] = 0;
                 roots[1] = 0;
                 return roots;
