@@ -194,21 +194,14 @@ std::vector<Real> quartic_roots(Real a, Real b, Real c, Real d, Real e) {
     // z³ + 2pz² + (p² - 4r)z - q² = 0.
     auto z_roots = cubic_roots(Real(1), 2*p, p*p - 4*r, -q*q);
     // z = s², so s = sqrt(z).
-    Real s = std::numeric_limits<Real>::quiet_NaN();
-    for (auto z : z_roots) {
-        if (z >= 0) {
-            s = std::sqrt(z);
-        }
-    }
-
     // No real roots:
-    if (std::isnan(s)) {
+    if (z_roots.back() <= 0) {
         std::vector<Real> v(0);
         return v;
     }
+    Real s = std::sqrt(z_roots.back());
 
     // s is nonzero, because we took care of the biquadratic case.
-    // but I've seen it hit identically zero under ASAN!!!
     Real v = (p + s*s + q/s)/2;
     Real u = v - q/s;
     // Now solve y² + sy + u = 0:

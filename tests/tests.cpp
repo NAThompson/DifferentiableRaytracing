@@ -124,6 +124,34 @@ TEST(RootsTest, Cubic) {
     EXPECT_FLOAT_EQ(roots[0], 1);
     EXPECT_FLOAT_EQ(roots[1], 2);
     EXPECT_FLOAT_EQ(roots[2], 3);
+
+    std::uniform_real_distribution<Real> dis(-2,2);
+    std::mt19937 gen(12345);
+    // Expected roots
+    std::array<Real, 3> r;
+    int i = 0;
+    do {
+        // Mathematica:
+        // Expand[(x - r0)*(x - r1)*(x - r2)]
+        // r0 r1 r2 r3 - (r0 r1 r2 + r0 r1 r3 + r0 r2 r3 + r1 r2 r3) x
+        // + (r0 r1 + r0 r2 + r1 r2 + r0 r3 + r1 r3 + r2 r3)x^2 - (r0 + r1 + r2 + r3) x^3 + x^4
+        for (auto & root : r) {
+            root = dis(gen);
+        }
+        std::sort(r.begin(), r.end());
+        Real a = 1;
+        Real b = -(r[0] + r[1] + r[2]);
+        Real c = r[0]*r[1] + r[0]*r[2] + r[1]*r[2];
+        Real d = -r[0]*r[1]*r[2];
+
+        std::cout << std::setprecision(std::numeric_limits<Real>::digits10);
+        auto roots = cubic_roots(a, b, c, d);
+        EXPECT_EQ(roots.size(), size_t(3));
+        EXPECT_FLOAT_EQ(roots[0], r[0]);
+        EXPECT_FLOAT_EQ(roots[1], r[1]);
+        EXPECT_FLOAT_EQ(roots[2], r[2]);
+    } while (i++ < 500);
+
 }
 
 TEST(RootsTest, Quartic) {
@@ -194,7 +222,6 @@ TEST(RootsTest, Quartic) {
         Real d = - (r[0]*r[1]*r[2] + r[0]*r[1]*r[3] + r[0]*r[2]*r[3] + r[1]*r[2]*r[3]);
         Real e = r[0]*r[1]*r[2]*r[3];
 
-        std::cout << std::setprecision(std::numeric_limits<Real>::digits10);
         auto roots = quartic_roots(a, b, c, d, e);
         EXPECT_EQ(roots.size(), size_t(4));
         EXPECT_FLOAT_EQ(roots[0], r[0]);

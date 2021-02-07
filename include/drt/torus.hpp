@@ -49,17 +49,31 @@ public:
     Real gaussian_curvature(vec<Real, 3> const & p) const {
         using std::sqrt;
         Real zr = (p[2] - center_[2])/r_;
-        std::clamp(zr, -Real(1), Real(1));
+        Real arg = 1 - zr*zr;
+        arg = std::clamp(arg, Real(0), Real(1));
         // cos(v) = cos(arcsin(z/r)) = ±√(1-z²/r²).
-        Real cosv = sqrt(1-zr*zr);
+        Real cosv = sqrt(arg);
         // We need additional information to resolve the sign of the square root.
         Real x = p[0] - center_[0];
+        x = std::clamp(x, -(R_ + r_), R_ + r_);
         Real y = p[1] - center_[1];
+        y = std::clamp(y, -(R_ + r_), R_ + r_);
+
         // x² + y² = (R+rcos(v))² = R² + r²cos(v)² + 2rRcos(v)
-        if (x*x + y*y - (R_*R_ + r_*r_*cosv*cosv) < 0) {
+        if (x*x + y*y < R_*R_ + r_*r_*cosv*cosv) {
             cosv = -cosv;
         }
-        return cosv/(r_*(R_ + r_*cosv));
+        Real denom = r_*(R_ + r_*cosv);
+#ifdef DEBUG
+        if (denom == 0) {
+            std::cerr << "r(R+rcos(v)) = " << denom << "\n";
+            std::cerr << "cos(v) = " << cosv << ", p = " << p << "\n";
+            std::cerr << "zr = " << zr << ", 1 - (z/r)^2 = " << 1 - zr*zr << "\n";
+            std::cerr << "arg = " << arg << "\n";
+            error_count++;
+        }
+#endif
+        return cosv/denom;
     }
 
     std::pair<Real, Real> gaussian_curvature_bounds() const {
@@ -92,7 +106,6 @@ public:
         Real dfdz = 4*z*(length_sq + R_*R_ - r_*r_);
 
         Real residual = abs(x*dfdx) + abs(y*dfdy) + abs(z*dfdz);
-        // Factor of 100 just to save some annoyance:
         residual *= 100*std::sqrt(std::numeric_limits<Real>::epsilon());
         return residual;
     }
@@ -108,9 +121,9 @@ public:
         Real y = p[1] - center_[1];
         Real z = p[2] - center_[2];
         // Bunch of clamps to stop nans:
-        std::clamp(x, -(R_+r_), (R_+r_));
-        std::clamp(y, -(R_+r_), (R_+r_));
-        std::clamp(z, -r_, r_);
+        x = std::clamp(x, -(R_+r_), (R_+r_));
+        y = std::clamp(y, -(R_+r_), (R_+r_));
+        z = std::clamp(z, -r_, r_);
         Real u = atan2(x,y);
         if(u < 0) {
             u += 2*M_PI;
@@ -152,12 +165,8 @@ bool torus<Real>::hit(const ray<Real>& r, Real t_min, Real t_max, hit_record<Rea
     c[4] = dsq*dsq;
 
     auto roots = quartic_roots(c[4], c[3], c[2], c[1], c[0]);
-    if (roots.size() == 0) {
-        return false;
-    }
-
     Real t = std::numeric_limits<Real>::quiet_NaN();
-    // Roots are sorted so this gets the minimal root:
+    // Roots are sorted so this gets the minimal root-or if no intersection, t stays nan.
     for (auto root : roots) {
         if (root >= t_min && root <= t_max) {
             t = root;
