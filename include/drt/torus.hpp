@@ -55,9 +55,7 @@ public:
         Real cosv = sqrt(arg);
         // We need additional information to resolve the sign of the square root.
         Real x = p[0] - center_[0];
-        x = std::clamp(x, -(R_ + r_), R_ + r_);
         Real y = p[1] - center_[1];
-        y = std::clamp(y, -(R_ + r_), R_ + r_);
 
         // x² + y² = (R+rcos(v))² = R² + r²cos(v)² + 2rRcos(v)
         if (x*x + y*y < R_*R_ + r_*r_*cosv*cosv) {
@@ -106,7 +104,7 @@ public:
         Real dfdz = 4*z*(length_sq + R_*R_ - r_*r_);
 
         Real residual = abs(x*dfdx) + abs(y*dfdy) + abs(z*dfdz);
-        residual *= 100*std::sqrt(std::numeric_limits<Real>::epsilon());
+        residual *= 100*std::numeric_limits<Real>::epsilon();
         return residual;
     }
 
@@ -120,10 +118,6 @@ public:
         Real x = p[0] - center_[0];
         Real y = p[1] - center_[1];
         Real z = p[2] - center_[2];
-        // Bunch of clamps to stop nans:
-        x = std::clamp(x, -(R_+r_), (R_+r_));
-        y = std::clamp(y, -(R_+r_), (R_+r_));
-        z = std::clamp(z, -r_, r_);
         Real u = atan2(x,y);
         if(u < 0) {
             u += 2*M_PI;
@@ -133,6 +127,31 @@ public:
             v += 2*M_PI;
         }
         return std::pair<Real, Real>(u,v);
+    }
+
+    // Ok, this reduces the residual, but now I'm wondering how meaningful it actually is.
+    // PBRT uses invariants; e.g. for a circle the refinement is
+    //  pHit *= radius / Distance(pHit, Point3f(0, 0, 0));
+    void refine_hit_point(vec<Real> & p) const {
+        Real x = p[0] - center_[0];
+        Real y = p[1] - center_[1];
+        Real z = p[2] - center_[2];
+        Real length_sq = x*x + y*y + z*z;
+        Real tmp = length_sq + R_*R_ - r_*r_;
+        Real fp = tmp*tmp - 4*R_*R_*(x*x + y*y);
+        Real dfdz = 4*z*(length_sq + R_*R_ - r_*r_);
+        vec<Real> new_p = p;
+        if (dfdz != 0) {
+            new_p[2] -= fp/dfdz;
+        }
+
+        if (abs(fp) > this->residual(new_p)) {
+            p = new_p;
+        }
+        // Keep nans away!
+        p[0] = std::clamp(p[0], center_[0] - (R_+r_), center_[0] + (R_+r_));
+        p[1] = std::clamp(p[1], center_[1] - (R_+r_), center_[1] + (R_+r_));
+        p[2] = std::clamp(p[2], center_[2] - r_, center_[2] + r_);
     }
 
     virtual ~torus() = default;
@@ -179,6 +198,8 @@ bool torus<Real>::hit(const ray<Real>& r, Real t_min, Real t_max, hit_record<Rea
 
     rec.t = t;
     rec.p = r(rec.t);
+    // PBRT often refines hit points. This works very well.
+    this->refine_hit_point(rec.p);
     vec<Real> outward_normal = this->normal(rec.p);
     rec.set_face_normal(r, outward_normal);
     rec.mat_ptr = mat_ptr_;

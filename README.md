@@ -187,6 +187,43 @@ Ray $$\mathbf{O} + t\mathbf{D}$$ intersects torus when $$x = o_x + td_x, y = o_y
 
 ---
 
+## Ray-tracers are 3D radiation transport codes!
+
+What information do physically based renderers like [PBRT](http://www.pbr-book.org/3ed-2018/Shapes/Spheres.html) require for the intersection of a surface $$f(u,v)$$ with a ray?
+
+- The intersection point $$\mathbf{p}$$, as well as $$t$$ and $$(u,v)$$.
+- The normal to the surface $$\mathbf{n}$$.
+- Partial derivatives $$\partial_{u}\mathbf{p}$$, $$\partial_{v}\mathbf{p}$$, $$\partial_{u}^2\mathbf{p}$$, $$\partial_{v}^2\mathbf{p}$$, $$\partial_{uv}^2\mathbf{p}$$
+- The first and second [fundamental forms](https://en.wikipedia.org/wiki/First_fundamental_form).
+
+---
+
+## Ray-tracers are 3D radiation transport codes!
+
+- The information required for radiation transport is a pretty good base for doing generic sciviz!
+
+- Differential geometry is a solid foundation to build your SciViz on.
+
+---
+
+## Implicit surfaces
+
+Given a surface $$\mathcal{S} := \{ \mathbf{r} \colon f(\mathbf{r}) = 0\}$$, how do we generate ray intersections?
+
+Naive idea: Use Newton's method:
+
+$$t_{k+1} = t_{k} - \frac{\nabla f(r(t_k)) \cdot \mathbf{d}}{f(r(t_k))}$$
+
+---
+
+## Newton's method is bad m'kay?
+
+The Newton fractal teaches us that it's impossibly difficult to predict *which* root a given starting point will converge to.
+
+In ray tracing, we need the *minimal* root to determine the closest intersection point to the ray.
+
+---
+
 References:
 
 - [_Ray Tracing in One Weekend_](https://raytracing.github.io/books/RayTracingInOneWeekend.html)
