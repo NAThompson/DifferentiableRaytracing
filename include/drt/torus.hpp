@@ -104,7 +104,7 @@ public:
         Real dfdz = 4*z*(length_sq + R_*R_ - r_*r_);
 
         Real residual = abs(x*dfdx) + abs(y*dfdy) + abs(z*dfdz);
-        residual *= 100*std::numeric_limits<Real>::epsilon();
+        residual *= 20*std::numeric_limits<Real>::epsilon();
         return residual;
     }
 
