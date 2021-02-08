@@ -129,24 +129,28 @@ public:
         return std::pair<Real, Real>(u,v);
     }
 
-    // Ok, this reduces the residual, but now I'm wondering how meaningful it actually is.
     // PBRT uses invariants; e.g. for a circle the refinement is
-    //  pHit *= radius / Distance(pHit, Point3f(0, 0, 0));
-    void refine_hit_point(vec<Real> & p) const {
+    // pHit *= radius / Distance(pHit, Point3f(0, 0, 0));
+    // This requires a direction in which to refine, so that we can update with Newton's method:
+    // f(p + δtd) = f(p) + δt𝝯f·d = 0 \implies δt = -f(p)/𝝯f·d
+    void refine_hit_point(vec<Real> & p, vec<Real> const & direction) const {
         Real x = p[0] - center_[0];
         Real y = p[1] - center_[1];
         Real z = p[2] - center_[2];
         Real length_sq = x*x + y*y + z*z;
         Real tmp = length_sq + R_*R_ - r_*r_;
         Real fp = tmp*tmp - 4*R_*R_*(x*x + y*y);
-        Real dfdz = 4*z*(length_sq + R_*R_ - r_*r_);
-        vec<Real> new_p = p;
-        if (dfdz != 0) {
-            new_p[2] -= fp/dfdz;
-        }
+        vec<Real> nablaf(4*x*(length_sq - R_*R_ - r_*r_),
+                         4*y*(length_sq - R_*R_ - r_*r_),
+                         4*z*(length_sq + R_*R_ - r_*r_));
 
-        if (abs(fp) > this->residual(new_p)) {
-            p = new_p;
+        Real nablafdd = drt::dot(nablaf, direction);
+        if (nablafdd != 0)
+        {
+            Real dt = -fp/nablafdd;
+            p[0] += dt*direction[0];
+            p[1] += dt*direction[1];
+            p[2] += dt*direction[2];
         }
         // Keep nans away!
         p[0] = std::clamp(p[0], center_[0] - (R_+r_), center_[0] + (R_+r_));
@@ -199,7 +203,7 @@ bool torus<Real>::hit(const ray<Real>& r, Real t_min, Real t_max, hit_record<Rea
     rec.t = t;
     rec.p = r(rec.t);
     // PBRT often refines hit points. This works very well.
-    this->refine_hit_point(rec.p);
+    this->refine_hit_point(rec.p, r.direction());
     vec<Real> outward_normal = this->normal(rec.p);
     rec.set_face_normal(r, outward_normal);
     rec.mat_ptr = mat_ptr_;

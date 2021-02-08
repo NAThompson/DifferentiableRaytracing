@@ -67,7 +67,7 @@ int main() {
     const Real aspect_ratio = 1.6;
     const int64_t image_width = 1200;
     const int64_t image_height = static_cast<int64_t>(image_width/aspect_ratio);
-    const int64_t samples_per_pixel = 512;
+    const int64_t samples_per_pixel = 16;
 
     auto world = torus_scene<Real>();
     Real scale = 0.7;
