@@ -19,14 +19,38 @@ public:
     virtual bool bounding_box(aabb<Real>& output_box) const override;
 
     virtual ~sphere() = default;
-public:
 
-    static void get_sphere_uv(const vec<Real>& p, Real& u, Real& v) {
-        auto theta = std::acos(-p[1]);
-        auto phi = std::atan2(-p[2], p[0]) + M_PI;
+    // The parametrization is:
+    // σ(u,v) = (cos(2πu)sin(2πv), sin(2πu)sin(2πv), cos(2πv)), u,v \in [0,1].
+    void get_sphere_uv(const vec<Real>& p, Real& u, Real& v) const {
+        Real x = p[0] - center_[0];
+        Real y = p[1] - center_[1];
+        Real z = p[2] - center_[2];
 
-        u = phi / (2*M_PI);
-        v = theta / M_PI;
+        v = std::acos(z)/(2*M_PI);
+        if (v < 0) {
+            v += 1;
+        }
+        u = std::atan2(y, x)/(2*M_PI);
+        if (u < 0) {
+            u += 1;
+        }
+    }
+
+private:
+    // Private since rec.u, rec.v must be set before this can be called:
+    void set_fundamental_forms(hit_record<Real>& rec) const {
+        // First fundamental form:
+        Real dsigmadu = 2*M_PI*std::sin(2*M_PI*rec.v);
+        rec.E = dsigmadu*dsigmadu;
+        rec.F = 0;
+        rec.G = 4*M_PI*M_PI;
+
+        // The second fundamental form of a sphere is the same as the first,
+        // see Pressley, Elementary Differential Geometry, Section 8.1.
+        rec.L = rec.E;
+        rec.M = rec.F;
+        rec.N = rec.G;
     }
 
     vec<Real, 3> center_;
@@ -58,6 +82,7 @@ bool sphere<Real>::hit(const ray<Real>& r, Real t_min, Real t_max, hit_record<Re
     auto outward_normal = (rec.p - center_) / radius_;
     rec.set_face_normal(r, outward_normal);
     get_sphere_uv(outward_normal, rec.u, rec.v);
+    set_fundamental_forms(rec);
     rec.mat_ptr = mat_ptr_;
     return true;
 }

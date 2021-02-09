@@ -17,7 +17,7 @@ struct hit_record {
     vec<Real, 3> normal;
     Real t;
     // Parametric coordinates on the surface.
-    // Not used by everything:
+    // Not used by everything, but if it is used, u, v \in [0,1].
     Real u = std::numeric_limits<Real>::quiet_NaN();
     Real v = std::numeric_limits<Real>::quiet_NaN();
     bool front_face;
@@ -26,6 +26,25 @@ struct hit_record {
     inline void set_face_normal(const ray<Real>& r, const vec<Real, 3>& outward_normal) {
         front_face = drt::dot(r.direction(), outward_normal) < 0;
         normal = front_face ? outward_normal : -outward_normal;
+    }
+
+    // First fundamental form. Computed under the assumption of [0,1] parametrization.
+    Real E = std::numeric_limits<Real>::quiet_NaN();
+    Real F = std::numeric_limits<Real>::quiet_NaN();
+    Real G = std::numeric_limits<Real>::quiet_NaN();
+
+    // Second fundamental form. Again, [0,1] parametrization assumed.
+    Real L = std::numeric_limits<Real>::quiet_NaN();
+    Real M = std::numeric_limits<Real>::quiet_NaN();
+    Real N = std::numeric_limits<Real>::quiet_NaN();
+
+    // Pressley, Elementary Differential Geometry, Corollary 8.1.3
+    Real gaussian_curvature() const {
+        return (L*N - M*M)/(E*G - F*F);
+    }
+
+    Real mean_curvature() const {
+        return (L*G - 2*M*F + N*E)/(2*(E*G - F*F));
     }
 
     friend std::ostream& operator<<(std::ostream & os, const hit_record<Real> & rec) {
@@ -37,7 +56,10 @@ struct hit_record {
         }
         os << " of object at " << rec.p << " and time " << rec.t << "\n";
         os << "Normal is " << rec.normal << "\n";
-        os << "Parametric coordinates: (u,v) = (" << rec.u << ", " << rec.v << ")";
+        os << "Parametric coordinates: (u,v) = (" << rec.u << ", " << rec.v << ")\n";
+        os << "First fundamental form (E,F,G) = (" << rec.E << ", " << rec.F << ", " << rec.G << ")\n";
+        os << "Second fundamental form (L, M, N) = (" << rec.L << ", " << rec.M << ", " << rec.N << ")\n";
+        os << "Gaussian curvature = " << rec.gaussian_curvature() << ", mean curvature = " << rec.mean_curvature() << ".";
         return os;
     }
 };

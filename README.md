@@ -232,8 +232,12 @@ References:
 
 - Moreland, Kenneth. "Why we use bad color maps and what you can do about it." Electronic Imaging 2016.16 (2016): 1-6.
 
-- Pharr, Matt, Wenzel Jakob, and Greg Humphreys. Physically based rendering: From theory to implementation. Morgan Kaufmann, 2016.
+- Pharr, Matt, Wenzel Jakob, and Greg Humphreys. "Physically based rendering: From theory to implementation." Morgan Kaufmann, 2016.
 
 ---
 
 - Barr, Alan H. "Ray tracing deformed surfaces." ACM SIGGRAPH Computer Graphics 20.4 (1986): 287-296.
+
+- Palais, Richard S. "The visualization of mathematics: towards a mathematical exploratorium." Notices of the AMS 46.6 (1999): 647-658.
+
+- Pressley, Andrew N. "Elementary differential geometry." Springer Science & Business Media, 2010.
