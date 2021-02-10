@@ -15,6 +15,7 @@ template<typename Real>
 struct hit_record {
     vec<Real, 3> p;
     vec<Real, 3> normal;
+    Real gradient_magnitude = std::numeric_limits<Real>::quiet_NaN();
     Real t;
     // Parametric coordinates on the surface.
     // Not used by everything, but if it is used, u, v \in [0,1].
@@ -55,7 +56,7 @@ struct hit_record {
             os << "back face";
         }
         os << " of object at " << rec.p << " and time " << rec.t << "\n";
-        os << "Normal is " << rec.normal << "\n";
+        os << "Normal is " << rec.normal << " with magnitude of gradient = " << rec.gradient_magnitude << "\n";
         os << "Parametric coordinates: (u,v) = (" << rec.u << ", " << rec.v << ")\n";
         os << "First fundamental form (E,F,G) = (" << rec.E << ", " << rec.F << ", " << rec.G << ")\n";
         os << "Second fundamental form (L, M, N) = (" << rec.L << ", " << rec.M << ", " << rec.N << ")\n";
