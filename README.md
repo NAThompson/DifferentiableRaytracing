@@ -165,7 +165,7 @@ See [kennethmoreland.com/color-advice](https://www.kennethmoreland.com/color-adv
 
 ## Parametric Equation of a Torus
 
-$$((x-x_c)^2 + (y-y_c)^2 + (z-z_c)^2 + R^2 - r^2)^2 - 4R^2((x-x_c)^2+(y-y_c)^2) = 0$$
+$$(x^2 + y^2 + z^2 + R^2 - r^2)^2 - 4R^2(x^2+y^2) = 0$$
 
 Ray $$\mathbf{O} + t\mathbf{D}$$ intersects torus when $$x = o_x + td_x, y = o_y + td_y, z = o_z + td_z$$, which gives a quartic equation for $$t$$.
 
@@ -184,6 +184,26 @@ Ray $$\mathbf{O} + t\mathbf{D}$$ intersects torus when $$x = o_x + td_x, y = o_y
 ## Gaussian Curvature of Torus in Paraview
 
 ![inline](figures/pv_torus_curvature.png)
+
+---
+
+## Parametric equation of helicoid
+
+$$\sigma(u, v) = (rv\cos(2\pi u), rv\sin(2\pi u), \lambda (u-1/2))$$.
+
+Intersections ray when
+
+$$\mathbf{o} + t \mathbf{d} = \sigma(u,v)$$
+
+Simplifies to $$\tan\left(\frac{2\pi}{\lambda}(o_z + t d_z)\right) = \frac{o_y + td_y}{o_x + t d_x}$$.
+
+---
+
+## Helicoid ray intersections
+
+Newton's method will work well enough here, but getting sensible starting values is difficult.
+
+Bound the helicoid with a cylinder. A cylinder is a quadric surface so we can easily obtain $$[t_{\min}, t_{\max}]$$.
 
 ---
 
