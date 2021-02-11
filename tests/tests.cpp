@@ -1,12 +1,7 @@
-#include <iostream>
-#include <cmath>
-#include <cstring>
-#include <random>
 #include <gtest/gtest.h>
 #include "roots_test.hpp"
 #include "torus_test.hpp"
-using namespace drt;
-
+#include "helicoid_test.hpp"
 
 int main(int argc, char **argv) {
   ::testing::InitGoogleTest(&argc, argv);

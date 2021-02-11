@@ -1,6 +1,7 @@
 #ifndef ROOTS_TEST_HPP
 #define ROOTS_TEST_HPP
 #include <array>
+#include <random>
 #include <drt/roots.hpp>
 
 TEST(RootsTest, Quadratic) {

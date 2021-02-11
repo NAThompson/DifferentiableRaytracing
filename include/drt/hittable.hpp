@@ -16,7 +16,7 @@ struct hit_record {
     vec<Real, 3> p;
     vec<Real, 3> normal;
     Real gradient_magnitude = std::numeric_limits<Real>::quiet_NaN();
-    Real t;
+    Real t = std::numeric_limits<Real>::quiet_NaN();
     // Parametric coordinates on the surface.
     // Not used by everything, but if it is used, u, v \in [0,1].
     Real u = std::numeric_limits<Real>::quiet_NaN();

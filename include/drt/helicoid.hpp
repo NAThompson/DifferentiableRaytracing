@@ -9,13 +9,24 @@
 
 namespace drt {
 
+namespace {
+    static int64_t helicoid_error_count = 0;
+}
+
 template<typename Real>
 class helicoid : public hittable<Real> {
 public:
 
     helicoid(Real radius, Real speed, std::shared_ptr<material<Real>> mat_ptr)
        : radius_(radius), speed_(speed), mat_ptr_(mat_ptr)
-    {};
+    {
+        if (radius_ <= 0) {
+            std::cerr << __FILE__ << ":" << __LINE__ << " Radius > 0 is required for a helicoid.\n";
+        }
+        if (speed_ <= 0) {
+            std::cerr << __FILE__ << ":" << __LINE__ << " Speed > 0 is required for a helicoid.\n";
+        }
+    };
 
     virtual bool hit(const ray<Real>& r, Real t_min, Real t_max, hit_record<Real>& rec) const override;
 
@@ -38,10 +49,7 @@ private:
         v = std::sqrt(p[0]*p[0] + p[1]*p[1])/radius_;
         v = std::clamp(v, Real(0), Real(1));
 
-        u = p[2]/speed_ + 1/2;
-        if (u < 0) {
-            u += 1;
-        }
+        u = p[2]/speed_ + Real(1)/2;
     }
 
     void set_fundamental_forms(hit_record<Real> & rec) const {
@@ -111,13 +119,18 @@ bool helicoid<Real>::hit(const ray<Real>& r, Real t_min, Real t_max, hit_record<
     auto [y, dydt, d2ydt2] = f(t, r);
     int i = 0;
     Real fudge_scale = 100;
-    while (abs(y) > std::sqrt(std::numeric_limits<Real>::epsilon())) {
-        //std::cout << "y = " << y << ", t = " << t << ", [tmin, tmax] = [" << helicoid_tmin << ", " << helicoid_tmax << "]\n";
-        t -= y/dydt;
+    while (abs(y) > 10*std::sqrt(std::numeric_limits<Real>::epsilon())) {
+        //t -= y/dydt;
+        t -= 2*y*dydt/(2*dydt*dydt - y*d2ydt2);
         if (t > helicoid_tmax) {
+            std::cerr << "Newton's method went too far forward!\n";
+            std::cerr << "updated t = " << t << "\n";
+            std::cerr << "error count " << ++helicoid_error_count << "\n";
             return false;
         }
         if (t < helicoid_tmin) {
+            std::cerr << "Newton's method went too far backward!\n";
+            std::cerr << "error count " << ++helicoid_error_count << "\n";
             return false;
         }
         std::tie(y, dydt, d2ydt2) = f(t, r);
@@ -127,16 +140,21 @@ bool helicoid<Real>::hit(const ray<Real>& r, Real t_min, Real t_max, hit_record<
             std::cerr << "Acceptable residual = " << fudge_scale*std::numeric_limits<Real>::epsilon()*abs(t*dydt) << "\n";
             std::cerr << "dydt = " << dydt << "\n";
             std::cerr << "t = " << t << ", should be in [tmin, tmax] = [" << helicoid_tmin << ", " << helicoid_tmax << "]\n";
+            std::cerr << "error count " << ++helicoid_error_count << "\n";
             break;
         }
     }
     rec.p = r(t);
-    std::cout << "Got an intersection at " << rec.p << "\n";
-    vec<Real> gradient(2*rec.p[0], 2*rec.p[1], 0);
+    rec.t = t;
+    set_helicoid_uv(rec.p, rec.u, rec.v);
+
+    vec<Real> dsigmadu(-2*M_PI*radius_*rec.v*sin(2*M_PI*rec.u), 2*M_PI*radius_*rec.v*cos(2*M_PI*rec.u), speed_);
+    vec<Real> dsigmadv(radius_*cos(2*M_PI*rec.u), radius_*sin(2*M_PI*rec.u), 0);
+ 
+    vec<Real> gradient = drt::cross(dsigmadu, dsigmadv);
     rec.gradient_magnitude = norm(gradient);
     vec<Real> outward_normal = gradient/rec.gradient_magnitude;
     rec.set_face_normal(r, outward_normal);
-    set_helicoid_uv(rec.p, rec.u, rec.v);
     set_fundamental_forms(rec);
     rec.mat_ptr = mat_ptr_;
 
