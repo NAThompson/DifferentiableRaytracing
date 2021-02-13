@@ -226,6 +226,41 @@ What information do physically based renderers like [PBRT](http://www.pbr-book.o
 
 ---
 
+## Aside: Residuals
+
+Raytracers are *brutal* testers of numerical codes, and not in a way you always want.
+
+Test residuals of every intersection!
+
+---
+
+## Implicit surface intersection residuals
+
+For an intersection $$(\hat{x}, \hat{y}, \hat{z})$$ on an implicit surface $$f(x,y,z) = 0$$, we have an expected residual
+$$f(\hat{x}, \hat{y}, \hat{z}) = f(x(1+\epsilon_x), y(1+\epsilon_y), z(1+\epsilon_z)) = x\epsilon_x \partial_x f + y\epsilon_y \partial_y f + z\epsilon_z \partial_z f + \mathcal{O}(\left\|\epsilon\right\|^2)$$
+
+So a reasonable check is
+
+$$
+\left| f(\hat{x}, \hat{y}, \hat{z}) \right| \le \mu\left(|\hat{x}\partial_x f| + |\hat{y}\partial_y f| + |\hat{z}\partial_z f| \right)
+$$
+
+---
+
+## Parametric surface intersection residuals
+
+For the intersection of a ray $$\mathbf{o} + t\mathbf{d}$$ with a parametric surface $$\sigma(u,v)$$, we recover $$(\hat{t}, \hat{u}, \hat{v})$$.
+
+The intersection point can be computed two ways: $$\hat{\mathbf{p}}_1 = \mathbf{o} + \hat{t}\mathbf{d}$$ or $$\hat{\mathbf{p}}_2 = \sigma(\hat{u}, \hat{v})$$.
+
+Compute it *both* ways to get a residual, and verify that
+
+$$
+\left\|\hat{p}_1 - \hat{p}_2  \right\| \le \mu \left(|\hat{t}| \left\|\mathbf{d}\right\| + |\hat{u}| \left\| \partial_u \sigma \right\| + |\hat{v}| \left\| \partial_v \sigma \right\| \right)
+$$
+
+---
+
 ## Implicit surfaces
 
 Given a surface $$\mathcal{S} := \{ \mathbf{r} \colon f(\mathbf{r}) = 0\}$$, how do we generate ray intersections?

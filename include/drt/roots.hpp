@@ -240,5 +240,61 @@ std::vector<Real> quartic_roots(Real a, Real b, Real c, Real d, Real e) {
 }
 
 
+template<typename Real>
+std::pair<Real, Real> bisect(std::function<Real(Real)> f, Real tmin, Real tmax)
+{
+    if (tmax < tmin) {
+        std::cerr << "Arguments to bisect in wrong order: [tmin, tmax] = [" << tmin << ", " << tmax << "]\n";
+    }
+    Real f_min = f(tmin);
+    if (f_min == 0) {
+        return std::make_pair(tmin, tmin);
+    }
+
+    // This is a pretty expensive check, but nonexistence of roots is important!
+    Real dt = std::min((tmax - tmin)/16, Real(1));
+    if (dt < 10*std::numeric_limits<Real>::epsilon()*abs(tmin)) {
+        dt = 10*std::numeric_limits<Real>::epsilon()*abs(tmin);
+    }
+    Real f_max = f(tmin + dt);
+    while (f_min*f_max > 0 && tmin < tmax) {
+        f_min = f_max;
+        tmin += dt;
+        f_max = f(tmin + dt);
+    }
+    // No sign change found anywhere!
+    if (tmin >= tmax)
+    {
+        return std::make_pair(std::numeric_limits<Real>::quiet_NaN(), std::numeric_limits<Real>::quiet_NaN());
+    }
+    tmax = tmin + dt;
+
+    int count = 0;
+    while (count++ < 40) {
+        Real mid = (tmin + tmax) / 2;
+        Real fmid = f(mid);
+        if ((mid == tmax) || (mid == tmin))
+        {
+            break;
+        }
+
+        if (fmid == 0)
+        {
+            tmin = tmax = mid;
+            break;
+        }
+        if (f_min*f_min < 0)
+        {
+            tmax = mid;
+        }
+        else
+        {
+            tmin = mid;
+            f_min = fmid;
+        }
+    }
+    return std::make_pair(tmin, tmax);
+}
+
 }
 #endif

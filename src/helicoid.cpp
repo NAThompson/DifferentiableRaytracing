@@ -32,6 +32,7 @@ hittable_list<Real> helicoid_scene() {
     Real speed = 20;
 
     auto mat = make_shared<lambertian<Real>>(vec<Real>(0,0,1));
+    //auto mat = make_shared<dielectric<Real>>(1.4);
     auto boundary = make_shared<helicoid<Real>>(radius, speed, mat);
     objects.add(boundary);
     return objects;
@@ -44,7 +45,7 @@ int main() {
     const Real aspect_ratio = 1.6;
     const int64_t image_width = 1200;
     const int64_t image_height = static_cast<int64_t>(image_width/aspect_ratio);
-    const int64_t samples_per_pixel = 16;
+    const int64_t samples_per_pixel = 8;
 
     auto world = helicoid_scene<Real>();
     drt::vec<Real> lookfrom(10, 10, 0);
@@ -52,6 +53,6 @@ int main() {
     drt::vec<Real> vup(0,1,0);
 
     drt::camera<Real> cam(lookfrom, lookat, vup, Real(40), aspect_ratio);
-    drt::vec<Real> background(0.0, 0.0, 0.0);
+    drt::vec<Real> background(0.1, 0.1, 0.1);
     drt::render_scene<Real>("helicoid.png", image_width, image_height, background, cam, world, samples_per_pixel);
 }
