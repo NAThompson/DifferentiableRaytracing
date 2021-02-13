@@ -65,6 +65,80 @@ private:
         return std::make_tuple(y, dydt, d2ydt2);
     }
 
+    // For a ray that intersects a cylinder at {tmin, tmax}, what is the corresponding [umin, umax]?
+    std::pair<Real, Real> ubounds(vec<Real> const & o, vec<Real> const & d, Real t_min, Real t_max) const
+    {
+        Real umin = (o[2] + t_min*d[2])/speed_ + Real(1)/2;
+        Real umax = (o[2] + t_max*d[2])/speed_ + Real(1)/2;
+        if (umin > umax) {
+            std::swap(umin, umax);
+        }
+        umin = std::max(Real(0), umin);
+        umax = std::min(Real(1), umax);
+        if (umin > 1 || umax < 0) {
+            return std::make_pair(std::numeric_limits<Real>::quiet_NaN(), std::numeric_limits<Real>::quiet_NaN());
+        }
+        return std::make_pair(umin, umax);
+    }
+
+    // For a ray that intersects a cylinder at {tmin, tmax}, what is the corresponding {vmin, vmax}?
+    std::pair<Real, Real> vbounds(vec<Real> const & o, vec<Real> const & d, Real tmin, Real tmax) const
+    {
+        using std::sqrt;
+        // v^2r^2 = (ox+tdx)^2 + (oy+tdy)^2 which is minimized at
+        // t_c = -(oxdx + oydz)/(dx^2 + dy^2).
+        Real tc = -(o[0]*d[0] + o[1]*d[1])/(d[0]*d[0] + d[1]*d[1]);
+        if (tc < tmin || tc > tmax)
+        {
+            // Then (ox+tdx)^2 + (oy+tdy)^2 in monotonic on [t_min, t_max].
+            Real x = o[0] + tmin*d[0];
+            Real y = o[1] + tmin*d[1];
+            Real vmin = sqrt(x*x + y*y)/radius_;
+            x = o[0] + tmax*d[0];
+            y = o[1] + tmax*d[1];
+            Real vmax = sqrt(x*x + y*y)/radius_;
+
+            if (vmin > vmax) {
+                std::swap(vmin, vmax);
+            }
+            if (vmin < 0) {
+                vmin = 0;
+            }
+            if (vmax > 1) {
+                vmax = 1;
+            }
+            if (vmin > 1 || vmax < 0) {
+                return std::make_pair(std::numeric_limits<Real>::quiet_NaN(), std::numeric_limits<Real>::quiet_NaN());
+            }
+        }
+
+        // The critical point is in the interval [tmin, tmax].
+        Real x = o[0] + tmin*d[0];
+        Real y = o[1] + tmin*d[1];
+        Real vmax1 = sqrt(x*x + y*y)/radius_;
+        x = o[0] + tmax*d[0];
+        y = o[1] + tmax*d[1];
+        Real vmax2 = sqrt(x*x + y*y)/radius_;
+        x = o[0] + tc*d[0];
+        y = o[1] + tc*d[1];
+        Real vmin = sqrt(x*x + y*y)/radius_;
+        if (vmax1 < vmax1) {
+            return std::make_pair(vmin, vmax1);
+        }
+        return std::make_pair(vmin, vmax2);
+    }
+
+    vec<Real, 2> g(vec<Real, 3> const & o, vec<Real, 3> const & d, Real u, Real v) const
+    {
+        // g(u, v)_x = ox + tdx - rvcos(2πu), t = (λ(u-1/2) - oz)/dz
+        // g(u, v)_y = oy + tdy - rvsin(2πu), t = (λ(u-1/2) - oz)/dz
+        Real t = (speed_*(u - 0.5) - o[2])/d[2];
+        vec<Real, 2> w;
+        w[0] = o[0] + t*d[0] - radius_*v*cos(2*M_PI*u);
+        w[1] = o[1] + t*d[1] - radius_*v*sin(2*M_PI*u);
+        return w;
+    }
+
     std::tuple<Real, Real, Real> compute_tuv(vec<Real> const & o, vec<Real> const & d, Real t_min, Real t_max) const
     {
         using std::abs;
@@ -125,20 +199,69 @@ private:
             }
             return w;
         }
-        // It's easier to recover u first, then t.
-        Real umin = (o[2] + t_min*d[2])/speed_ + Real(1)/2;
-        Real umax = (o[2] + t_max*d[2])/speed_ + Real(1)/2;
-        if (umin > umax) {
-            std::swap(umin, umax);
-        }
-        if (umin > 1) {
+
+        // Yes, we do have to take care of this case separately. Sad!
+        if (d[0]*d[0] + d[1]*d[1] <= std::numeric_limits<Real>::min())
+        {
+            v = sqrt(o[0]*o[0] + o[1]*o[1])/radius_;
+            // We're shooting a ray down, but the origin is outside of r:
+            if (v > 1) {
+                std::cerr << "Quick return at v = 1\n";
+                return w;
+            }
+            if (v < std::numeric_limits<Real>::min()) {
+                // Infinitely many solutions on
+                // oz + tdz = λ(u-1/2)
+                if (d[2] > 0) {
+                    u = 0;
+                    t = (-speed_/2 - o[2])/d[2];
+                }
+                else
+                {
+                    u = 1;
+                    t = (speed_/2 - o[2])/d[2];
+                }
+            }
+            else {
+                Real rv = radius_*v;
+                u = atan2(o[1]/rv, o[0]/rv)/(2*M_PI);
+                if (u < 0) {
+                    u += 1;
+                }
+                t = (speed_*(u-0.5) - o[2])/d[2];
+            }
+            std::get<0>(w) = t;
+            std::get<1>(w) = std::clamp(u, Real(0), Real(1));
+            std::get<2>(w) = std::clamp(v, Real(0), Real(1));
             return w;
         }
-        umin = std::max(Real(0), umin);
-        if (umax < 0) {
+
+        auto [umin, umax] = this->ubounds(o, d, t_min, t_max);
+        auto [vmin, vmax] = this->vbounds(o, d, t_min, t_max);
+
+        Real min_residual = std::numeric_limits<Real>::max();
+        int rt_samples = 16;
+        for (int i = 0; i < rt_samples; ++i) {
+            Real u_ = umin + i*(umax - umin)/(rt_samples-1);
+            for (int j = 0; j < rt_samples; ++j) {
+                Real v_ = vmin + j*(vmax - vmin)/(rt_samples-1);
+                Real residual = squared_norm(g(o, d, u_, v_));
+                if (residual < min_residual)
+                {
+                    u = u_;
+                    v = v_;
+                    min_residual = residual;
+                }
+            }
+        }
+        if (min_residual > 0.1) {
             return w;
         }
-        umax = std::min(Real(1), umax);
+        /*Real jac_g00 = speed_*d[0]/d[2] + 2*M_PI*radius_*v*sin(2*M_PI*u);
+        Real jac_g10 = speed_*d[1]/d[2] - 2*M_PI*radius_*v*cos(2*M_PI*u);
+        Real jac_g01 = -radius_*cos(2*M_PI*u);
+        Real jac_g11 = -radius_*sin(2*M_PI*u);
+
         std::function<Real(Real)> g2 = [&o, &d, this](Real u) -> Real {
             Real t = (speed_*(u - 0.5) - o[2])/d[2];
             Real angle = std::atan2(o[1] + t*d[1], o[0] + t*d[0])/(2*M_PI);
@@ -151,42 +274,9 @@ private:
         if (std::isnan(umin)) {
             return w;
         }
-        u = umin;
+        u = umin;*/
         t = (speed_*(u-Real(1)/Real(2)) - o[2])/d[2];
 
-        Real x_r = (o[0] + t*d[0]);
-        Real y_r = (o[1] + t*d[1]);
-        Real z_r = (o[2] + t*d[2]);
-        v = std::sqrt(x_r*x_r + y_r*y_r)/radius_;
-        bool xbad = abs(x_r - radius_*v*cos(2*M_PI*u)) > 0.1;
-        bool ybad = abs(y_r - radius_*v*sin(2*M_PI*u)) > 0.1;
-        bool zbad = abs(z_r - speed_*(u-0.5)) > 0.1;
-        if (xbad || ybad || zbad) {
-            std::function<Real(Real)> g1 = [&o, &d, this](Real t) -> Real {
-                Real angle = std::atan2(o[1] + t*d[1], o[0] + t*d[0]);
-                if (angle < 0) {
-                    angle += 2*M_PI;
-                }
-                return angle - 2*M_PI*(o[2] + t*d[2])/speed_ - M_PI;
-            };
-
-            std::tie(t_min, t_max) = drt::bisect(g1, t_min, t_max);
-            if (std::isnan(t_min)) {
-                return w;
-            }
-            t = t_min;
-            x_r = (o[0] + t*d[0]);
-            y_r = (o[1] + t*d[1]);
-            z_r = (o[2] + t*d[2]);
-            u = z_r/speed_ + 0.5;
-            v = std::sqrt(x_r*x_r + y_r*y_r)/radius_;
-            xbad = abs(x_r - radius_*v*cos(2*M_PI*u)) > 0.1;
-            ybad = abs(y_r - radius_*v*sin(2*M_PI*u)) > 0.1;
-            zbad = abs(z_r - speed_*(u-0.5)) > 0.1;
-            if (xbad || ybad || zbad) {
-                return w;
-            }
-        }
         std::get<0>(w) = t;
         std::get<1>(w) = std::clamp(u, Real(0), Real(1));
         std::get<2>(w) = std::clamp(v, Real(0), Real(1));
@@ -204,28 +294,31 @@ bool helicoid<Real>::hit(const ray<Real>& r, Real t_min, Real t_max, hit_record<
     vec<Real, 3> o = r.origin();
     auto dir = r.direction();
     Real a = dir[0]*dir[0] + dir[1]*dir[1];
-    Real b = 2*(o[0]*dir[0] + o[1]*dir[1]);
-    Real c = o[0]*o[0] + o[1]*o[1] - radius_*radius_;
+    // Rays vertically down do hit the helicoid, without hitting the walls of the cylinder.
+    if (a > std::numeric_limits<Real>::min()) {
+        Real b = 2*(o[0]*dir[0] + o[1]*dir[1]);
+        Real c = o[0]*o[0] + o[1]*o[1] - radius_*radius_;
 
-    std::vector<Real> roots = quadratic_roots(a, b, c);
-    if (roots.size() != 2) {
-        return false;
-    }
-    if (roots[1] < t_min) {
-        return false;
-    }
-    t_min = std::max(t_min, roots[0]);
-    t_max = std::min(t_max, roots[1]);
+        std::vector<Real> roots = quadratic_roots(a, b, c);
+        if (roots.size() != 2) {
+            return false;
+        }
+        if (roots[1] < t_min) {
+            return false;
+        }
+        t_min = std::max(t_min, roots[0]);
+        t_max = std::min(t_max, roots[1]);
 
-    auto cylinder_p1 = r(t_max);
-    auto cylinder_p2 = r(t_min);
-    Real cylinder_intersection_z_max = std::max(cylinder_p1[2], cylinder_p2[2]);
-    Real cylinder_intersection_z_min = std::min(cylinder_p1[2], cylinder_p2[2]);
-    if (cylinder_intersection_z_min > speed_/2) {
-        return false;
-    }
-    if (cylinder_intersection_z_max <  -speed_/2) {
-        return false;
+        auto cylinder_p1 = r(t_max);
+        auto cylinder_p2 = r(t_min);
+        Real cylinder_intersection_z_max = std::max(cylinder_p1[2], cylinder_p2[2]);
+        Real cylinder_intersection_z_min = std::min(cylinder_p1[2], cylinder_p2[2]);
+        if (cylinder_intersection_z_min > speed_/2) {
+            return false;
+        }
+        if (cylinder_intersection_z_max < -speed_/2) {
+            return false;
+        }
     }
 
     std::tie(rec.t, rec.u, rec.v) = compute_tuv(r.origin(), r.direction(), t_min, t_max);
