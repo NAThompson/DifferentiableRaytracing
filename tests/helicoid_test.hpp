@@ -26,6 +26,9 @@ TEST(HelicoidTest, Intersection) {
     EXPECT_FLOAT_EQ(hr.E, 4*M_PI*M_PI*hr.v*hr.v + 1);
     EXPECT_FLOAT_EQ(hr.F, 0);
     EXPECT_FLOAT_EQ(hr.G, 1);
+    EXPECT_FLOAT_EQ(hr.mean_curvature(), 0);
+    auto [k1, k2] = hr.principle_curvatures();
+    EXPECT_FLOAT_EQ(k1, -k2);
 
     o[0] = -2;
     d[0] = 1;
@@ -42,6 +45,9 @@ TEST(HelicoidTest, Intersection) {
     EXPECT_FLOAT_EQ(hr.E, 4*M_PI*M_PI*hr.v*hr.v + 1);
     EXPECT_FLOAT_EQ(hr.F, 0);
     EXPECT_FLOAT_EQ(hr.G, 1);
+    EXPECT_FLOAT_EQ(hr.mean_curvature(), 0);
+    std::tie(k1, k2) = hr.principle_curvatures();
+    EXPECT_FLOAT_EQ(k1, -k2);
 
     // Looking down from +z.
     // v = 0, u = 1. Pathological since only constraint is 3/2 = u+t; minimal t occurs for maximal u.
@@ -63,6 +69,13 @@ TEST(HelicoidTest, Intersection) {
     EXPECT_FLOAT_EQ(hr.E, 4*M_PI*M_PI*hr.v*hr.v + 1);
     EXPECT_FLOAT_EQ(hr.F, 0);
     EXPECT_FLOAT_EQ(hr.G, 1);
+    EXPECT_FLOAT_EQ(hr.mean_curvature(), 0);
+    std::tie(k1, k2) = hr.principle_curvatures();
+    EXPECT_FLOAT_EQ(k1, -k2);
+
+    //Something wrong here methinks:
+    //Real denom = (1 + hr.v*hr.v)*(1 + hr.v*hr.v);
+    //EXPECT_FLOAT_EQ(hr.gaussian_curvature(), -Real(1)/denom);
 
 }
 

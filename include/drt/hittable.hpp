@@ -1,6 +1,7 @@
 #ifndef DRT_HITTABLE_HPP
 #define DRT_HITTABLE_HPP
 #include <limits>
+#include <drt/roots.hpp>
 #include <drt/ray.hpp>
 #include <drt/vec.hpp>
 #include <drt/aabb.hpp>
@@ -48,6 +49,13 @@ struct hit_record {
         return (L*G - 2*M*F + N*E)/(2*(E*G - F*F));
     }
 
+    std::pair<Real, Real> principle_curvatures() const {
+        Real H = mean_curvature();
+        Real K = gaussian_curvature();
+        auto v = quadratic_roots(Real(1), -2*H, K);
+        return std::make_pair(v[0], v[1]);
+    }
+
     friend std::ostream& operator<<(std::ostream & os, const hit_record<Real> & rec) {
         os << "Ray intersects ";
         if (rec.front_face) {
@@ -60,7 +68,9 @@ struct hit_record {
         os << "Parametric coordinates: (u,v) = (" << rec.u << ", " << rec.v << ")\n";
         os << "First fundamental form (E,F,G) = (" << rec.E << ", " << rec.F << ", " << rec.G << ")\n";
         os << "Second fundamental form (L, M, N) = (" << rec.L << ", " << rec.M << ", " << rec.N << ")\n";
-        os << "Gaussian curvature = " << rec.gaussian_curvature() << ", mean curvature = " << rec.mean_curvature() << ".";
+        os << "Gaussian curvature = " << rec.gaussian_curvature() << ", mean curvature = " << rec.mean_curvature() << ".\n";
+        auto [k1, k2] = rec.principle_curvatures();
+        os << "Principle curvatures are κ₁ = " << k1 << " and κ₂ = " << k2 << "\n";
         return os;
     }
 };
