@@ -23,7 +23,7 @@ TEST(SphereTest, Intersection) {
     EXPECT_FLOAT_EQ(hr.normal[1], 0);
     EXPECT_FLOAT_EQ(hr.normal[2], 0);
     EXPECT_FLOAT_EQ(hr.u, 0.0);
-    EXPECT_FLOAT_EQ(hr.v, 0.25);
+    EXPECT_FLOAT_EQ(hr.v, 0.5);
     EXPECT_FLOAT_EQ(hr.F, 0);
     EXPECT_FLOAT_EQ(hr.mean_curvature(), 1);
     EXPECT_FLOAT_EQ(hr.gaussian_curvature(), 1);
@@ -45,7 +45,7 @@ TEST(SphereTest, Intersection) {
     EXPECT_FLOAT_EQ(hr.normal[1], 0);
     EXPECT_FLOAT_EQ(hr.normal[2], 0);
     EXPECT_FLOAT_EQ(hr.u, 0.0);
-    EXPECT_FLOAT_EQ(hr.v, 0.25);
+    EXPECT_FLOAT_EQ(hr.v, 0.5);
     EXPECT_FLOAT_EQ(hr.F, 0);
     // H = 1/R for a sphere
     EXPECT_FLOAT_EQ(hr.mean_curvature(), 0.5);

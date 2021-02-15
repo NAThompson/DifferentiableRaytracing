@@ -47,7 +47,6 @@ int main() {
     const int64_t samples_per_pixel = 16;
 
     auto world = cylinder_scene<Real>();
-    Real scale = 1.0;
     drt::vec<Real> lookfrom(10, 10, 0);
     drt::vec<Real> lookat(0,0,0);
     drt::vec<Real> vup(0,1,0);

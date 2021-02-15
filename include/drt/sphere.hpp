@@ -22,13 +22,13 @@ public:
     virtual ~sphere() = default;
 
     // The parametrization is:
-    // σ(u,v) = (x₀ + rcos(2πu)sin(2πv), y₀ + rsin(2πu)sin(2πv), z₀ + rcos(2πv)), u,v \in [0,1].
+    // σ(u,v) = (x₀ + rcos(2πu)sin(πv), y₀ + rsin(2πu)sin(πv), z₀ + rcos(πv)), u,v \in [0,1].
     void get_sphere_uv(const vec<Real>& p, Real& u, Real& v) const {
         Real x = p[0] - center_[0];
         Real y = p[1] - center_[1];
         Real z = p[2] - center_[2];
 
-        v = std::acos(z)/(2*M_PI);
+        v = std::acos(z)/M_PI;
         if (v < 0) {
             v += 1;
         }
@@ -50,17 +50,17 @@ private:
     // Private since rec.u, rec.v must be set before this can be called:
     void set_fundamental_forms(hit_record<Real>& rec) const {
         // First fundamental form:
-        Real dsigmadu = 2*M_PI*radius_*std::sin(2*M_PI*rec.v);
+        Real dsigmadu = 2*M_PI*radius_*std::sin(M_PI*rec.v);
         rec.E = dsigmadu*dsigmadu;
         rec.F = 0;
-        rec.G = 4*M_PI*M_PI*radius_*radius_;
+        rec.G = M_PI*M_PI*radius_*radius_;
 
         // The second fundamental form of a sphere is the same as the first,
         // see Pressley, Elementary Differential Geometry, Section 8.1.
         // However, a variable radius changes this a bit, see https://mathworld.wolfram.com/Sphere.html
         rec.L = rec.E/radius_;
         rec.M = 0;
-        rec.N = 4*M_PI*M_PI*radius_;
+        rec.N = M_PI*M_PI*radius_;
     }
 
     vec<Real, 3> center_;
