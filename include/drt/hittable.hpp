@@ -49,7 +49,7 @@ struct hit_record {
         return (L*G - 2*M*F + N*E)/(2*(E*G - F*F));
     }
 
-    std::pair<Real, Real> principle_curvatures() const {
+    std::pair<Real, Real> principal_curvatures() const {
         Real H = mean_curvature();
         Real K = gaussian_curvature();
         auto v = quadratic_roots(Real(1), -2*H, K);
@@ -68,8 +68,8 @@ struct hit_record {
         os << "Parametric coordinates: (u,v) = (" << rec.u << ", " << rec.v << ")\n";
         os << "First fundamental form (E,F,G) = (" << rec.E << ", " << rec.F << ", " << rec.G << ")\n";
         os << "Second fundamental form (L, M, N) = (" << rec.L << ", " << rec.M << ", " << rec.N << ")\n";
-        os << "Gaussian curvature = " << rec.gaussian_curvature() << ", mean curvature = " << rec.mean_curvature() << ".\n";
-        auto [k1, k2] = rec.principle_curvatures();
+        os << "Gaussian curvature K = " << rec.gaussian_curvature() << ", mean curvature H = " << rec.mean_curvature() << ".\n";
+        auto [k1, k2] = rec.principal_curvatures();
         os << "Principle curvatures are κ₁ = " << k1 << " and κ₂ = " << k2 << "\n";
         return os;
     }

@@ -27,7 +27,7 @@ TEST(HelicoidTest, Intersection) {
     EXPECT_FLOAT_EQ(hr.F, 0);
     EXPECT_FLOAT_EQ(hr.G, 1);
     EXPECT_FLOAT_EQ(hr.mean_curvature(), 0);
-    auto [k1, k2] = hr.principle_curvatures();
+    auto [k1, k2] = hr.principal_curvatures();
     EXPECT_FLOAT_EQ(k1, -k2);
 
     o[0] = -2;
@@ -46,7 +46,7 @@ TEST(HelicoidTest, Intersection) {
     EXPECT_FLOAT_EQ(hr.F, 0);
     EXPECT_FLOAT_EQ(hr.G, 1);
     EXPECT_FLOAT_EQ(hr.mean_curvature(), 0);
-    std::tie(k1, k2) = hr.principle_curvatures();
+    std::tie(k1, k2) = hr.principal_curvatures();
     EXPECT_FLOAT_EQ(k1, -k2);
 
     // Looking down from +z.
@@ -70,7 +70,7 @@ TEST(HelicoidTest, Intersection) {
     EXPECT_FLOAT_EQ(hr.F, 0);
     EXPECT_FLOAT_EQ(hr.G, 1);
     EXPECT_FLOAT_EQ(hr.mean_curvature(), 0);
-    std::tie(k1, k2) = hr.principle_curvatures();
+    std::tie(k1, k2) = hr.principal_curvatures();
     EXPECT_FLOAT_EQ(k1, -k2);
 
     //Something wrong here methinks:
