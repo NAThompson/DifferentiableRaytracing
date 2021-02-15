@@ -33,9 +33,9 @@ public:
         Real asq = scales_[0]*scales_[0];
         Real bsq = scales_[1]*scales_[1];
         Real csq = scales_[2]*scales_[2];
-        Real ysq = (p[1]-center_[1])*(p[1] -center_[1]);
-        Real zsq = (p[2] -center_[2])*(p[2] -center_[2]);
-        // https://mathworld.wolfram.com/Ellipsoid.html, equation 14:s
+        Real ysq = (p[1] - center_[1])*(p[1] - center_[1]);
+        Real zsq = (p[2] - center_[2])*(p[2] - center_[2]);
+        // https://mathworld.wolfram.com/Ellipsoid.html, equation 14:
         Real numerator = asq*bsq*bsq*bsq*csq*csq*csq;
         Real sqrt_denom = csq*csq*bsq*bsq + csq*csq*(asq - bsq)*ysq + bsq*bsq*(asq-csq)*zsq;
         return numerator/(sqrt_denom*sqrt_denom);

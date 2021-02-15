@@ -16,6 +16,7 @@ namespace {
 }
 
 // Parametrized via σ(u,v) = (rvcos(2πu), rvsin(2πu), λ(u-1/2))
+// Mathematica: ParametricPlot3D[{v*Cos[2*\[Pi]*u], v*Sin[2*\[Pi]*u], (u - 1/2)}, {u, 0, 1}, {v, 0, 1}]
 template<typename Real>
 class helicoid : public hittable<Real> {
 public:
