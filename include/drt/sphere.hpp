@@ -4,6 +4,7 @@
 #include <drt/hittable.hpp>
 #include <drt/vec.hpp>
 #include <drt/material.hpp>
+#include <drt/roots.hpp>
 
 namespace drt {
 template<typename Real>
@@ -62,21 +63,25 @@ template<typename Real>
 bool sphere<Real>::hit(const ray<Real>& r, Real t_min, Real t_max, hit_record<Real>& rec) const {
     vec<Real, 3> oc = r.origin() - center_;
     Real a = drt::squared_norm(r.direction());
-    Real half_b = drt::dot(oc, r.direction());
-    auto c = drt::squared_norm(oc) - radius_*radius_;
-
-    auto discriminant = half_b*half_b - a*c;
-    if (discriminant < 0) return false;
-    Real sqrtd = sqrt(discriminant);
-
-    // Find the nearest root that lies in the acceptable range.
-    auto root = (-half_b - sqrtd) / a;
-    if (root < t_min || t_max < root) {
-        root = (-half_b + sqrtd) / a;
-        if (root < t_min || t_max < root)
-            return false;
+    Real b = 2*drt::dot(oc, r.direction());
+    Real c = drt::squared_norm(oc) - radius_*radius_;
+    auto roots = quadratic_roots(a, b, c);
+    if (roots.size() != 2) {
+        return false;
+    }
+    Real root = std::numeric_limits<Real>::quiet_NaN();
+    if (roots[0] < t_min || roots[0] > t_max) {
+        if (roots[1] >= t_min && roots[1] <= t_max) {
+            root = roots[1];
+        }
+    }
+    else {
+        root = roots[0];
     }
 
+    if (std::isnan(root)) {
+        return false;
+    }
     rec.t = root;
     rec.p = r(root);
     auto outward_normal = (rec.p - center_) / radius_;
