@@ -32,30 +32,32 @@ public:
     }
 
     Real expected_residual([[maybe_unused]] vec<Real> const & p) const {
-        return 2*std::numeric_limits<Real>::epsilon()*radius_*radius_;
+        return 20*std::numeric_limits<Real>::epsilon()*radius_*radius_;
+    }
+
+    // σ(u,v) = (rcos(2πu), rsin(2πu), z_min + v(z_max - z_min))
+    std::pair<Real, Real> get_uv(vec<Real> const & p) const {
+        Real v = (p[2] - z_min_)/(z_max_ - z_min_);
+        v = std::clamp(v, Real(0), Real(1));
+
+        Real u = std::atan2(p[1], p[0])/(2*M_PI);
+        if (u < 0) {
+            u += 1;
+        }
+        return std::make_pair(u,v);
     }
 
 private:
 
-    // σ(u,v) = (rcos(2πu), rsin(2πu), z_min + v(z_max - z_min))
-    void set_cylinder_uv(vec<Real> const & p, Real& u, Real& v) const {
-        v = (p[2] - z_min_)/(z_max_ - z_min_);
-        v = std::clamp(v, Real(0), Real(1));
-
-        u = std::atan2(p[1], p[0])/(2*M_PI);
-        if (u < 0) {
-            u += 1;
-        }
-    }
 
     void set_fundamental_forms(hit_record<Real> & rec) const {
         rec.E = 4*M_PI*M_PI*radius_*radius_;
         rec.F = 0;
         rec.G = (z_max_ - z_min_)*(z_max_ - z_min_);
 
-        rec.L = 4*M_PI*M_PI*radius_;
-        rec.M = 0;
-        rec.N = 0;
+        rec.e = 4*M_PI*M_PI*radius_;
+        rec.f = 0;
+        rec.g = 0;
     }
 
     Real radius_;
@@ -71,23 +73,12 @@ bool cylinder<Real>::hit(const ray<Real>& r, Real t_min, Real t_max, hit_record<
     Real a = dir[0]*dir[0] + dir[1]*dir[1];
     Real b = 2*(o[0]*dir[0] + o[1]*dir[1]);
     Real c = o[0]*o[0] + o[1]*o[1] - radius_*radius_;
-
-    std::vector<Real> roots = quadratic_roots(a, b, c);
-    if (roots.size() == 0) {
+    auto opt_root = first_quadratic_root_in_range(a, b, c, t_min, t_max);
+    if (!opt_root) {
         return false;
     }
-    Real root = roots[0];
-    if (root < t_min || t_max < root) {
-        if (roots.size() == 1) {
-            return false;
-        }
-        root = roots[1];
-        if (root < t_min || t_max < root) {
-            return false;
-        }
-    }
-    rec.t = root;
-    rec.p = r(root);
+    rec.t = *opt_root;
+    rec.p = r(rec.t);
     Real z = rec.p[2];
     if (z > z_max_ || z < z_min_) {
         return false;
@@ -97,7 +88,7 @@ bool cylinder<Real>::hit(const ray<Real>& r, Real t_min, Real t_max, hit_record<
     rec.gradient_magnitude = norm(gradient);
     vec<Real> outward_normal = gradient/rec.gradient_magnitude;
     rec.set_face_normal(r, outward_normal);
-    set_cylinder_uv(outward_normal, rec.u, rec.v);
+    std::tie(rec.u, rec.v) = get_uv(rec.p);
     set_fundamental_forms(rec);
     rec.mat_ptr = mat_ptr_;
 
