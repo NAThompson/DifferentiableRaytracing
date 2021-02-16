@@ -3,6 +3,7 @@
 #include <utility>
 #include <algorithm>
 #include <drt/hittable.hpp>
+#include <drt/roots.hpp>
 #include <drt/vec.hpp>
 #include <drt/material.hpp>
 
@@ -71,19 +72,24 @@ bool ellipsoid<Real>::hit(const ray<Real>& r, Real t_min, Real t_max, hit_record
     sd[2] /= scales_[2];
 
     Real a = drt::squared_norm(sd);
-    Real half_b = drt::dot(oc, sd);
-    auto c = drt::squared_norm(oc) - 1;
+    Real b = 2*drt::dot(oc, sd);
+    Real c = drt::squared_norm(oc) - 1;
+    auto roots = quadratic_roots(a, b, c);
+    if (roots.size() != 2) {
+        return false;
+    }
+    Real root = std::numeric_limits<Real>::quiet_NaN();
+    if (roots[0] < t_min || roots[0] > t_max) {
+        if (roots[1] >= t_min && roots[1] <= t_max) {
+            root = roots[1];
+        }
+    }
+    else {
+        root = roots[0];
+    }
 
-    auto discriminant = half_b*half_b - a*c;
-    if (discriminant < 0) return false;
-    Real sqrtd = sqrt(discriminant);
-
-    // Find the nearest root that lies in the acceptable range.
-    auto root = (-half_b - sqrtd) / a;
-    if (root < t_min || t_max < root) {
-        root = (-half_b + sqrtd) / a;
-        if (root < t_min || t_max < root)
-            return false;
+    if (std::isnan(root)) {
+        return false;
     }
 
     rec.t = root;
