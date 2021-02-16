@@ -12,7 +12,7 @@ TEST(HelicoidTest, Intersection) {
     vec<Real> o(2,0,0);
     vec<Real> d(-1,0,0);
     ray<Real> r(o, d);
-    hit_record<Real> hr;
+    drt::hit_record<Real> hr;
     // This is a somewhat pathological intersection, since the line intersects at uncountably many points.
     bool hits = h.hit(r, 0.0, 10.0, hr);
     EXPECT_TRUE(hits);

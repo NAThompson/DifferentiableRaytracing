@@ -12,7 +12,7 @@ TEST(SphereTest, Intersection) {
     vec<Real> o(2,0,0);
     vec<Real> d(-1,0,0);
     ray<Real> r(o, d);
-    hit_record<Real> hr;
+    drt::hit_record<Real> hr;
     bool hits = s.hit(r, 0.0, 10.0, hr);
     EXPECT_TRUE(hits);
     EXPECT_FLOAT_EQ(hr.p[0], 1);
