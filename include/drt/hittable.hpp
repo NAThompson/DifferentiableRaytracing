@@ -53,6 +53,9 @@ struct hit_record {
         Real H = mean_curvature();
         Real K = gaussian_curvature();
         auto v = quadratic_roots(Real(1), -2*H, K);
+        if (v.size() != 2) {
+            return std::make_pair(std::numeric_limits<Real>::quiet_NaN(), std::numeric_limits<Real>::quiet_NaN());
+        }
         return std::make_pair(v[0], v[1]);
     }
 

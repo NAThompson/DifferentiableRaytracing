@@ -1,5 +1,5 @@
-#ifndef DRT_SPHERE_H
-#define DRT_SPHERE_H
+#ifndef DRT_SPHERE_HPP
+#define DRT_SPHERE_HPP
 
 #include <drt/hittable.hpp>
 #include <drt/vec.hpp>
@@ -23,19 +23,20 @@ public:
 
     // The parametrization is:
     // σ(u,v) = (x₀ + rcos(2πu)sin(πv), y₀ + rsin(2πu)sin(πv), z₀ + rcos(πv)), u,v \in [0,1].
-    void get_sphere_uv(const vec<Real>& p, Real& u, Real& v) const {
-        Real x = p[0] - center_[0];
-        Real y = p[1] - center_[1];
-        Real z = p[2] - center_[2];
+    std::pair<Real, Real> get_uv(const vec<Real>& p) const {
+        Real x = (p[0] - center_[0])/radius_;
+        Real y = (p[1] - center_[1])/radius_;
+        Real z = (p[2] - center_[2])/radius_;
 
-        v = std::acos(z)/M_PI;
+        Real v = std::acos(z)/M_PI;
         if (v < 0) {
             v += 1;
         }
-        u = std::atan2(y, x)/(2*M_PI);
+        Real u = std::atan2(y, x)/(2*M_PI);
         if (u < 0) {
             u += 1;
         }
+        return std::make_pair(u, v);
     }
 
     Real area() const {
@@ -74,28 +75,15 @@ bool sphere<Real>::hit(const ray<Real>& r, Real t_min, Real t_max, hit_record<Re
     Real a = drt::squared_norm(r.direction());
     Real b = 2*drt::dot(oc, r.direction());
     Real c = drt::squared_norm(oc) - radius_*radius_;
-    auto roots = quadratic_roots(a, b, c);
-    if (roots.size() != 2) {
+    auto opt_root = first_quadratic_root_in_range(a, b, c, t_min, t_max);
+    if (!opt_root) {
         return false;
     }
-    Real root = std::numeric_limits<Real>::quiet_NaN();
-    if (roots[0] < t_min || roots[0] > t_max) {
-        if (roots[1] >= t_min && roots[1] <= t_max) {
-            root = roots[1];
-        }
-    }
-    else {
-        root = roots[0];
-    }
-
-    if (std::isnan(root)) {
-        return false;
-    }
-    rec.t = root;
-    rec.p = r(root);
+    rec.t = *opt_root;
+    rec.p = r(rec.t);
     auto outward_normal = (rec.p - center_) / radius_;
     rec.set_face_normal(r, outward_normal);
-    get_sphere_uv(outward_normal, rec.u, rec.v);
+    std::tie(rec.u, rec.v) = get_uv(rec.p);
     rec.gradient_magnitude = 2*radius_;
     set_fundamental_forms(rec);
     rec.mat_ptr = mat_ptr_;

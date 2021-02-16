@@ -3,6 +3,7 @@
 #include <cmath>
 #include <utility>
 #include <vector>
+#include <optional>
 
 namespace drt {
 
@@ -81,6 +82,22 @@ std::vector<Real> quadratic_roots(Real const a, Real const b, Real const c)
     roots[0] = x1;
     roots[1] = x0;
     return roots;
+}
+
+// Is a std::optional really better than a nan? I'm not so sure . . .
+template<typename Real>
+std::optional<Real> first_quadratic_root_in_range(Real a, Real b, Real c, Real tmin, Real tmax) {
+    auto roots = quadratic_roots(a, b, c);
+    if (roots.size() != 2) {
+        return std::nullopt;
+    }
+    if (roots[0] >= tmin && roots[0] <= tmax) {
+        return roots[0];
+    }
+    if (roots[1] >= tmin && roots[1] <= tmax) {
+        return roots[1];
+    }
+    return std::nullopt;
 }
 
 template <typename Real> int sgn(Real val) {

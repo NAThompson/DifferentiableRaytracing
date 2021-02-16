@@ -11,7 +11,6 @@ namespace drt {
 template<typename Real>
 class ellipsoid : public hittable<Real> {
 public:
-    ellipsoid() {}
     ellipsoid(vec<Real, 3> const & center, vec<Real, 3> const & scales, std::shared_ptr<material<Real>> mat_ptr)
        : center_(center), scales_(scales), mat_ptr_(mat_ptr)
     {
@@ -29,6 +28,25 @@ public:
     virtual bool hit(const ray<Real>& r, Real t_min, Real t_max, hit_record<Real>& rec) const override;
 
     virtual bool bounding_box(aabb<Real>& output_box) const override;
+
+    // The parametrization is:
+    // σ(u,v) = (x₀ + a·cos(2πu)sin(πv), y₀ + b·sin(2πu)sin(πv), z₀ + c·cos(πv)), u,v \in [0,1].
+    std::pair<Real, Real> get_uv(const vec<Real>& p) const {
+        Real x = (p[0] - center_[0])/scales_[0];
+        Real y = (p[1] - center_[1])/scales_[1];
+        Real z = (p[2] - center_[2])/scales_[2];
+
+        Real v = std::acos(z)/M_PI;
+        if (v < 0) {
+            v += 1;
+        }
+        Real u = std::atan2(y, x)/(2*M_PI);
+        if (u < 0) {
+            u += 1;
+        }
+        return std::make_pair(u, v);
+    }
+
 
     Real gaussian_curvature(const vec<Real>& p) {
         Real asq = scales_[0]*scales_[0];
@@ -74,32 +92,19 @@ bool ellipsoid<Real>::hit(const ray<Real>& r, Real t_min, Real t_max, hit_record
     Real a = drt::squared_norm(sd);
     Real b = 2*drt::dot(oc, sd);
     Real c = drt::squared_norm(oc) - 1;
-    auto roots = quadratic_roots(a, b, c);
-    if (roots.size() != 2) {
+    auto opt_root = first_quadratic_root_in_range(a, b, c, t_min, t_max);
+    if (!opt_root) {
         return false;
     }
-    Real root = std::numeric_limits<Real>::quiet_NaN();
-    if (roots[0] < t_min || roots[0] > t_max) {
-        if (roots[1] >= t_min && roots[1] <= t_max) {
-            root = roots[1];
-        }
-    }
-    else {
-        root = roots[0];
-    }
-
-    if (std::isnan(root)) {
-        return false;
-    }
-
-    rec.t = root;
-    rec.p = r(root);
+    rec.t = *opt_root;
+    rec.p = r(rec.t);
     vec<Real> outward_normal = (rec.p - center_);
     outward_normal[0] *= 2/(scales_[0]*scales_[0]);
     outward_normal[1] *= 2/(scales_[1]*scales_[1]);
     outward_normal[2] *= 2/(scales_[2]*scales_[2]);
-    normalize(outward_normal);
-
+    rec.gradient_magnitude = norm(outward_normal);
+    outward_normal = outward_normal/rec.gradient_magnitude;
+    std::tie(rec.u, rec.v) = get_uv(rec.p);
     rec.set_face_normal(r, outward_normal);
     rec.mat_ptr = mat_ptr_;
     return true;
