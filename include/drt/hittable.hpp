@@ -31,22 +31,26 @@ struct hit_record {
     }
 
     // First fundamental form. Computed under the assumption of [0,1] parametrization.
+    // Let p = σ(u,v). Then
+    // E = ‖∂σ/∂u‖², F = ∂σ/∂u·∂σ/∂v, G = ‖∂σ/∂v‖²
     Real E = std::numeric_limits<Real>::quiet_NaN();
     Real F = std::numeric_limits<Real>::quiet_NaN();
     Real G = std::numeric_limits<Real>::quiet_NaN();
 
     // Second fundamental form. Again, [0,1] parametrization assumed.
-    Real L = std::numeric_limits<Real>::quiet_NaN();
-    Real M = std::numeric_limits<Real>::quiet_NaN();
-    Real N = std::numeric_limits<Real>::quiet_NaN();
+    // Follow the notation here: http://www.pbr-book.org/3ed-2018/Shapes/Spheres.html#PartialDerivativesofNormalVectors
+    // e = ∂²σ/∂u²·n, f = ∂²σ/∂u∂v·n, g = ∂²σ/∂v²·n
+    Real e = std::numeric_limits<Real>::quiet_NaN();
+    Real f = std::numeric_limits<Real>::quiet_NaN();
+    Real g = std::numeric_limits<Real>::quiet_NaN();
 
     // Pressley, Elementary Differential Geometry, Corollary 8.1.3
     Real gaussian_curvature() const {
-        return (L*N - M*M)/(E*G - F*F);
+        return (e*g - f*f)/(E*G - F*F);
     }
 
     Real mean_curvature() const {
-        return (L*G - 2*M*F + N*E)/(2*(E*G - F*F));
+        return (e*G - 2*f*F + g*E)/(2*(E*G - F*F));
     }
 
     std::pair<Real, Real> principal_curvatures() const {
@@ -70,7 +74,7 @@ struct hit_record {
         os << "Normal is " << rec.normal << " with magnitude of gradient = " << rec.gradient_magnitude << "\n";
         os << "Parametric coordinates: (u,v) = (" << rec.u << ", " << rec.v << ")\n";
         os << "First fundamental form (E,F,G) = (" << rec.E << ", " << rec.F << ", " << rec.G << ")\n";
-        os << "Second fundamental form (L, M, N) = (" << rec.L << ", " << rec.M << ", " << rec.N << ")\n";
+        os << "Second fundamental form (e, f, g) = (" << rec.e << ", " << rec.f << ", " << rec.g << ")\n";
         os << "Gaussian curvature K = " << rec.gaussian_curvature() << ", mean curvature H = " << rec.mean_curvature() << ".\n";
         auto [k1, k2] = rec.principal_curvatures();
         os << "Principle curvatures are κ₁ = " << k1 << " and κ₂ = " << k2 << "\n";

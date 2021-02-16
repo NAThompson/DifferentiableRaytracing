@@ -338,9 +338,9 @@ bool helicoid<Real>::hit(const ray<Real>& r, Real t_min, Real t_max, hit_record<
     rec.gradient_magnitude = norm(gradient);
     vec<Real> outward_normal = gradient/rec.gradient_magnitude;
     // Could verify that dot(d2sigmadu2, outward_normal) == 0.
-    rec.L = 0;
-    rec.M = dot(d2sigmadudv, outward_normal);
-    rec.N = 0;
+    rec.e = 0;
+    rec.f = dot(d2sigmadudv, outward_normal);
+    rec.g = 0;
     rec.E = dot(dsigmadu, dsigmadu);
     rec.F = 0;
     rec.G = radius_*radius_;

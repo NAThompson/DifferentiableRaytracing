@@ -30,7 +30,7 @@ public:
     virtual bool bounding_box(aabb<Real>& output_box) const override;
 
     // The parametrization is:
-    // σ(u,v) = (x₀ + a·cos(2πu)sin(πv), y₀ + b·sin(2πu)sin(πv), z₀ + c·cos(πv)), u,v \in [0,1].
+    // σ(u,v) = (x₀ + a·cos(2πu)sin(πv), y₀ + b·sin(2πu)sin(πv), z₀ + c·cos(πv)), u,v ∈ [0,1].
     std::pair<Real, Real> get_uv(const vec<Real>& p) const {
         Real x = (p[0] - center_[0])/scales_[0];
         Real y = (p[1] - center_[1])/scales_[1];
@@ -46,7 +46,6 @@ public:
         }
         return std::make_pair(u, v);
     }
-
 
     Real gaussian_curvature(const vec<Real>& p) {
         Real asq = scales_[0]*scales_[0];
@@ -73,6 +72,32 @@ public:
     virtual ~ellipsoid() = default;
 
 private:
+
+    // Private since rec.u, rec.v must be set before this can be called:
+    void set_fundamental_forms(hit_record<Real>& rec) const {
+        using std::sin;
+        using std::cos;
+        using std::sqrt;
+        // First fundamental form:
+        Real a = scales_[0];
+        Real b = scales_[1];
+        Real c = scales_[2];
+        Real spv = sin(M_PI*rec.v);
+        Real cpv = cos(M_PI*rec.v);
+        Real stpu = sin(2*M_PI*rec.u);
+        Real ctpu = cos(2*M_PI*rec.u);
+        rec.E = 4*M_PI*M_PI*spv*spv*(a*a*stpu*stpu + b*b*ctpu*ctpu);
+        rec.F = 2*M_PI*M_PI*ctpu*stpu*cpv*spv*(b*b-a*a);
+        rec.G = M_PI*M_PI*(a*a*cpv*cpv*ctpu*ctpu + b*b*stpu*stpu*cpv*cpv + c*c*spv*spv);
+
+        // Second fundamental form.
+        // Computed from rescaling the information here: https://mathworld.wolfram.com/Ellipsoid.html
+        Real denom = sqrt(a*a*b*b*cpv*cpv + c*c*(b*b*ctpu*ctpu + a*a*stpu*stpu)*spv*spv);
+        rec.e = 4*M_PI*M_PI*a*b*c*spv*spv/denom;
+        rec.f = 0;
+        rec.g = M_PI*M_PI*a*b*c/denom;
+    }
+
     vec<Real, 3> center_;
     vec<Real, 3> scales_;
     std::shared_ptr<material<Real>> mat_ptr_;
@@ -105,6 +130,7 @@ bool ellipsoid<Real>::hit(const ray<Real>& r, Real t_min, Real t_max, hit_record
     rec.gradient_magnitude = norm(outward_normal);
     outward_normal = outward_normal/rec.gradient_magnitude;
     std::tie(rec.u, rec.v) = get_uv(rec.p);
+    set_fundamental_forms(rec);
     rec.set_face_normal(r, outward_normal);
     rec.mat_ptr = mat_ptr_;
     return true;

@@ -22,7 +22,7 @@ public:
     virtual ~sphere() = default;
 
     // The parametrization is:
-    // σ(u,v) = (x₀ + rcos(2πu)sin(πv), y₀ + rsin(2πu)sin(πv), z₀ + rcos(πv)), u,v \in [0,1].
+    // σ(u,v) = (x₀ + rcos(2πu)sin(πv), y₀ + rsin(2πu)sin(πv), z₀ + rcos(πv)), u,v ∈ [0,1].
     std::pair<Real, Real> get_uv(const vec<Real>& p) const {
         Real x = (p[0] - center_[0])/radius_;
         Real y = (p[1] - center_[1])/radius_;
@@ -59,9 +59,9 @@ private:
         // The second fundamental form of a sphere is the same as the first,
         // see Pressley, Elementary Differential Geometry, Section 8.1.
         // However, a variable radius changes this a bit, see https://mathworld.wolfram.com/Sphere.html
-        rec.L = rec.E/radius_;
-        rec.M = 0;
-        rec.N = M_PI*M_PI*radius_;
+        rec.e = rec.E/radius_;
+        rec.f = 0;
+        rec.g = M_PI*M_PI*radius_;
     }
 
     vec<Real, 3> center_;
