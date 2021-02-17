@@ -10,6 +10,7 @@ endif
 
 SRCS := $(wildcard src/*.cpp)
 EXECS := $(patsubst src/%.cpp,%.x,$(SRCS))
+DEPS :=  $(patsubst src/%.cpp,%.d,$(SRCS))
 
 all: $(EXECS)
 
@@ -17,11 +18,13 @@ all: $(EXECS)
 %.x: src/%.cpp
 	$(CXX) $(CXXFLAGS) $(INCFLAGS) -o $@ lodepng/lodepng.cpp $< $(LINKFLAGS)
 
--include $(SRCS:.cpp=.d)
-
-test: tests/tests.cpp
+tests.x: tests/tests.cpp
 	$(CXX) $(CXXFLAGS) $(INCFLAGS) -o tests.x lodepng/lodepng.cpp $< $(LINKFLAGS) -lgtest -lgtest_main
+
+test: tests.x
 	./tests.x
+
+-include $(DEPS)
 
 .PHONY: clean
 clean:

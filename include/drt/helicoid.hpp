@@ -349,7 +349,7 @@ bool helicoid<Real>::hit(const ray<Real>& r, Real t_min, Real t_max, hit_record<
     Real residual = norm(rec.p - this->sigma(rec.u, rec.v));
     //Real expected_residual = this->expected_residual(rec.p);
     if (std::abs(residual) > 1) {
-        ++error_count;
+        ++helicoid_error_count;
 #ifdef DEBUG
         std::cerr << "Residual for a helicoid with r = " << radius_ << " and λ = " << speed_ << " is " << residual << ".\n";
         std::cerr << "r(" << rec.t << ") = " << r(rec.t) << ", but σ(" << rec.u << ", " << rec.v << ") = " << this->sigma(rec.u, rec.v) << "\n";

@@ -41,7 +41,7 @@ public:
         Real y = p[1] - center_[1];
         Real z = p[2] - center_[2];
         Real s = x*x + y*y + z*z - r_*r_;
-        vec<Real> n(4*x*(s- R_*R_), 4*y*(s - R_*R_), 4*z*(s + R_*R_));
+        vec<Real> n(4*x*(s - R_*R_), 4*y*(s - R_*R_), 4*z*(s + R_*R_));
         normalize(n);
         return n;
     }
@@ -108,23 +108,23 @@ public:
         return residual;
     }
 
-    // x = (R + r cos(v)) cos(u)
-    // y = (R + r cos(v)) sin(u)
-    // z = r sin(v)
-    std::pair<Real, Real> vec_to_uv(vec<Real> const & p)
+    // x = x₀ + (R + r cos(2πv)) cos(2πu)
+    // y = y₀ + (R + r cos(2πv)) sin(2πu)
+    // z = z₀ + r sin(2πv)
+    std::pair<Real, Real> get_uv(vec<Real> const & p) const
     {
         using std::asin;
         using std::atan2;
         Real x = p[0] - center_[0];
         Real y = p[1] - center_[1];
         Real z = p[2] - center_[2];
-        Real u = atan2(x,y);
+        Real u = atan2(x,y)/(2*M_PI);
         if(u < 0) {
-            u += 2*M_PI;
+            u += 1;
         }
-        Real v = asin(z/r_);
+        Real v = asin(z/r_)/(2*M_PI);
         if (v < 0) {
-            v += 2*M_PI;
+            v += 1;
         }
         return std::pair<Real, Real>(u,v);
     }
@@ -161,6 +161,18 @@ public:
     virtual ~torus() = default;
 
 private:
+
+    void set_fundamental_forms(hit_record<Real>& rec) const
+    {
+        Real tmp = R_ + r_*std::cos(2*M_PI*rec.v);
+        rec.E = 4*M_PI*M_PI*tmp*tmp;
+        rec.F = 0;
+        rec.G = 4*M_PI*M_PI*R_*R_;
+
+        rec.e = -4*M_PI*M_PI*tmp*std::cos(2*M_PI*rec.v);
+        rec.f = 0;
+        rec.g = -4*M_PI*M_PI*R_;
+    }
     vec<Real, 3> center_;
     Real R_; // major radius
     Real r_; // minor radius
@@ -169,6 +181,7 @@ private:
 
 template<typename Real>
 bool torus<Real>::hit(const ray<Real>& r, Real t_min, Real t_max, hit_record<Real>& rec) const {
+    using std::abs;
     vec<Real, 3> oc = r.origin() - center_;
     vec<Real, 5> c;
     // http://blog.marcinchwedczuk.pl/ray-tracing-torus is informative,
@@ -206,8 +219,9 @@ bool torus<Real>::hit(const ray<Real>& r, Real t_min, Real t_max, hit_record<Rea
     this->refine_hit_point(rec.p, r.direction());
     vec<Real> outward_normal = this->normal(rec.p);
     rec.set_face_normal(r, outward_normal);
+    std::tie(rec.u, rec.v) = get_uv(rec.p);
+    set_fundamental_forms(rec);
     rec.mat_ptr = mat_ptr_;
-    using std::abs;
     Real res = this->residual(rec.p);
     Real expected_res = this->expected_residual(rec.p);
     if (abs(res) > expected_res) {
