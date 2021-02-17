@@ -8,7 +8,10 @@
 #include <drt/material.hpp>
 #include <drt/roots.hpp>
 
-static int64_t error_count = 0;
+namespace {
+    static int64_t torus_error_count = 0;
+}
+
 namespace drt {
 template<typename Real>
 class torus : public hittable<Real> {
@@ -68,7 +71,7 @@ public:
             std::cerr << "cos(v) = " << cosv << ", p = " << p << "\n";
             std::cerr << "zr = " << zr << ", 1 - (z/r)^2 = " << 1 - zr*zr << "\n";
             std::cerr << "arg = " << arg << "\n";
-            error_count++;
+            torus_error_count++;
         }
 #endif
         return cosv/denom;
@@ -118,7 +121,7 @@ public:
         Real x = p[0] - center_[0];
         Real y = p[1] - center_[1];
         Real z = p[2] - center_[2];
-        Real u = atan2(x,y)/(2*M_PI);
+        Real u = atan2(y,x)/(2*M_PI);
         if(u < 0) {
             u += 1;
         }
@@ -167,11 +170,11 @@ private:
         Real tmp = R_ + r_*std::cos(2*M_PI*rec.v);
         rec.E = 4*M_PI*M_PI*tmp*tmp;
         rec.F = 0;
-        rec.G = 4*M_PI*M_PI*R_*R_;
+        rec.G = 4*M_PI*M_PI*r_*r_;
 
         rec.e = -4*M_PI*M_PI*tmp*std::cos(2*M_PI*rec.v);
         rec.f = 0;
-        rec.g = -4*M_PI*M_PI*R_;
+        rec.g = -4*M_PI*M_PI*r_;
     }
     vec<Real, 3> center_;
     Real R_; // major radius
@@ -217,7 +220,14 @@ bool torus<Real>::hit(const ray<Real>& r, Real t_min, Real t_max, hit_record<Rea
     rec.p = r(rec.t);
     // PBRT often refines hit points. This works very well.
     this->refine_hit_point(rec.p, r.direction());
-    vec<Real> outward_normal = this->normal(rec.p);
+
+    Real x = rec.p[0] - center_[0];
+    Real y = rec.p[1] - center_[1];
+    Real z = rec.p[2] - center_[2];
+    Real s = x*x + y*y + z*z - r_*r_;
+    vec<Real> n(4*x*(s - R_*R_), 4*y*(s - R_*R_), 4*z*(s + R_*R_));
+    rec.gradient_magnitude = norm(n);
+    vec<Real> outward_normal = n/rec.gradient_magnitude;
     rec.set_face_normal(r, outward_normal);
     std::tie(rec.u, rec.v) = get_uv(rec.p);
     set_fundamental_forms(rec);
@@ -226,13 +236,13 @@ bool torus<Real>::hit(const ray<Real>& r, Real t_min, Real t_max, hit_record<Rea
     Real expected_res = this->expected_residual(rec.p);
     if (abs(res) > expected_res) {
 #ifdef DEBUG
-        error_count++;
+        torus_error_count++;
         std::cerr << __FILE__ << ":" << __LINE__ << " Residual for torus intersection unexpectedly high. ";
         std::cerr << "Residual is " << res << ", but expected residual is " << expected_res << ".\n";
         std::cerr << rec << "\n";
         std::cerr << "[t_min, t_max] = [" << t_min << ", " << t_max << "]\n";
         std::cerr << "Ray: " << r << "\n";
-        std::cerr << "Error count = " << error_count << "\n";
+        std::cerr << "Error count = " << torus_error_count << "\n";
         std::cerr << "Roots are {";
         for (auto r : roots) {
             std::cerr << r << ", ";

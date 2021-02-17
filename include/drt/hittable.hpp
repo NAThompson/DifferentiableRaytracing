@@ -74,10 +74,10 @@ struct hit_record {
         os << "Normal is " << rec.normal << " with magnitude of gradient = " << rec.gradient_magnitude << "\n";
         os << "Parametric coordinates: (u,v) = (" << rec.u << ", " << rec.v << ")\n";
         os << "First fundamental form (E,F,G) = (" << rec.E << ", " << rec.F << ", " << rec.G << ")\n";
-        os << "Second fundamental form (e, f, g) = (" << rec.e << ", " << rec.f << ", " << rec.g << ")\n";
+        os << "Second fundamental form (e,f,g) = (" << rec.e << ", " << rec.f << ", " << rec.g << ")\n";
         os << "Gaussian curvature K = " << rec.gaussian_curvature() << ", mean curvature H = " << rec.mean_curvature() << ".\n";
         auto [k1, k2] = rec.principal_curvatures();
-        os << "Principle curvatures are κ₁ = " << k1 << " and κ₂ = " << k2 << "\n";
+        os << "Principle curvatures are κ₁ = " << k1 << " and κ₂ = " << k2 << ".\n";
         return os;
     }
 };

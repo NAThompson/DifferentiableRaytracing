@@ -33,6 +33,7 @@ TEST(Torus, Intersection)
     EXPECT_FLOAT_EQ(rec.p[0], 3);
     EXPECT_FLOAT_EQ(rec.p[1], 0);
     EXPECT_FLOAT_EQ(rec.p[2], -1);
+    EXPECT_FLOAT_EQ(rec.t, 4);
     Real res = tor.residual(rec.p);
     Real ex_res = tor.expected_residual(rec.p);
     EXPECT_LE(abs(res), ex_res);
@@ -40,7 +41,11 @@ TEST(Torus, Intersection)
     EXPECT_FLOAT_EQ(rec.normal[0], 0);
     EXPECT_FLOAT_EQ(rec.normal[1], 0);
     EXPECT_FLOAT_EQ(rec.normal[2], -1);
-
+    EXPECT_FLOAT_EQ(rec.v, 0.75);
+    EXPECT_FLOAT_EQ(rec.u, 0.0);
+    EXPECT_LE(abs(tor.gaussian_curvature(rec.p)), std::numeric_limits<Real>::epsilon());
+    EXPECT_LE(abs(rec.gaussian_curvature()), std::numeric_limits<Real>::epsilon());
+    EXPECT_FLOAT_EQ(rec.mean_curvature(), -0.5);
 
     origin[0] = -3;
     r = ray<Real>(origin, direction);
@@ -56,6 +61,8 @@ TEST(Torus, Intersection)
     EXPECT_FLOAT_EQ(rec.normal[0], 0);
     EXPECT_FLOAT_EQ(rec.normal[1], 0);
     EXPECT_FLOAT_EQ(rec.normal[2], -1);
+    EXPECT_LE(abs(tor.gaussian_curvature(rec.p)), std::numeric_limits<Real>::epsilon());
+    EXPECT_LE(abs(rec.gaussian_curvature()), std::numeric_limits<Real>::epsilon());
 
     origin[0] = 0;
     origin[1] = 3;
@@ -120,6 +127,8 @@ TEST(Torus, Intersection)
     EXPECT_FLOAT_EQ(rec.normal[0], 0);
     EXPECT_FLOAT_EQ(rec.normal[1], -1);
     EXPECT_FLOAT_EQ(rec.normal[2], 0);
+    EXPECT_FLOAT_EQ(rec.v, 0);
+    EXPECT_FLOAT_EQ(rec.u, 0.75);
 
 }
 

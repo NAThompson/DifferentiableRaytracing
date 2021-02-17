@@ -11,6 +11,7 @@ endif
 SRCS := $(wildcard src/*.cpp)
 EXECS := $(patsubst src/%.cpp,%.x,$(SRCS))
 DEPS :=  $(patsubst src/%.cpp,%.d,$(SRCS))
+DEPS += tests.d
 
 all: $(EXECS)
 
