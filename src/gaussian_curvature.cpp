@@ -40,8 +40,9 @@ using drt::lambda_texture;
 template<typename Real>
 drt::hittable_list<Real> ellipsoid_scene() {
     drt::hittable_list<Real> objects;
-    auto light = make_shared<diffuse_light<Real>>(vec<Real>(1, 1, 1));
-    objects.add(make_shared<xy_rect<Real>>(-30, 30, -30, 30, -15, light));
+    auto light_mat = make_shared<diffuse_light<Real>>(vec<Real>(1, 1, 1));
+    auto light_geom = make_shared<xy_rect<Real>>(-30, 30, -30, 30, -15);
+    objects.add(light_geom, light_mat);
 
     Real scale = 1.5;
     Real a = Real(scale*1.3);
@@ -73,8 +74,8 @@ drt::hittable_list<Real> ellipsoid_scene() {
     auto ltext_ptr = make_shared<decltype(ltext)>(ltext);
 
     auto mat = make_shared<lambertian<Real>>(ltext_ptr);
-    auto boundary = make_shared<ellipsoid<Real>>(center, scales, mat);
-    objects.add(boundary);
+    auto boundary = make_shared<ellipsoid<Real>>(center, scales);
+    objects.add(boundary, mat);
     return objects;
 }
 
@@ -86,8 +87,7 @@ int main() {
     const int64_t image_height = static_cast<int>(image_width / 1.6);
     const int64_t samples_per_pixel = 64;
 
-    drt::hittable_list<Real> world1 = ellipsoid_scene<Real>();
-    drt::bvh_node<Real> world(world1);
+    drt::hittable_list<Real> world = ellipsoid_scene<Real>();
 
     drt::vec<Real> lookfrom(5, 0, -5);
     drt::vec<Real> lookat(0, 0, 0);

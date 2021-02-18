@@ -11,8 +11,8 @@ namespace drt {
 template<typename Real>
 class ellipsoid : public hittable<Real> {
 public:
-    ellipsoid(vec<Real, 3> const & center, vec<Real, 3> const & scales, std::shared_ptr<material<Real>> mat_ptr)
-       : center_(center), scales_(scales), mat_ptr_(mat_ptr)
+    ellipsoid(vec<Real, 3> const & center, vec<Real, 3> const & scales)
+       : center_(center), scales_(scales)
     {
         if (scales_[0] <= 0) {
             std::cerr << "a <= 0 is not allowed for an ellipsoid.\n";
@@ -100,7 +100,6 @@ private:
 
     vec<Real, 3> center_;
     vec<Real, 3> scales_;
-    std::shared_ptr<material<Real>> mat_ptr_;
 };
 
 template<typename Real>
@@ -132,7 +131,6 @@ bool ellipsoid<Real>::hit(const ray<Real>& r, Real t_min, Real t_max, hit_record
     std::tie(rec.u, rec.v) = get_uv(rec.p);
     set_fundamental_forms(rec);
     rec.set_face_normal(r, outward_normal);
-    rec.mat_ptr = mat_ptr_;
     return true;
 }
 

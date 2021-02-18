@@ -30,7 +30,7 @@ void display_progress(double progress)
 
 template<typename Real>
 void render_scene(std::string filename, int64_t image_width, int64_t image_height,
-                  vec<Real> const & background, camera<Real> const & cam, hittable<Real> const & world,
+                  vec<Real> const & background, camera<Real> const & cam, hittable_list<Real> const & world,
                   int64_t samples_per_pixel)
 {
     std::uniform_real_distribution<Real> dis(0,1);

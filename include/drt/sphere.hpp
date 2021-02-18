@@ -11,8 +11,8 @@ template<typename Real>
 class sphere : public hittable<Real> {
 public:
     sphere() {}
-    sphere(vec<Real, 3> const & center, Real radius, std::shared_ptr<material<Real>> mat_ptr)
-       : center_(center), radius_(radius), mat_ptr_(mat_ptr)
+    sphere(vec<Real, 3> const & center, Real radius)
+       : center_(center), radius_(radius)
     {};
 
     virtual bool hit(const ray<Real>& r, Real t_min, Real t_max, hit_record<Real>& rec) const override;
@@ -66,7 +66,6 @@ private:
 
     vec<Real, 3> center_;
     Real radius_;
-    std::shared_ptr<material<Real>> mat_ptr_;
 };
 
 template<typename Real>
@@ -86,7 +85,6 @@ bool sphere<Real>::hit(const ray<Real>& r, Real t_min, Real t_max, hit_record<Re
     std::tie(rec.u, rec.v) = get_uv(rec.p);
     rec.gradient_magnitude = 2*radius_;
     set_fundamental_forms(rec);
-    rec.mat_ptr = mat_ptr_;
     return true;
 }
 

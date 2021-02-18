@@ -29,14 +29,18 @@ using namespace drt;
 template<typename Real>
 hittable_list<Real> ellipsoid_scene() {
     hittable_list<Real> objects;
-    auto light = make_shared<diffuse_light<Real>>(vec<Real>(7, 7, 7));
-    objects.add(make_shared<xz_rect<Real>>(123, 423, 147, 412, 700, light));
+    auto light_mat = make_shared<diffuse_light<Real>>(vec<Real>(7, 7, 7));
+    auto light_geom = make_shared<xz_rect<Real>>(123, 423, 147, 412, 700);
+    objects.add(light_geom, light_mat);
     Real scale = 3.5;
     vec<Real> scales(scale*60, scale*55, scale*40);
     vec<Real> center(260, 250,45);
-    auto boundary = make_shared<ellipsoid<Real>>(center, scales, make_shared<dielectric<Real>>(1.5));
-    objects.add(boundary);
-    objects.add(make_shared<constant_medium<Real>>(boundary, 0.015, vec<Real>(0.02, 0.4, 0.9)));
+    auto boundary = make_shared<ellipsoid<Real>>(center, scales);
+    auto e_mat = make_shared<dielectric<Real>>(1.5);
+    objects.add(boundary, e_mat);
+    auto txt = std::make_shared<isotropic<Real>>(vec<Real>(0.02, 0.4, 0.9));
+    auto volume = make_shared<constant_medium<Real>>(boundary, 0.015);
+    objects.add(volume, txt);
     return objects;
 }
 
@@ -48,8 +52,7 @@ int main() {
     const int64_t image_height = static_cast<int>(image_width / 1.6);
     const int64_t samples_per_pixel = 32;
 
-    drt::hittable_list<Real> world1 = ellipsoid_scene<Real>();
-    drt::bvh_node<Real> world(world1);
+    drt::hittable_list<Real> world = ellipsoid_scene<Real>();
 
     drt::vec<Real> lookfrom(478, 278, -600);
     drt::vec<Real> lookat(278, 278, 0);

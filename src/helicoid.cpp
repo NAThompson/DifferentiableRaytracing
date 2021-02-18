@@ -25,17 +25,16 @@ template<typename Real>
 hittable_list<Real> helicoid_scene() {
     hittable_list<Real> objects;
     auto light = make_shared<diffuse_light<Real>>(vec<Real>(3, 3, 3));
-    objects.add(make_shared<yz_rect<Real>>(-10, 10, -10, 10, 20, light));
-    objects.add(make_shared<yz_rect<Real>>(-10, 10, -10, 10, -100, light));
-    //objects.add(make_shared<xy_rect<Real>>(-100, 100, -100, 100, 20, light));
+    objects.add(make_shared<yz_rect<Real>>(-10, 10, -10, 10, 20),light);
+    objects.add(make_shared<yz_rect<Real>>(-10, 10, -10, 10, -100), light);
 
     Real radius = 5;
     Real speed = 10;
 
     auto mat = make_shared<lambertian<Real>>(vec<Real>(0.7,0.6,0.5));
     //auto mat = make_shared<dielectric<Real>>(1.4);
-    auto boundary = make_shared<helicoid<Real>>(radius, speed, mat);
-    objects.add(boundary);
+    auto boundary = make_shared<helicoid<Real>>(radius, speed);
+    objects.add(boundary, mat);
     return objects;
 }
 

@@ -26,14 +26,14 @@ template<typename Real>
 hittable_list<Real> torus_scene() {
     hittable_list<Real> objects;
     auto light = make_shared<diffuse_light<Real>>(vec<Real>(1, 1, 1));
-    objects.add(make_shared<yz_rect<Real>>(-10, 10, -10, 10, 20, light));
-    objects.add(make_shared<xy_rect<Real>>(-100, 100, -100, 100, -20, light));
+    objects.add(make_shared<yz_rect<Real>>(-10, 10, -10, 10, 20), light);
+    objects.add(make_shared<xy_rect<Real>>(-100, 100, -100, 100, -20), light);
 
     auto dummy_mat = make_shared<lambertian<Real>>(vec<Real,3>(0,0,0));
     vec<Real> center(0,0,0);
     Real R = 3.0;
     Real r = 1.0;
-    torus<Real> tor(center, R, r, dummy_mat);
+    torus<Real> tor(center, R, r);
     std::function<vec<Real>(Real, Real, const vec<Real> &)> gaussian_curvature = [=]([[maybe_unused]] Real u, [[maybe_unused]] Real v, vec<Real> const & p) {
         auto [kappa_min, kappa_max] = tor.gaussian_curvature_bounds();
         Real kappa = tor.gaussian_curvature(p);
@@ -55,8 +55,8 @@ hittable_list<Real> torus_scene() {
     auto ltext_ptr = make_shared<decltype(ltext)>(ltext);
 
     auto mat = make_shared<lambertian<Real>>(ltext_ptr);
-    auto boundary = make_shared<torus<Real>>(center, R, r, mat);
-    objects.add(boundary);
+    auto boundary = make_shared<torus<Real>>(center, R, r);
+    objects.add(boundary,mat);
     return objects;
 }
 

@@ -17,8 +17,8 @@ template<typename Real>
 class cylinder : public hittable<Real> {
 public:
 
-    cylinder(Real radius, Real z_min, Real z_max, std::shared_ptr<material<Real>> mat_ptr)
-       : radius_(radius), z_min_(z_min), z_max_(z_max), mat_ptr_(mat_ptr)
+    cylinder(Real radius, Real z_min, Real z_max)
+       : radius_(radius), z_min_(z_min), z_max_(z_max)
     {};
 
     virtual bool hit(const ray<Real>& r, Real t_min, Real t_max, hit_record<Real>& rec) const override;
@@ -49,7 +49,6 @@ public:
 
 private:
 
-
     void set_fundamental_forms(hit_record<Real> & rec) const {
         rec.E = 4*M_PI*M_PI*radius_*radius_;
         rec.F = 0;
@@ -63,7 +62,6 @@ private:
     Real radius_;
     Real z_min_;
     Real z_max_;
-    std::shared_ptr<material<Real>> mat_ptr_;
 };
 
 template<typename Real>
@@ -92,7 +90,6 @@ bool cylinder<Real>::hit(const ray<Real>& r, Real t_min, Real t_max, hit_record<
     rec.set_face_normal(r, outward_normal);
     std::tie(rec.u, rec.v) = get_uv(rec.p);
     set_fundamental_forms(rec);
-    rec.mat_ptr = mat_ptr_;
 
     Real residual = this->residual(rec.p);
     Real expected_residual = this->expected_residual(rec.p);

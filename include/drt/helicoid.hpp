@@ -21,8 +21,8 @@ template<typename Real>
 class helicoid : public hittable<Real> {
 public:
 
-    helicoid(Real radius, Real speed, std::shared_ptr<material<Real>> mat_ptr)
-       : radius_(radius), speed_(speed), mat_ptr_(mat_ptr)
+    helicoid(Real radius, Real speed)
+       : radius_(radius), speed_(speed)
     {
         if (radius_ <= 0) {
             std::cerr << __FILE__ << ":" << __LINE__ << " Radius > 0 is required for a helicoid.\n";
@@ -285,7 +285,6 @@ private:
 
     Real radius_;
     Real speed_;
-    std::shared_ptr<material<Real>> mat_ptr_;
 };
 
 template<typename Real>
@@ -343,7 +342,6 @@ bool helicoid<Real>::hit(const ray<Real>& r, Real t_min, Real t_max, hit_record<
     rec.E = dot(dsigmadu, dsigmadu);
     rec.F = 0;
     rec.G = radius_*radius_;
-    rec.mat_ptr = mat_ptr_;
     rec.set_face_normal(r, outward_normal);
     Real residual = norm(rec.p - this->sigma(rec.u, rec.v));
     //Real expected_residual = this->expected_residual(rec.p);

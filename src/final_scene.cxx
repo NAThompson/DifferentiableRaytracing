@@ -46,8 +46,8 @@ drt::hittable_list<Real> final_scene() {
             Real x1 = x0 + w;
             Real y1 = dis(rd);
             Real z1 = z0 + w;
-
-            boxes1.add(make_shared<drt::box<Real>>(vec<Real>(x0,y0,z0), vec<Real>(x1,y1,z1), ground));
+            auto box = make_shared<drt::box<Real>>(vec<Real>(x0,y0,z0), vec<Real>(x1,y1,z1));
+            boxes1.add(box, ground);
         }
     }
 
@@ -55,18 +55,19 @@ drt::hittable_list<Real> final_scene() {
     objects.add(make_shared<drt::bvh_node<Real>>(boxes1));
 
     auto light = make_shared<drt::diffuse_light<Real>>(vec<Real>(7, 7, 7));
-    objects.add(make_shared<drt::xz_rect<Real>>(123, 423, 147, 412, 554, light));
-
-    objects.add(make_shared<sphere<Real>>(vec<Real>(260, 150, 45), Real(50), make_shared<dielectric<Real>>(1.5)));
+    objects.add(make_shared<drt::xz_rect<Real>>(123, 423, 147, 412, 554), light);
+    auto di15 = make_shared<dielectric<Real>>(1.5);
+    objects.add(make_shared<sphere<Real>>(vec<Real>(260, 150, 45), Real(50)), di15);
     auto m1 = std::make_shared<metal<Real>>(vec<Real>(0.8, 0.8, 0.9));
-    auto s1 = std::make_shared<sphere<Real>>(vec<Real>(0, 150, 145), Real(50), m1);
-    objects.add(s1);
+    auto s1 = std::make_shared<sphere<Real>>(vec<Real>(0, 150, 145), Real(50));
+    objects.add(s1, m1);
 
-    auto boundary = make_shared<sphere<Real>>(vec<Real>(360,150,145), Real(70), make_shared<dielectric<Real>>(1.5));
-    objects.add(boundary);
+    auto boundary = make_shared<sphere<Real>>(vec<Real>(360,150,145), Real(70));
+    objects.add(boundary, di15);
     objects.add(make_shared<constant_medium<Real>>(boundary, 0.2, vec<Real>(0.2, 0.4, 0.9)));
-    boundary = make_shared<sphere<Real>>(vec<Real>(0, 0, 0), 5000, make_shared<dielectric<Real>>(1.5));
-    objects.add(make_shared<constant_medium<Real>>(boundary, .0001, vec<Real>(1,1,1)));
+    boundary = make_shared<sphere<Real>>(vec<Real>(0, 0, 0), 5000);
+    auto txt = solid_color(vec<Real>(1,1,1));
+    objects.add(make_shared<constant_medium<Real>>(boundary, .0001), std::make_shared(txt));
 
     return objects;
 }
@@ -79,8 +80,9 @@ int main() {
     const int64_t image_height = static_cast<int>(image_width / aspect_ratio);
     const int64_t samples_per_pixel = 256;
 
-    drt::hittable_list<Real> world1 = final_scene<Real>();
-    drt::bvh_node<Real> world(world1);
+    drt::hittable_list<Real> world = final_scene<Real>();
+    //drt::hittable_list<Real> world1 = final_scene<Real>();
+    //drt::bvh_node<Real> world(world1);
 
     drt::vec<Real> lookfrom(478, 278, -600);
     drt::vec<Real> lookat(278, 278, 0);

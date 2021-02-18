@@ -10,9 +10,6 @@
 namespace drt {
 
 template<typename Real>
-class material;
-
-template<typename Real>
 struct hit_record {
     vec<Real, 3> p;
     vec<Real, 3> normal;
@@ -23,7 +20,6 @@ struct hit_record {
     Real u = std::numeric_limits<Real>::quiet_NaN();
     Real v = std::numeric_limits<Real>::quiet_NaN();
     bool front_face;
-    std::shared_ptr<material<Real>> mat_ptr;
 
     inline void set_face_normal(const ray<Real>& r, const vec<Real, 3>& outward_normal) {
         front_face = drt::dot(r.direction(), outward_normal) < 0;

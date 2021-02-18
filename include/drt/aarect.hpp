@@ -13,9 +13,8 @@ class xy_rect : public hittable<Real> {
 public:
     xy_rect() {}
 
-    xy_rect(Real x0, Real x1, Real y0, Real y1, Real k,
-           std::shared_ptr<material<Real>> mat)
-        : x0_(x0), x1_(x1), y0_(y0), y1_(y1), k_(k), mp_(mat) {};
+    xy_rect(Real x0, Real x1, Real y0, Real y1, Real k)
+        : x0_(x0), x1_(x1), y0_(y0), y1_(y1), k_(k) {};
 
     virtual bool hit(const ray<Real>& r, Real t_min, Real t_max, hit_record<Real>& rec) const override;
 
@@ -33,7 +32,6 @@ public:
 
 public:
     Real x0_, x1_, y0_, y1_, k_;
-    std::shared_ptr<material<Real>> mp_;
 };
 
 template<typename Real>
@@ -41,9 +39,8 @@ class xz_rect : public hittable<Real> {
 public:
     xz_rect() {}
 
-    xz_rect(Real x0, Real x1, Real z0, Real z1, Real k,
-            std::shared_ptr<material<Real>> mat)
-        : x0_(x0), x1_(x1), z0_(z0), z1_(z1), k_(k), mp_(mat) {};
+    xz_rect(Real x0, Real x1, Real z0, Real z1, Real k)
+        : x0_(x0), x1_(x1), z0_(z0), z1_(z1), k_(k) {};
 
     virtual bool hit(const ray<Real>& r, Real t_min, Real t_max, hit_record<Real>& rec) const override;
 
@@ -60,17 +57,14 @@ public:
 
 public:
     Real x0_, x1_, z0_, z1_, k_;
-    std::shared_ptr<material<Real>> mp_;
 };
 
 template<typename Real>
 class yz_rect : public hittable<Real> {
 public:
-    yz_rect() {}
 
-    yz_rect(Real y0, Real y1, Real z0, Real z1, Real k,
-            std::shared_ptr<material<Real>> mat)
-        : y0_(y0), y1_(y1), z0_(z0), z1_(z1), k_(k), mp_(mat) {};
+    yz_rect(Real y0, Real y1, Real z0, Real z1, Real k)
+        : y0_(y0), y1_(y1), z0_(z0), z1_(z1), k_(k) {};
 
     virtual bool hit(const ray<Real>& r, Real t_min, Real t_max, hit_record<Real>& rec) const override;
 
@@ -87,7 +81,6 @@ public:
 
 public:
     Real y0_, y1_, z0_, z1_, k_;
-    std::shared_ptr<material<Real>> mp_;
 };
 
 
@@ -106,7 +99,6 @@ bool xy_rect<Real>::hit(const ray<Real>& r, Real t_min, Real t_max, hit_record<R
     rec.t = t;
     auto outward_normal = vec<Real>(0, 0, 1);
     rec.set_face_normal(r, outward_normal);
-    rec.mat_ptr = mp_;
     rec.p = r(t);
     return true;
 }
@@ -125,7 +117,6 @@ bool xz_rect<Real>::hit(const ray<Real>& r, Real t_min, Real t_max, hit_record<R
     rec.t = t;
     auto outward_normal = vec<Real>(0, 1, 0);
     rec.set_face_normal(r, outward_normal);
-    rec.mat_ptr = mp_;
     rec.p = r(t);
     return true;
 }
@@ -144,7 +135,6 @@ bool yz_rect<Real>::hit(const ray<Real>& r, Real t_min, Real t_max, hit_record<R
     rec.t = t;
     auto outward_normal = vec<Real>(1, 0, 0);
     rec.set_face_normal(r, outward_normal);
-    rec.mat_ptr = mp_;
     rec.p = r(t);
     return true;
 }

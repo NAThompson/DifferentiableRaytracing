@@ -12,14 +12,8 @@ namespace drt {
 template<typename Real>
 class constant_medium : public hittable<Real> {
 public:
-    constant_medium(std::shared_ptr<hittable<Real>> b, Real d, std::shared_ptr<texture<Real>> a)
-        : boundary_(b), neg_inv_density_(-1/d), phase_function_(std::make_shared<isotropic<Real>>(a))
-    {
-        dis_ = std::uniform_real_distribution<Real>(0,1);
-    }
-
-    constant_medium(std::shared_ptr<hittable<Real>> b, Real d, vec<Real> c)
-        : boundary_(b), neg_inv_density_(-1/d), phase_function_(std::make_shared<isotropic<Real>>(c))
+    constant_medium(std::shared_ptr<hittable<Real>> b, Real d)
+        : boundary_(b), neg_inv_density_(-1/d)
     {
         dis_ = std::uniform_real_distribution<Real>(0,1);
     }
@@ -35,7 +29,6 @@ public:
 public:
     std::shared_ptr<hittable<Real>> boundary_;
     Real neg_inv_density_;
-    std::shared_ptr<material<Real>> phase_function_;
     mutable std::uniform_real_distribution<Real> dis_;
     mutable std::mt19937_64 gen_;
 };
@@ -74,8 +67,6 @@ bool constant_medium<Real>::hit(const ray<Real>& r, Real t_min, Real t_max, hit_
 
     rec.normal = vec<Real>(1,0,0);  // arbitrary
     rec.front_face = true;     // also arbitrary
-    rec.mat_ptr = phase_function_;
-
     return true;
 }
 

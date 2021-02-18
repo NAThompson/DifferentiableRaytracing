@@ -9,7 +9,7 @@ TEST(EllipsoidTest, Intersection) {
     using Real = double;
     vec<Real> center(0,0,0);
     vec<Real> scales(1,1,1);
-    ellipsoid<Real> s(center, scales, nullptr);
+    ellipsoid<Real> s(center, scales);
     vec<Real> o(2,0,0);
     vec<Real> d(-1,0,0);
     ray<Real> r(o, d);
@@ -34,7 +34,7 @@ TEST(EllipsoidTest, Intersection) {
 
 
     scales = vec<Real>(2,2,2);
-    s = ellipsoid<Real>(center, scales, nullptr);
+    s = ellipsoid<Real>(center, scales);
     o = vec<Real>(4,0,0);
     r = ray<Real>(o, d);
     hits = s.hit(r, 0.0, 10.0, hr);

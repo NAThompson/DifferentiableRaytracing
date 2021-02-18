@@ -7,10 +7,10 @@
 namespace drt {
 
 template<typename Real>
-class box : public hittable<Real>  {
+class box : public hittable<Real> {
 public:
     box() {}
-    box(const vec<Real>& p0, const vec<Real>& p1, std::shared_ptr<material<Real>> ptr);
+    box(const vec<Real>& p0, const vec<Real>& p1);
 
     virtual bool hit(const ray<Real>& r, Real t_min, Real t_max, hit_record<Real>& rec) const override;
 
@@ -28,19 +28,19 @@ private:
 };
 
 template<typename Real>
-box<Real>::box(const vec<Real>& p0, const vec<Real>& p1, std::shared_ptr<material<Real>> ptr) {
+box<Real>::box(const vec<Real>& p0, const vec<Real>& p1) {
     using std::make_shared;
     box_min_ = p0;
     box_max_ = p1;
 
-    sides_.add(make_shared<xy_rect<Real>>(p0[0], p1[0], p0[1], p1[1], p1[2], ptr));
-    sides_.add(make_shared<xy_rect<Real>>(p0[0], p1[0], p0[1], p1[1], p0[2], ptr));
+    sides_.add(make_shared<xy_rect<Real>>(p0[0], p1[0], p0[1], p1[1], p1[2]));
+    sides_.add(make_shared<xy_rect<Real>>(p0[0], p1[0], p0[1], p1[1], p0[2]));
 
-    sides_.add(make_shared<xz_rect<Real>>(p0[0], p1[0], p0[2], p1[2], p1[1], ptr));
-    sides_.add(make_shared<xz_rect<Real>>(p0[0], p1[0], p0[2], p1[2], p0[1], ptr));
+    sides_.add(make_shared<xz_rect<Real>>(p0[0], p1[0], p0[2], p1[2], p1[1]));
+    sides_.add(make_shared<xz_rect<Real>>(p0[0], p1[0], p0[2], p1[2], p0[1]));
 
-    sides_.add(make_shared<yz_rect<Real>>(p0[1], p1[1], p0[2], p1[2], p1[0], ptr));
-    sides_.add(make_shared<yz_rect<Real>>(p0[1], p1[1], p0[2], p1[2], p0[0], ptr));
+    sides_.add(make_shared<yz_rect<Real>>(p0[1], p1[1], p0[2], p1[2], p1[0]));
+    sides_.add(make_shared<yz_rect<Real>>(p0[1], p1[1], p0[2], p1[2], p0[0]));
 }
 
 template<typename Real>

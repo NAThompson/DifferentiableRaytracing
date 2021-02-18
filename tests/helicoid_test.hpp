@@ -7,8 +7,7 @@ using namespace drt;
 
 TEST(HelicoidTest, Intersection) {
     using Real = double;
-    auto mat = std::make_shared<drt::lambertian<Real>>(vec<Real>(1,0,0));
-    helicoid<Real> h(1, 1, mat);
+    helicoid<Real> h(1, 1);
     vec<Real> o(2,0,0);
     vec<Real> d(-1,0,0);
     ray<Real> r(o, d);

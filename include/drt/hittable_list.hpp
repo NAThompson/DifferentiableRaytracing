@@ -2,44 +2,57 @@
 #define DRT_HITTABLE_LIST_H
 
 #include <drt/hittable.hpp>
-
+#include <drt/material.hpp>
 #include <memory>
 #include <vector>
 
 namespace drt {
 
 template<typename Real>
-class hittable_list : public hittable<Real> {
+class hittable_list {
 public:
     hittable_list() {}
-    hittable_list(std::shared_ptr<hittable<Real>> object) { add(object); }
+    hittable_list(std::shared_ptr<hittable<Real>> object, std::shared_ptr<material<Real>> mat) { add(object, mat); }
 
-    void clear() { objects.clear(); }
-    void add(std::shared_ptr<hittable<Real>> object) { objects.push_back(object); }
+    void clear() {
+        objects.clear();
+        materials.clear();
+    }
+    void add(std::shared_ptr<hittable<Real>> object, std::shared_ptr<material<Real>> mat) {
+        objects.push_back(object);
+        materials.push_back(mat);
+    }
 
-    virtual bool hit(
-        const ray<Real>& r, Real t_min, Real t_max, hit_record<Real>& rec) const override;
+    std::shared_ptr<material<Real>> hit(const ray<Real>& r, Real t_min, Real t_max, hit_record<Real>& rec) const;
 
-    virtual bool bounding_box(aabb<Real>& output_box) const override;
+    bool bounding_box(aabb<Real>& output_box) const;
+
 public:
     std::vector<std::shared_ptr<hittable<Real>>> objects;
+    std::vector<std::shared_ptr<material<Real>>> materials;
 };
 
 template<typename Real>
-bool hittable_list<Real>::hit(const ray<Real>& r, Real t_min, Real t_max, hit_record<Real>& rec) const {
+std::shared_ptr<material<Real>> hittable_list<Real>::hit(const ray<Real>& r, Real t_min, Real t_max, hit_record<Real>& rec) const {
     hit_record<Real> temp_rec;
-    bool hit_anything = false;
     auto closest_so_far = t_max;
-
-    for (const auto& object : objects) {
+    int64_t hit_idx = -1;
+    for (size_t i = 0; i < objects.size(); ++i) {
+        auto object = objects[i];
         if (object->hit(r, t_min, closest_so_far, temp_rec)) {
-            hit_anything = true;
             closest_so_far = temp_rec.t;
             rec = temp_rec;
+            hit_idx = i;
         }
     }
-
-    return hit_anything;
+    if (hit_idx >= 0)
+    {
+        return materials[hit_idx];
+    }
+    else
+    {
+        return nullptr;
+    }
 }
 
 template<typename Real>

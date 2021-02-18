@@ -8,7 +8,7 @@ using namespace drt;
 TEST(SphereTest, Intersection) {
     using Real = double;
     vec<Real> center(0,0,0);
-    sphere<Real> s(center, 1, nullptr);
+    sphere<Real> s(center, 1);
     vec<Real> o(2,0,0);
     vec<Real> d(-1,0,0);
     ray<Real> r(o, d);
@@ -32,7 +32,7 @@ TEST(SphereTest, Intersection) {
     EXPECT_FLOAT_EQ(k2, 1);
 
 
-    s = sphere<Real>(center, 2, nullptr);
+    s = sphere<Real>(center, 2);
     o = vec<Real>(4,0,0);
     r = ray<Real>(o, d);
     hits = s.hit(r, 0.0, 10.0, hr);

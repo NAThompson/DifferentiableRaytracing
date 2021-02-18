@@ -16,8 +16,8 @@ namespace drt {
 template<typename Real>
 class torus : public hittable<Real> {
 public:
-    torus(vec<Real, 3> const & center, Real major_radius, Real minor_radius, std::shared_ptr<material<Real>> mat_ptr)
-       : center_(center), R_(major_radius), r_(minor_radius), mat_ptr_(mat_ptr)
+    torus(vec<Real, 3> const & center, Real major_radius, Real minor_radius)
+       : center_(center), R_(major_radius), r_(minor_radius)
     {
         if (R_ < 0) {
             std::cerr << "Major radius must be >= 0\n";
@@ -179,7 +179,6 @@ private:
     vec<Real, 3> center_;
     Real R_; // major radius
     Real r_; // minor radius
-    std::shared_ptr<material<Real>> mat_ptr_;
 };
 
 template<typename Real>
@@ -230,7 +229,6 @@ bool torus<Real>::hit(const ray<Real>& r, Real t_min, Real t_max, hit_record<Rea
     rec.set_face_normal(r, outward_normal);
     std::tie(rec.u, rec.v) = get_uv(rec.p);
     set_fundamental_forms(rec);
-    rec.mat_ptr = mat_ptr_;
     Real res = this->residual(rec.p);
     Real expected_res = this->expected_residual(rec.p);
     if (abs(res) > expected_res) {

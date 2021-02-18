@@ -33,7 +33,7 @@ drt::hittable_list<Real> random_scene() {
     drt::hittable_list<Real> world;
 
     auto checker = std::make_shared<drt::checker_texture<Real>>(vec<Real>(0.2, 0.3, 0.1), vec<Real>(0.9, 0.9, 0.9));
-    world.add(std::make_shared<drt::sphere<Real>>(vec<Real>(0,-1000,0), 1000, std::make_shared<lambertian<Real>>(checker)));
+    world.add(std::make_shared<drt::sphere<Real>>(vec<Real>(0,-1000,0), 1000), std::make_shared<lambertian<Real>>(checker));
 
     for (int a = -11; a < 11; a++) {
         for (int b = -11; b < 11; b++) {
@@ -50,7 +50,7 @@ drt::hittable_list<Real> random_scene() {
                     albedo[1] = dis(gen)*dis(gen);
                     albedo[2] = dis(gen)*dis(gen);
                     sphere_material = make_shared<lambertian<Real>>(albedo);
-                    world.add(make_shared<sphere<Real>>(center, 0.2, sphere_material));
+                    world.add(make_shared<sphere<Real>>(center, 0.2), sphere_material);
                 } else if (choose_mat < 0.75) {
                     // metal
                     vec<Real> albedo;
@@ -58,24 +58,24 @@ drt::hittable_list<Real> random_scene() {
                     albedo[1] = dis(gen)/2 + 0.5;
                     albedo[2] = dis(gen)/2 + 0.5;
                     sphere_material = make_shared<metal<Real>>(albedo);
-                    world.add(make_shared<sphere<Real>>(center, 0.2, sphere_material));
+                    world.add(make_shared<sphere<Real>>(center, 0.2), sphere_material);
                 } else {
                     // glass
                     sphere_material = make_shared<dielectric<Real>>(1.5);
-                    world.add(make_shared<sphere<Real>>(center, 0.2, sphere_material));
+                    world.add(make_shared<sphere<Real>>(center, 0.2), sphere_material);
                 }
             }
         }
     }
 
     auto material1 = make_shared<dielectric<Real>>(1.5);
-    world.add(make_shared<sphere<Real>>(vec<Real>(0, 1, 0), 1.0, material1));
+    world.add(make_shared<sphere<Real>>(vec<Real>(0, 1, 0), 1.0), material1);
 
     auto material2 = make_shared<lambertian<Real>>(vec<Real>(0.4, 0.2, 0.1));
-    world.add(make_shared<sphere<Real>>(vec<Real>(-4, 1, 0), 1.0, material2));
+    world.add(make_shared<sphere<Real>>(vec<Real>(-4, 1, 0), 1.0), material2);
 
     auto material3 = make_shared<metal<Real>>(vec<Real>(0.7, 0.6, 0.5));
-    world.add(make_shared<sphere<Real>>(vec<Real>(4, 1, 0), 1.0, material3));
+    world.add(make_shared<sphere<Real>>(vec<Real>(4, 1, 0), 1.0), material3);
 
     return world;
 }
@@ -88,8 +88,7 @@ int main() {
     const int64_t image_height = static_cast<int>(image_width / aspect_ratio);
     const int64_t samples_per_pixel = 128;
 
-    drt::hittable_list<Real> world1 = random_scene<Real>();
-    drt::bvh_node<Real> world(world1);
+    drt::hittable_list<Real> world = random_scene<Real>();
 
     drt::vec<Real> lookfrom(13,2,3);
     drt::vec<Real> lookat(0,0,0);

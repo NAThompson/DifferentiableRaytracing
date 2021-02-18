@@ -14,12 +14,11 @@ using drt::aabb;
 TEST(Torus, Intersection)
 {
     using Real = double;
-    auto mat = std::make_shared<drt::lambertian<Real>>(vec<Real>(1,0,0));
     vec<Real> origin(0,0,-5);
     vec<Real> direction(0,0,1);
     vec<Real> center(0,0,0);
     auto r = ray<Real>(origin, direction);
-    auto tor = torus<Real>(center, 3.0, 1.0, mat);
+    auto tor = torus<Real>(center, 3.0, 1.0);
 
     drt::hit_record<Real> rec;
     bool hits = tor.hit(r, std::numeric_limits<Real>::lowest(), std::numeric_limits<Real>::infinity(), rec);
@@ -135,9 +134,8 @@ TEST(Torus, Intersection)
 TEST(Torus, AABB)
 {
     using Real = double;
-    auto mat = std::make_shared<lambertian<Real>>(vec<Real>(1,0,0));
     vec<Real> center(0,0,0);
-    auto tor = torus<Real>(center, 3.0, 1.0, mat);
+    auto tor = torus<Real>(center, 3.0, 1.0);
     aabb<Real> box;
     EXPECT_TRUE(tor.bounding_box(box));
     EXPECT_EQ(box.min_[0], -4);
@@ -152,9 +150,8 @@ TEST(Torus, AABB)
 TEST(Torus, Curvature)
 {
     using Real = double;
-    auto mat = std::make_shared<lambertian<Real>>(vec<Real>(1,0,0));
     vec<Real> center(0,0,0);
-    auto tor = torus<Real>(center, 3.0, 1.0, mat);
+    auto tor = torus<Real>(center, 3.0, 1.0);
     auto [kappa_min, kappa_max] = tor.gaussian_curvature_bounds();
     EXPECT_FLOAT_EQ(kappa_min, -0.5);
     EXPECT_FLOAT_EQ(kappa_max, 0.25);

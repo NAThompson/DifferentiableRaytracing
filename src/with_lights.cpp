@@ -32,13 +32,16 @@ drt::hittable_list<Real> simple_light() {
     drt::hittable_list<Real> objects;
 
     auto chtext = make_shared<drt::checker_texture<Real>>(vec<Real>(0.8, 0.0, 1.0), vec<Real>(0.0, 0.8, 1.0));
-    objects.add(make_shared<sphere<Real>>(vec<Real>(0,-1000,0), Real(1000), make_shared<drt::lambertian<Real>>(chtext)));
+    auto s1 = make_shared<sphere<Real>>(vec<Real>(0,-1000,0), Real(1000));
+    objects.add(s1, make_shared<drt::lambertian<Real>>(chtext));
 
     auto stext = make_shared<drt::solid_color<Real>>(vec<Real>(0.2, 0.4, 0.9));
-    objects.add(make_shared<sphere<Real>>(vec<Real>(0,2,0), Real(2), make_shared<drt::metal<Real>>(stext)));
+    auto s2 = make_shared<sphere<Real>>(vec<Real>(0,2,0), Real(2));
+    objects.add(s2, make_shared<drt::metal<Real>>(stext));
 
     auto difflight = make_shared<diffuse_light<Real>>(vec<Real>(4,4,4));
-    objects.add(make_shared<drt::xy_rect<Real>>(Real(3), Real(5), Real(1), Real(3), Real(-2), difflight));
+    auto xyrect = make_shared<drt::xy_rect<Real>>(Real(3), Real(5), Real(1), Real(3), Real(-2));
+    objects.add(xyrect, difflight);
 
     return objects;
 }
@@ -51,8 +54,7 @@ int main() {
     const int64_t image_height = static_cast<int>(image_width / aspect_ratio);
     const int64_t samples_per_pixel = 16;
 
-    drt::hittable_list<Real> world1 = simple_light<Real>();
-    drt::bvh_node<Real> world(world1);
+    drt::hittable_list<Real> world = simple_light<Real>();
 
     drt::vec<Real> lookfrom(26,3,6);
     drt::vec<Real> lookat(0,2,0);

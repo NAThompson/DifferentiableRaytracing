@@ -23,17 +23,16 @@ using namespace drt;
 template<typename Real>
 hittable_list<Real> cylinder_scene() {
     hittable_list<Real> objects;
-    auto light = make_shared<diffuse_light<Real>>(vec<Real>(3, 3, 3));
-    objects.add(make_shared<yz_rect<Real>>(-10, 10, -10, 10, 20, light));
-    //objects.add(make_shared<xy_rect<Real>>(-100, 100, -100, 100, -20, light));
-
+    auto light_type = make_shared<diffuse_light<Real>>(vec<Real>(3, 3, 3));
+    auto area_light = make_shared<yz_rect<Real>>(-10, 10, -10, 10, 20);
+    objects.add(area_light, light_type);
     Real radius = 3;
     Real z_min = -10;
     Real z_max = 10;
 
     auto mat = make_shared<lambertian<Real>>(vec<Real>(0,0,1));
-    auto boundary = make_shared<cylinder<Real>>(radius, z_min, z_max, mat);
-    objects.add(boundary);
+    auto boundary = make_shared<cylinder<Real>>(radius, z_min, z_max);
+    objects.add(boundary, mat);
     return objects;
 }
 
