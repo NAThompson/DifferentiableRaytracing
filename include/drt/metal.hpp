@@ -22,7 +22,7 @@ public:
         normalize(in);
         vec<Real> reflected = reflect(in, rec.normal);
         scattered = ray(rec.p, reflected);
-        attenuation = albedo_->value(rec.u, rec.v, rec.p);
+        attenuation = albedo_->value(rec);
         return (dot(scattered.direction(), rec.normal) > 0);
     }
 

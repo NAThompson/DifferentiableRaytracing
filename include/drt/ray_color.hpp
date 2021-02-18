@@ -18,7 +18,7 @@ drt::vec<Real, 3> ray_color(const drt::ray<Real>& r, const drt::vec<Real>& backg
     }
     drt::ray<Real> scattered;
     drt::vec<Real> attenuation;
-    drt::vec<Real> emitted = mat->emitted(rec.u, rec.v, rec.p);
+    drt::vec<Real> emitted = mat->emitted(rec);
     if (!mat->scatter(r, rec, attenuation, scattered)) {
         return emitted;
     }

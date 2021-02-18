@@ -56,13 +56,8 @@ drt::hittable_list<Real> ellipsoid_scene() {
     Real kappa_min = std::min({csq/(asq*bsq), asq/(csq*bsq), bsq/(asq*csq)});
     Real kappa_max = std::max({csq/(asq*bsq), asq/(csq*bsq), bsq/(asq*csq)});
 
-    std::function<vec<Real>(Real, Real, const vec<Real> &)> gaussian_curvature = [=]([[maybe_unused]] Real u, [[maybe_unused]] Real v, vec<Real> const & p) {
-        // https://mathworld.wolfram.com/Ellipsoid.html, equation 14:
-        Real numerator = asq*bsq*bsq*bsq*csq*csq*csq;
-        Real y = p[1] - center[1];
-        Real z = p[2] - center[2];
-        Real sqrt_denom = csq*csq*bsq*bsq + csq*csq*(asq - bsq)*y*y + bsq*bsq*(asq-csq)*z*z;
-        Real kappa = numerator/(sqrt_denom*sqrt_denom);
+    std::function<vec<Real>(const drt::hit_record<Real> &)> gaussian_curvature = [=](drt::hit_record<Real> const & hr) {
+        Real kappa = hr.gaussian_curvature();
 
         Real scalar = (kappa - kappa_min)/(kappa_max - kappa_min);
         vec<Real, 3> w = viridis(scalar);

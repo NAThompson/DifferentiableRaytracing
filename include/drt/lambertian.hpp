@@ -27,7 +27,7 @@ public:
         }
 
         scattered = ray(rec.p, scatter_direction);
-        attenuation = albedo_->value(rec.u, rec.v, rec.p);
+        attenuation = albedo_->value(rec);
         return true;
     }
 

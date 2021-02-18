@@ -17,12 +17,13 @@ public:
     checker_texture(vec<Real> c1, vec<Real> c2)
         : even_(std::make_shared<solid_color<Real>>(c1)) , odd_(std::make_shared<solid_color<Real>>(c2)) {}
 
-    virtual vec<Real> value(Real u, Real v, const vec<Real>& p) const override {
+    virtual vec<Real> value(const hit_record<Real>& hr) const override {
+        auto const & p = hr.p;
         auto sines = std::sin(10*p[0])*std::sin(10*p[1])*std::sin(10*p[2]);
         if (sines < 0)
-            return odd_->value(u, v, p);
+            return odd_->value(hr);
         else
-            return even_->value(u, v, p);
+            return even_->value(hr);
     }
 
     virtual ~checker_texture() = default;

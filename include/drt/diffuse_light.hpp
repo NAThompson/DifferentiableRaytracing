@@ -19,9 +19,9 @@ public:
         return false;
     }
 
-    virtual vec<Real> emitted(Real u, Real v, const vec<Real>& p) const override
+    virtual vec<Real> emitted(hit_record<Real> const & hr) const override
     {
-        return emit_->value(u, v, p);
+        return emit_->value(hr);
     }
 
     virtual ~diffuse_light() = default;

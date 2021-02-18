@@ -22,7 +22,7 @@ public:
     {
 
         scattered = ray(rec.p, random_in_unit_sphere());
-        attenuation = albedo_->value(rec.u, rec.v, rec.p);
+        attenuation = albedo_->value(rec);
         return true;
     }
 
