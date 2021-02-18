@@ -73,6 +73,8 @@ bool cylinder<Real>::hit(const ray<Real>& r, Real t_min, Real t_max, hit_record<
     Real a = dir[0]*dir[0] + dir[1]*dir[1];
     Real b = 2*(o[0]*dir[0] + o[1]*dir[1]);
     Real c = o[0]*o[0] + o[1]*o[1] - radius_*radius_;
+    // This might be wrong if the first root is in the t-range, but gives a ray
+    // which is not in the z-range.
     auto opt_root = first_quadratic_root_in_range(a, b, c, t_min, t_max);
     if (!opt_root) {
         return false;

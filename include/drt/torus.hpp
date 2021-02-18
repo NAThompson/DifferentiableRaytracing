@@ -204,19 +204,18 @@ bool torus<Real>::hit(const ray<Real>& r, Real t_min, Real t_max, hit_record<Rea
     c[4] = dsq*dsq;
 
     auto roots = quartic_roots(c[4], c[3], c[2], c[1], c[0]);
-    Real t = std::numeric_limits<Real>::quiet_NaN();
+    rec.t = std::numeric_limits<Real>::quiet_NaN();
     // Roots are sorted so this gets the minimal root-or if no intersection, t stays nan.
     for (auto root : roots) {
         if (root >= t_min && root <= t_max) {
-            t = root;
+            rec.t = root;
             break;
         }
     }
-    if (std::isnan(t)) {
+    if (std::isnan(rec.t)) {
         return false;
     }
 
-    rec.t = t;
     rec.p = r(rec.t);
     // PBRT often refines hit points. This works very well.
     this->refine_hit_point(rec.p, r.direction());

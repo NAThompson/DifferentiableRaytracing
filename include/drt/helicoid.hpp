@@ -123,7 +123,7 @@ private:
         x = o[0] + tc*d[0];
         y = o[1] + tc*d[1];
         Real vmin = sqrt(x*x + y*y)/radius_;
-        if (vmax1 < vmax1) {
+        if (vmax1 < vmax2) {
             return std::make_pair(vmin, vmax1);
         }
         return std::make_pair(vmin, vmax2);
@@ -207,7 +207,6 @@ private:
             v = sqrt(o[0]*o[0] + o[1]*o[1])/radius_;
             // We're shooting a ray down, but the origin is outside of r:
             if (v > 1) {
-                std::cerr << "Quick return at v = 1\n";
                 return w;
             }
             if (v < std::numeric_limits<Real>::min()) {
@@ -355,7 +354,7 @@ bool helicoid<Real>::hit(const ray<Real>& r, Real t_min, Real t_max, hit_record<
         std::cerr << "r(" << rec.t << ") = " << r(rec.t) << ", but σ(" << rec.u << ", " << rec.v << ") = " << this->sigma(rec.u, rec.v) << "\n";
         std::cerr << "Ray: " << r << ", [t_min, t_max] = ["  << t_min << ", " << t_max << "]\n";
         std::cerr << rec << "\n";
-        std::cerr << "Error count: " << error_count << "\n";
+        std::cerr << "Error count: " << helicoid_error_count << "\n";
         std::cerr << "Hits = " << helicoid_hits << ", misses = " << helicoid_misses << "\n";
         std::cerr << "\n";
 #endif
