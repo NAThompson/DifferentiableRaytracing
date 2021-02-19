@@ -35,16 +35,16 @@ private:
 template<typename Real>
 class lambda_texture : public texture<Real> {
 public:
-    lambda_texture(std::shared_ptr<std::function<vec<Real>(const hit_record<Real> &)>> f_ptr) : f_ptr_(f_ptr) {}
+    lambda_texture(std::function<vec<Real>(const hit_record<Real> &)> f) : f_(f) {}
 
     virtual vec<Real> value(const hit_record<Real> & hr) const override {
-        return f_ptr_->operator()(hr);
+        return f_(hr);
     }
 
     virtual ~lambda_texture() = default;
 
 private:
-    std::shared_ptr<std::function<vec<Real>(const hit_record<Real> &)>> f_ptr_;
+    std::function<vec<Real>(const hit_record<Real> &)> f_;
 };
 
 

@@ -32,10 +32,12 @@ hittable_list<Real> torus_scene() {
     vec<Real> center(0,0,0);
     Real R = 3.0;
     Real r = 1.0;
-    torus<Real> tor(center, R, r);
+    auto tor = make_shared<torus<Real>>(center, R, r);
+    auto bounds = tor->gaussian_curvature_bounds();
+    Real kappa_min = bounds.first;
+    Real kappa_max = bounds.second;
     std::function<vec<Real>(const drt::hit_record<Real> &)> gaussian_curvature = [=](hit_record<Real> const & hr) {
-        auto [kappa_min, kappa_max] = tor.gaussian_curvature_bounds();
-        Real kappa = tor.gaussian_curvature(hr.p);
+        Real kappa = tor->gaussian_curvature(hr.p);
         if (std::isnan(kappa)) {
             return vec<Real, 3>(0,0,0);
         }
@@ -49,13 +51,9 @@ hittable_list<Real> torus_scene() {
         return viridis(scalar);
     };
 
-    auto ptr = make_shared<decltype(gaussian_curvature)>(gaussian_curvature);
-    auto ltext = drt::lambda_texture(ptr);
-    auto ltext_ptr = make_shared<decltype(ltext)>(ltext);
-
-    auto mat = make_shared<lambertian<Real>>(ltext_ptr);
-    auto boundary = make_shared<torus<Real>>(tor);
-    objects.add(boundary, mat);
+    auto texture = make_shared<drt::lambda_texture<Real>>(gaussian_curvature);
+    auto mat = make_shared<lambertian<Real>>(texture);
+    objects.add(tor, mat);
     return objects;
 }
 
