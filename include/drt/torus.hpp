@@ -125,10 +125,20 @@ public:
         if(u < 0) {
             u += 1;
         }
-        Real v = asin(z/r_)/(2*M_PI);
-        if (v < 0) {
-            v += 1;
+        // asin(y) \in [-π/2, π/2].
+        Real v = asin(z/r_);
+        // asin cannot distinguish the quadrant. Use x and y to distinguish.
+        // x² + y² = (R+rcos(v))² = R² + r²cos(v)² + 2rRcos(v)
+        if (x*x + y*y < R_*R_) {
+            v = M_PI - v;
         }
+        // 3rd quadrant is the only place it can be:
+        if (v < 0) {
+            v += 2*M_PI;
+        }
+
+        // Now v \in [0, 2π]. We need it in [0,1]:
+        v /= 2*M_PI;
         return std::pair<Real, Real>(u,v);
     }
 

@@ -37,17 +37,8 @@ hittable_list<Real> torus_scene() {
     Real kappa_min = bounds.first;
     Real kappa_max = bounds.second;
     auto gaussian_curvature = [=](hit_record<Real> const & hr) {
-        Real kappa = tor->gaussian_curvature(hr.p);
-        if (std::isnan(kappa)) {
-            return vec<Real, 3>(0,0,0);
-        }
+        Real kappa = hr.gaussian_curvature();
         Real scalar = (kappa - kappa_min)/(kappa_max - kappa_min);
-        if (scalar < 0) {
-            std::cerr << "Scalar = " << scalar << ", this bad.\n";
-        }
-        if (scalar > 1) {
-            std::cerr << "Scalar = " << scalar << ", this bad.\n";
-        }
         return viridis(scalar);
     };
 

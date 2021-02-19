@@ -60,6 +60,8 @@ TEST(Torus, Intersection)
     EXPECT_FLOAT_EQ(rec.normal[0], 0);
     EXPECT_FLOAT_EQ(rec.normal[1], 0);
     EXPECT_FLOAT_EQ(rec.normal[2], -1);
+    EXPECT_FLOAT_EQ(rec.v, 0.75);
+    EXPECT_FLOAT_EQ(rec.u, 0.5);
     EXPECT_LE(abs(tor.gaussian_curvature(rec.p)), std::numeric_limits<Real>::epsilon());
     EXPECT_LE(abs(rec.gaussian_curvature()), std::numeric_limits<Real>::epsilon());
 
