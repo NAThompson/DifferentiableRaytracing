@@ -25,11 +25,7 @@ hittable_list<Real> ellipsoid_scene() {
     auto light_geom = make_shared<xy_rect<Real>>(-30, 30, -30, 30, -15);
     objects.add(light_geom, light_mat);
 
-    Real scale = 1.5;
-    Real a = Real(scale*1.3);
-    Real b = Real(scale*1);
-    Real c = Real(scale*1.6);
-    vec<Real> scales(a,b,c);
+    vec<Real> scales(1.95, 1.5, 2.5);
     vec<Real> center = vec<Real>(0, 0, 0);
     auto ell = make_shared<ellipsoid<Real>>(center, scales);
     auto bounds = ell->gaussian_curvature_bounds();
@@ -64,5 +60,5 @@ int main() {
 
     camera cam(lookfrom, lookat, vup, Real(40), aspect_ratio);
     vec<Real> background(0.0, 0.0, 0.0);
-    render_scene<Real>("gaussian_curvature.png", image_width, image_height, background, cam, world, samples_per_pixel);
+    render_scene<Real>("ellipsoid_curvature.png", image_width, image_height, background, cam, world, samples_per_pixel);
 }
