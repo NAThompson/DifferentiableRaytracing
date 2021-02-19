@@ -36,7 +36,7 @@ hittable_list<Real> torus_scene() {
     auto bounds = tor->gaussian_curvature_bounds();
     Real kappa_min = bounds.first;
     Real kappa_max = bounds.second;
-    std::function<vec<Real>(const drt::hit_record<Real> &)> gaussian_curvature = [=](hit_record<Real> const & hr) {
+    auto gaussian_curvature = [=](hit_record<Real> const & hr) {
         Real kappa = tor->gaussian_curvature(hr.p);
         if (std::isnan(kappa)) {
             return vec<Real, 3>(0,0,0);

@@ -66,7 +66,7 @@ public:
 
         Real kappa_min = std::min({csq/(asq*bsq), asq/(csq*bsq), bsq/(asq*csq)});
         Real kappa_max = std::max({csq/(asq*bsq), asq/(csq*bsq), bsq/(asq*csq)});
-        return std::make_pair<Real,Real>(kappa_min, kappa_max);
+        return std::make_pair(kappa_min, kappa_max);
     }
 
     virtual ~ellipsoid() = default;
