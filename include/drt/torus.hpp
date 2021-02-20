@@ -125,10 +125,10 @@ public:
         if(u < 0) {
             u += 1;
         }
-        // asin(y) \in [-π/2, π/2].
+        // asin(y) ∈ [-π/2, π/2].
         Real v = asin(z/r_);
         // asin cannot distinguish the quadrant. Use x and y to distinguish.
-        // x² + y² = (R+rcos(v))² = R² + r²cos(v)² + 2rRcos(v)
+        // x² + y² = (R+rcos(2πv))² = R² + r²cos(2πv)² + 2rRcos(2πv)
         if (x*x + y*y < R_*R_) {
             v = M_PI - v;
         }
@@ -137,7 +137,7 @@ public:
             v += 2*M_PI;
         }
 
-        // Now v \in [0, 2π]. We need it in [0,1]:
+        // Now v ∈ [0, 2π]. We need it in [0,1]:
         v /= 2*M_PI;
         return std::pair<Real, Real>(u,v);
     }
@@ -145,7 +145,7 @@ public:
     // PBRT uses invariants; e.g. for a circle the refinement is
     // pHit *= radius / Distance(pHit, Point3f(0, 0, 0));
     // This requires a direction in which to refine, so that we can update with Newton's method:
-    // f(p + δtd) = f(p) + δt𝝯f·d = 0 \implies δt = -f(p)/𝝯f·d
+    // f(p + δtd) ≈ f(p) + δt𝝯f·d = 0 ⇒ δt = -f(p)/𝝯f·d
     void refine_hit_point(vec<Real> & p, vec<Real> const & direction) const {
         Real x = p[0] - center_[0];
         Real y = p[1] - center_[1];
@@ -226,7 +226,9 @@ bool torus<Real>::hit(const ray<Real>& r, Real t_min, Real t_max, hit_record<Rea
     }
 
     rec.p = r(rec.t);
-    // PBRT often refines hit points. This works very well.
+    // PBRT often refines hit points.
+    // The conditioning of the problem "find t such that f(o+td) = 0" is different (and often worse!)
+    // than "find p such that f(p) = 0".
     this->refine_hit_point(rec.p, r.direction());
 
     Real x = rec.p[0] - center_[0];
