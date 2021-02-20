@@ -1,15 +1,9 @@
 #include <iostream>
 #include <random>
 #include <drt/vec.hpp>
-#include <drt/ray.hpp>
-#include <drt/cylinder.hpp>
 #include <drt/hittable_list.hpp>
 #include <drt/camera.hpp>
 #include <drt/lambertian.hpp>
-#include <drt/dielectric.hpp>
-#include <drt/metal.hpp>
-#include <drt/aabb.hpp>
-#include <drt/bvh.hpp>
 #include <drt/texture.hpp>
 #include <drt/diffuse_light.hpp>
 #include <drt/aarect.hpp>
@@ -32,7 +26,6 @@ hittable_list<Real> helicoid_scene() {
     Real speed = 10;
 
     auto mat = make_shared<lambertian<Real>>(vec<Real>(0.7,0.6,0.5));
-    //auto mat = make_shared<dielectric<Real>>(1.4);
     auto boundary = make_shared<helicoid<Real>>(radius, speed);
     objects.add(boundary, mat);
     return objects;

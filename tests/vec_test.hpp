@@ -27,6 +27,38 @@ TEST(VecTest, Cross) {
     EXPECT_FLOAT_EQ(v3[0], 0);
     EXPECT_FLOAT_EQ(v3[1], -1);
     EXPECT_FLOAT_EQ(v3[2], 0);
+
+    std::uniform_real_distribution<Real> dis(-1,1);
+    std::mt19937_64 gen;
+    int i = 0;
+    while (i++ < 500) {
+        v1[0] = dis(gen);
+        v1[1] = dis(gen);
+        v1[2] = dis(gen);
+
+        v2[0] = dis(gen);
+        v2[1] = dis(gen);
+        v2[2] = dis(gen);
+
+        auto w1 = cross(v1, v2);
+        auto w2 = cross(v2, v1);
+
+        EXPECT_FLOAT_EQ(w1[0], -w2[0]);
+        EXPECT_FLOAT_EQ(w1[1], -w2[1]);
+        EXPECT_FLOAT_EQ(w1[2], -w2[2]);
+
+        w1 = cross(v1, v1);
+        EXPECT_FLOAT_EQ(w1[0], 0);
+        EXPECT_FLOAT_EQ(w1[1], 0);
+        EXPECT_FLOAT_EQ(w1[2], 0);
+
+        vec<Real> v3(dis(gen), dis(gen), dis(gen));
+        w1 = cross(v1, v2 + v3);
+        w2 = cross(v1, v2) + cross(v1, v3);
+        EXPECT_FLOAT_EQ(w1[0], w2[0]);
+        EXPECT_FLOAT_EQ(w1[1], w2[1]);
+        EXPECT_FLOAT_EQ(w1[2], w2[2]);
+    }
 }
 
 #endif

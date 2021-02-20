@@ -3,7 +3,6 @@
 
 #include <drt/hittable.hpp>
 #include <drt/vec.hpp>
-#include <drt/material.hpp>
 #include <drt/roots.hpp>
 
 
@@ -240,7 +239,7 @@ private:
         auto [vmin, vmax] = this->vbounds(o, d, t_min, t_max);
 
         Real min_residual = std::numeric_limits<Real>::max();
-        int rt_samples = 16;
+        int rt_samples = 64;
         for (int i = 0; i < rt_samples; ++i) {
             Real u_ = umin + i*(umax - umin)/(rt_samples-1);
             for (int j = 0; j < rt_samples; ++j) {
@@ -255,6 +254,7 @@ private:
             }
         }
         if (min_residual > 0.1) {
+            //std::cerr << "Min residual = " << min_residual << "\n";
             return w;
         }
         /*Real jac_g00 = speed_*d[0]/d[2] + 2*M_PI*radius_*v*sin(2*M_PI*u);
@@ -333,6 +333,8 @@ bool helicoid<Real>::hit(const ray<Real>& r, Real t_min, Real t_max, hit_record<
     vec<Real> d2sigmadudv(-2*M_PI*radius_*sin(2*M_PI*rec.u), 2*M_PI*radius_*cos(2*M_PI*rec.u), 0);
  
     vec<Real> gradient = drt::cross(dsigmadu, dsigmadv);
+    // Simplified:
+    //vec<Real> gradient2(-radius_*speed_*sin(2*M_PI*rec.u), radius_*speed_*cos(2*M_PI*rec.u), -2*M_PI*radius_*radius_*rec.v);
     rec.gradient_magnitude = norm(gradient);
     vec<Real> outward_normal = gradient/rec.gradient_magnitude;
     // Could verify that dot(d2sigmadu2, outward_normal) == 0.
@@ -341,7 +343,7 @@ bool helicoid<Real>::hit(const ray<Real>& r, Real t_min, Real t_max, hit_record<
     rec.g = 0;
     rec.E = dot(dsigmadu, dsigmadu);
     rec.F = 0;
-    rec.G = radius_*radius_;
+    rec.G = 4*M_PI*M_PI*radius_*radius_;
     rec.set_face_normal(r, outward_normal);
     Real residual = norm(rec.p - this->sigma(rec.u, rec.v));
     //Real expected_residual = this->expected_residual(rec.p);
