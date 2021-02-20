@@ -35,9 +35,7 @@ public:
 
     virtual bool bounding_box(aabb<Real>& output_box) const override;
 
-    virtual ~helicoid() {
-        std::cerr << "Hits = " << helicoid_hits << ", misses = " << helicoid_misses << "\n";
-    };
+    virtual ~helicoid() {};
 
     vec<Real> operator()(Real u, Real v) const {
         Real x = radius_*v*std::cos(2*M_PI*u);
@@ -246,7 +244,7 @@ private:
         auto [vmin, vmax] = this->vbounds(o, d, t_min, t_max);
 
         Real min_residual = std::numeric_limits<Real>::max();
-        int rt_samples = 64;
+        int rt_samples = 32;
         for (int i = 0; i < rt_samples; ++i) {
             Real u_ = umin + i*(umax - umin)/(rt_samples-1);
             for (int j = 0; j < rt_samples; ++j) {

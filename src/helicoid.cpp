@@ -11,23 +11,34 @@
 #include <drt/ray_color.hpp>
 #include <drt/render_scene.hpp>
 #include <drt/helicoid.hpp>
+#include <drt/dielectric.hpp>
+#include <drt/cylinder.hpp>
 
 using std::make_shared;
+using std::log;
 using namespace drt;
 
 template<typename Real>
 hittable_list<Real> helicoid_scene() {
     hittable_list<Real> objects;
-    auto light = make_shared<diffuse_light<Real>>(vec<Real>(3, 3, 3));
-    objects.add(make_shared<yz_rect<Real>>(-10, 10, -10, 10, 20),light);
-    objects.add(make_shared<yz_rect<Real>>(-10, 10, -10, 10, -100), light);
+    Real radius = 1;
+    Real speed = 3;
+    auto heli = make_shared<helicoid<Real>>(radius, speed);
+    auto bounds = heli->gaussian_curvature_bounds();
+    Real ln_nkmin = log(-bounds.second);
+    Real ln_nkmax = log(-bounds.first);
+    assert(ln_nkmin <= ln_nkmax);
+    auto gaussian_curvature = [=](hit_record<Real> const & hr) {
+        Real kappa = hr.gaussian_curvature();
+        Real ln_nk = log(-kappa);
+        Real scalar = (ln_nk - ln_nkmin)/(ln_nkmax - ln_nkmin);
+        return plasma(scalar);
+    };
 
-    Real radius = 5;
-    Real speed = 10;
+    auto texture = make_shared<lambda_texture<Real>>(gaussian_curvature);
+    auto mat = make_shared<diffuse_light<Real>>(texture);
+    objects.add(heli, mat);
 
-    auto mat = make_shared<lambertian<Real>>(vec<Real>(0.7,0.6,0.5));
-    auto boundary = make_shared<helicoid<Real>>(radius, speed);
-    objects.add(boundary, mat);
     return objects;
 }
 
@@ -35,17 +46,16 @@ hittable_list<Real> helicoid_scene() {
 int main() {
     using Real = double;
 
-    const Real aspect_ratio = 1.6;
-    const int64_t image_width = 1200;
+    const Real aspect_ratio = 1.0;
+    const int64_t image_width = 800;
     const int64_t image_height = static_cast<int64_t>(image_width/aspect_ratio);
-    const int64_t samples_per_pixel = 8;
+    const int64_t samples_per_pixel = 32;
 
     auto world = helicoid_scene<Real>();
-    drt::vec<Real> lookfrom(10, 10, 0);
     drt::vec<Real> lookat(0,0,0);
-    drt::vec<Real> vup(0,0,1);
-
+    drt::vec<Real> lookfrom(0, -4, 0);
+    drt::vec<Real> vup(0,1,1);
     drt::camera<Real> cam(lookfrom, lookat, vup, Real(40), aspect_ratio);
-    drt::vec<Real> background(0.1, 0.1, 0.1);
+    drt::vec<Real> background(0.0, 0.0, 0.0);
     drt::render_scene<Real>("helicoid.png", image_width, image_height, background, cam, world, samples_per_pixel);
 }
