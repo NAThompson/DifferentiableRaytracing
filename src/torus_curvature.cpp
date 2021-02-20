@@ -2,21 +2,17 @@
 #include <random>
 #include <drt/vec.hpp>
 #include <drt/ray.hpp>
-#include <drt/sphere.hpp>
-#include <drt/hittable.hpp>
 #include <drt/hittable_list.hpp>
 #include <drt/camera.hpp>
 #include <drt/lambertian.hpp>
 #include <drt/dielectric.hpp>
 #include <drt/metal.hpp>
 #include <drt/aabb.hpp>
-#include <drt/bvh.hpp>
 #include <drt/texture.hpp>
 #include <drt/diffuse_light.hpp>
 #include <drt/aarect.hpp>
 #include <drt/color_maps.hpp>
 #include <drt/torus.hpp>
-#include <drt/ray_color.hpp>
 #include <drt/render_scene.hpp>
 
 using std::make_shared;
