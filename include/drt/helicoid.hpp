@@ -39,11 +39,18 @@ public:
         std::cerr << "Hits = " << helicoid_hits << ", misses = " << helicoid_misses << "\n";
     };
 
-    vec<Real> sigma(Real u, Real v) const {
+    vec<Real> operator()(Real u, Real v) const {
         Real x = radius_*v*std::cos(2*M_PI*u);
         Real y = radius_*v*std::sin(2*M_PI*u);
         Real z = speed_*(u-0.5);
         return vec<Real>(x,y,z);
+    }
+
+    std::pair<Real, Real> gaussian_curvature_bounds() const {
+        Real Kmin = -1/(speed_*speed_);
+        Real rt_denom = speed_*speed_ + 4*M_PI*M_PI*radius_*radius_;
+        Real Kmax = -speed_*speed_/(rt_denom*rt_denom);
+        return std::make_pair(Kmin, Kmax);
     }
 
 private:
@@ -345,13 +352,13 @@ bool helicoid<Real>::hit(const ray<Real>& r, Real t_min, Real t_max, hit_record<
     rec.F = 0;
     rec.G = 4*M_PI*M_PI*radius_*radius_;
     rec.set_face_normal(r, outward_normal);
-    Real residual = norm(rec.p - this->sigma(rec.u, rec.v));
+    Real residual = norm(rec.p - this->operator()(rec.u, rec.v));
     //Real expected_residual = this->expected_residual(rec.p);
     if (std::abs(residual) > 1) {
         ++helicoid_error_count;
 #ifdef DEBUG
         std::cerr << "Residual for a helicoid with r = " << radius_ << " and λ = " << speed_ << " is " << residual << ".\n";
-        std::cerr << "r(" << rec.t << ") = " << r(rec.t) << ", but σ(" << rec.u << ", " << rec.v << ") = " << this->sigma(rec.u, rec.v) << "\n";
+        std::cerr << "r(" << rec.t << ") = " << r(rec.t) << ", but σ(" << rec.u << ", " << rec.v << ") = " << this->operator()(rec.u, rec.v) << "\n";
         std::cerr << "Ray: " << r << ", [t_min, t_max] = ["  << t_min << ", " << t_max << "]\n";
         std::cerr << rec << "\n";
         std::cerr << "Error count: " << helicoid_error_count << "\n";

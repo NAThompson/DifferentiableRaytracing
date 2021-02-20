@@ -80,6 +80,7 @@ TEST(HelicoidTest, Intersection) {
     std::uniform_real_distribution<Real> dist(0, 1);
     std::mt19937_64 gen;
     int i = 0;
+    auto [Kmin, Kmax] = h.gaussian_curvature_bounds();
     while (i++ < 512) {
         d[0] = 0;
         d[1] = 0;
@@ -119,6 +120,8 @@ TEST(HelicoidTest, Intersection) {
         Real gc_d = 1 + 4*M_PI*M_PI*v*v;
         EXPECT_FLOAT_EQ(hr.gaussian_curvature(), -1.0/(gc_d*gc_d));
         EXPECT_FLOAT_EQ(k1*k2, -1.0/(gc_d*gc_d));
+        EXPECT_GE(hr.gaussian_curvature(), Kmin);
+        EXPECT_LE(hr.gaussian_curvature(), Kmax);
     }
 
 }

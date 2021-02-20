@@ -48,9 +48,9 @@ TEST(VecTest, Cross) {
         EXPECT_FLOAT_EQ(w1[2], -w2[2]);
 
         w1 = cross(v1, v1);
-        EXPECT_FLOAT_EQ(w1[0], 0);
-        EXPECT_FLOAT_EQ(w1[1], 0);
-        EXPECT_FLOAT_EQ(w1[2], 0);
+        EXPECT_LE(abs(w1[0]), std::numeric_limits<Real>::epsilon());
+        EXPECT_LE(abs(w1[1]), std::numeric_limits<Real>::epsilon());
+        EXPECT_LE(abs(w1[2]), std::numeric_limits<Real>::epsilon());
 
         vec<Real> v3(dis(gen), dis(gen), dis(gen));
         w1 = cross(v1, v2 + v3);
