@@ -191,19 +191,47 @@ Ray $$\mathbf{O} + t\mathbf{D}$$ intersects torus when $$x = o_x + td_x, y = o_y
 
 $$\sigma(u, v) = (rv\cos(2\pi u), rv\sin(2\pi u), \lambda (u-1/2))$$.
 
-Intersections ray when
+Intersects ray when
 
-$$\mathbf{o} + t \mathbf{d} = \sigma(u,v)$$
-
-Simplifies to $$\tan\left(\frac{2\pi}{\lambda}(o_z + t d_z)\right) = \frac{o_y + td_y}{o_x + t d_x}$$.
+$$
+o_x + td_x = rv\cos(2\pi u),
+o_y + td_y = rv\sin(2\pi u),
+o_z + td_z = \lambda(u-1/2)
+$$
 
 ---
 
 ## Helicoid ray intersections
 
-Newton's method will work well enough here, but getting sensible starting values is difficult.
+Newton's method will work well enough here, but getting sensible starting values is key.
 
-Bound the helicoid with a cylinder. A cylinder is a quadric surface so we can easily obtain $$[t_{\min}, t_{\max}]$$.
+Bound the helicoid with a cylinder. A cylinder is a quadric surface so we can obtain $$[t_{\min}, t_{\max}]$$ by a quadratic equation.
+
+Then $$r^2v^2 = (o_x + td_x)^2 + (o_y + td_y)^2$$ gives us bounds on $$[v_{\min}, v_{\max}]$$, and $$u = (o_z+td_z)/\lambda + 1/2$$ gives us bounds on $$[u_{\min}, u_{\max}]$$.
+
+---
+
+## Inequalities are just as important as numerics!
+
+Working to *constrain* a ray intersection with an object is just as important as the convergence of the method to the correct solution.
+
+The ability to say "this ray *does not* intersect our object" in as few flops as possible is just as important for your performance as the numerical method to compute the intersection when it does.
+
+---
+
+## Non-minimal t
+
+The Newton fractal teaches us that it's difficult to predict *which* root Newton's method with a given starting point will converge to.
+
+In ray tracing, we need the *minimal* root to determine the closest intersection point to the ray.
+
+---
+
+## Non-minimal roots
+
+![inline](figures/wrong_solutions.png)
+
+^ The pseudocoloring changes discontinuously where the non-minial roots are identified.
 
 ---
 
@@ -268,14 +296,6 @@ Given a surface $$\mathcal{S} := \{ \mathbf{r} \colon f(\mathbf{r}) = 0\}$$, how
 Naive idea: Use Newton's method:
 
 $$t_{k+1} = t_{k} - \frac{\nabla f(r(t_k)) \cdot \mathbf{d}}{f(r(t_k))}$$
-
----
-
-## Newton's method is bad m'kay?
-
-The Newton fractal teaches us that it's impossibly difficult to predict *which* root a given starting point will converge to.
-
-In ray tracing, we need the *minimal* root to determine the closest intersection point to the ray.
 
 ---
 

@@ -70,6 +70,22 @@ private:
         return std::make_tuple(y, dydt, d2ydt2);
     }
 
+    std::tuple<Real, Real, Real> f2(Real t, vec<Real> const & o, vec<Real> const & d) const {
+        using std::atan2;
+        Real x = o[0] + t*d[0];
+        Real y = o[1] + t*d[1];
+        Real z = o[2] + t*d[2];
+        Real theta = atan2(y, x);
+        if (theta < 0) {
+            theta += 2*M_PI;
+        }
+        Real f = (2*M_PI/speed_)*z + M_PI - theta;
+        Real rdenom = 1/(x*x + y*y);
+        Real dfdt = (2*M_PI/speed_)*d[2]  + rdenom*(d[1]*x - d[0]*y);
+        Real d2fdt2 = std::numeric_limits<Real>::quiet_NaN();
+        return std::make_tuple(f, dfdt, d2fdt2);
+    }
+
     // For a ray that intersects a cylinder at {tmin, tmax}, what is the corresponding [umin, umax]?
     std::pair<Real, Real> ubounds(vec<Real> const & o, vec<Real> const & d, Real t_min, Real t_max) const
     {
