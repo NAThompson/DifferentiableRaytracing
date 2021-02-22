@@ -26,7 +26,7 @@ drt::vec<Real, 3> ray_color(const drt::ray<Real>& r, const drt::vec<Real>& backg
     // Peter Shirley has an overload for componentwise vector multiplication.
     // I'm avoiding that for now.
     // It does make sense for this application: Independently attenuating each frequency.
-    for (size_t i = 0; i < 3; ++i) {
+    for (int64_t i = 0; i < 3; ++i) {
         color[i] *= attenuation[i];
     }
     return emitted + color;

@@ -16,7 +16,7 @@ public:
     vec<Real> max() const {return max_; }
 
     bool hit(const ray<Real>& r, Real t_min, Real t_max) const {
-        for (size_t i = 0; i < 3; i++) {
+        for (int64_t i = 0; i < 3; i++) {
             auto invD = Real(1) / r.direction()[i];
             auto t0 = (min_[i] - r.origin()[i]) * invD;
             auto t1 = (max_[i] - r.origin()[i]) * invD;

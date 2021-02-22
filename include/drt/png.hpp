@@ -1,18 +1,19 @@
 #ifndef DRT_PNG_HPP
 #define DRT_PNG_HPP
 #include <cmath>
+#include <array>
 #include <algorithm>
 #include "lodepng.h"
 
 namespace drt {
 
-template<typename Real, size_t dimension>
+template<typename Real, int64_t dimension>
 std::array<uint8_t, 4> to_8bit_rgba(vec<Real, dimension> const & v)
 {
     using std::sqrt;
     static_assert(dimension == 3 || dimension == 4, "The color must be RGB[0,1] or RGBA[0,1]");
     std::array<uint8_t, 4> pixel;
-    for (size_t i = 0; i < dimension; ++i) {
+    for (int64_t i = 0; i < dimension; ++i) {
         // Apply gamma correction here:
         Real u = sqrt(v[i]);
         // Clamp to [0, 1] or assert when v[i] \in \mathbb{R} \setminus [0,1]? OMG questions questions questions.

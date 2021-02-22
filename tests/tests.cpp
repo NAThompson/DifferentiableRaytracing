@@ -3,6 +3,7 @@
 #include "torus_test.hpp"
 #include "helicoid_test.hpp"
 #include "vec_test.hpp"
+#include "mat_test.hpp"
 #include "sphere_test.hpp"
 #include "ellipsoid_test.hpp"
 

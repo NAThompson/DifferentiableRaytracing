@@ -31,7 +31,7 @@ vec<Real, 3> plasma(Real scalar) {
     scalar = std::clamp(scalar, Real(0), Real(1));
     constexpr const Real h = Real(1)/(plasma_r<Real>.size()-1);
     Real ii = std::floor(scalar/h);
-    int i = static_cast<size_t>(ii);
+    int i = static_cast<int64_t>(ii);
     Real t = scalar/h - ii;
     auto color = vec<Real, 3>((1-t)*plasma_r<Real>[i] + t*plasma_r<Real>[i+1],
                               (1-t)*plasma_g<Real>[i] + t*plasma_g<Real>[i+1],
@@ -60,7 +60,7 @@ vec<Real, 3> viridis(Real scalar) {
     }
     constexpr const Real h = Real(1)/(viridis_r<Real>.size()-1);
     Real ii = std::floor(scalar/h);
-    int i = static_cast<size_t>(ii);
+    int i = static_cast<int64_t>(ii);
     Real t = scalar/h - ii;
 
     auto color = vec<Real, 3>((1-t)*viridis_r<Real>[i] + t*viridis_r<Real>[i+1],
