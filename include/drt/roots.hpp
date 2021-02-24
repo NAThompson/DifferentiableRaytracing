@@ -269,7 +269,7 @@ std::pair<Real, Real> bisect(std::function<Real(Real)> f, Real tmin, Real tmax)
     }
 
     // This is a pretty expensive check, but nonexistence of roots is important!
-    Real dt = std::min((tmax - tmin)/16, Real(1));
+    Real dt = std::min((tmax - tmin)/8, Real(1));
     if (dt < 10*std::numeric_limits<Real>::epsilon()*abs(tmin)) {
         dt = 10*std::numeric_limits<Real>::epsilon()*abs(tmin);
     }

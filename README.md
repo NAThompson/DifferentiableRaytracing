@@ -235,6 +235,38 @@ In ray tracing, we need the *minimal* root to determine the closest intersection
 
 ---
 
+## Multivariate root-finding is the worst!
+
+![inline](figures/the_worst.gif)
+
+
+---
+
+## Multivariate root-finding is the worst!
+
+> We make an extreme, but wholly defensible, statement: There are *no* good, general methods for solving systems of more than one nonlinear equation.
+-- Numerical Recipes
+
+---
+
+## Multivariate root-finding is the worst!
+
+Bounced rays make the problem even worse than the generic multivariate rootfinding problem.
+
+A ray that bounces off an object satisfies the equation $$f(\mathbf{o} + t\mathbf{d}) = 0$$ at $$t = t_{\min}$$, and it *might* hit the object again.
+
+So you need to find the $$t$$ *closest* to $$t_{\min}$$ that hits the object, but not the $$t = t_{\min}$$ solution.
+
+---
+
+## Multivariate root-finding is the worst!
+
+And numerical imprecision might mean your $$t = t_{\min} + \epsilon$$ solution is the *same* as your original solution.
+
+This is called "shadow acne".
+
+---
+
 ## Ray-tracers are 3D radiation transport codes!
 
 What information do physically based renderers like [PBRT](http://www.pbr-book.org/3ed-2018/Shapes/Spheres.html) require for the intersection of a surface $$f(u,v)$$ with a ray?
@@ -316,3 +348,7 @@ References:
 - Palais, Richard S. "The visualization of mathematics: towards a mathematical exploratorium." Notices of the AMS 46.6 (1999): 647-658.
 
 - Pressley, Andrew N. "Elementary differential geometry." Springer Science & Business Media, 2010.
+
+- Press, William H., et al. "Numerical recipes in C++." The art of scientific computing 2 (1992): 1002.
+
+---

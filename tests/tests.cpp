@@ -6,6 +6,8 @@
 #include "mat_test.hpp"
 #include "sphere_test.hpp"
 #include "ellipsoid_test.hpp"
+#include "newton_test.hpp"
+#include "halley_test.hpp"
 
 int main(int argc, char **argv) {
   ::testing::InitGoogleTest(&argc, argv);
