@@ -21,6 +21,9 @@ public:
         return M_[i*cols + j];
     }
 
+    // Return an x that satisfies Ax = b.
+    vec<Real, cols> solve(vec<Real, rows> const & b) const;
+
     friend std::ostream& operator<<(std::ostream & os, const mat<Real, rows, cols> & v)
     {
         for (int64_t i = 0; i < rows; ++i) {
@@ -105,6 +108,31 @@ inline vec<Real, rows> operator*(const mat<Real, rows, cols> & M, const vec<Real
         }
     }
     return w;
+}
+
+template<typename Real, int64_t rows, int64_t cols>
+vec<Real, cols> mat<Real, rows, cols>::solve(vec<Real, rows> const & b) const
+{
+    static_assert(rows == cols, "Rows must = columns in solve.");
+    static_assert(rows == 2, "Only 2x2 matrices have been implemented.");
+    vec<Real, cols> v;
+    if constexpr (rows == 2) {
+        if (M_[2] == 0) {
+            v[1] = b[1]/M_[3];
+            v[0] = (b[0] - M_[1]*v[1])/M_[0];
+            return v;
+        }
+        else {
+            Real b1 = b[0] - M_[0]*b[1]/M_[2];
+            v[1] = b1/(M_[1] - M_[0]*M_[3]/M_[2]);
+            v[0] = b[0] - M_[1]*v[1];
+            v[0] /= M_[0];
+        }
+    }
+    else {
+        std::cerr << "Not yet implemented!\n";
+    }
+    return v;
 }
 
 }

@@ -30,8 +30,8 @@ Real halley(std::function<std::tuple<Real,Real,Real>(Real)> f, Real tmin, Real t
     Real eps = std::numeric_limits<Real>::epsilon();
     auto [y, dydt, d2ydt2] = f(t);
 #ifdef DEBUG
-std::cerr << std::setprecision(std::numeric_limits<Real>::digits10 + 1);
-std::cerr << "Halley iterate:\n";
+//std::cerr << std::setprecision(std::numeric_limits<Real>::digits10 + 1);
+//std::cerr << "Halley iterate:\n";
 #endif
     int iterations = 0;
     do {
@@ -63,7 +63,7 @@ std::cerr << "Halley iterate:\n";
             }
         }
 #ifdef DEBUG
-        std::cerr << "\t(t, f(t), f'(t), f''(t), i) = ("  << t << ", " << y << ", "  << dydt << ", " << d2ydt2 << ", " << iterations << ")\n";
+        //std::cerr << "\t(t, f(t), f'(t), f''(t), i) = ("  << t << ", " << y << ", "  << dydt << ", " << d2ydt2 << ", " << iterations << ")\n";
 #endif
         std::tie(y, dydt, d2ydt2) = f(t);
     } while (abs(y) > eps*abs(t*dydt) && iterations++ < 32);

@@ -29,6 +29,10 @@ TEST(MatTest, TwoByTwo) {
     v = M_inv*w;
     EXPECT_FLOAT_EQ(v[0], 3);
     EXPECT_FLOAT_EQ(v[1], 8);
+
+    v = M.solve(w);
+    EXPECT_FLOAT_EQ(v[0], 3);
+    EXPECT_FLOAT_EQ(v[1], 8);
 }
 
 

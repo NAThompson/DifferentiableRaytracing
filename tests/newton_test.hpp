@@ -71,7 +71,26 @@ TEST(NewtonTest, CubeRoot) {
 
 
 TEST(NewtonTest, 2D) {
+    // From Annie Cuyt's paper
+    // "Computational Implementation of the Multivariate Halley Method for Solving Nonlinear Systems of Equations."
+    auto f = [](Real t, Real u) {
+        vec<Real, 2> v;
+        Real expmp = exp(-t+u);
+        Real expmm = exp(-t-u);
+        v[0] = expmp - 0.1;
+        v[1] = expmm - 0.1;
 
+        mat<Real, 2,2> M;
+        M(0,0) = -expmp;
+        M(0,1) = expmp;
+        M(1,0) = -expmm;
+        M(1,1) = -expmm;
+        return std::make_pair(v, M);
+    };
+
+    auto [t, u] = newton<Real>(f, 0.0, 5.0, -1.0, 3.0);
+    EXPECT_FLOAT_EQ(t, -log(0.1));
+    EXPECT_LE(abs(u), std::numeric_limits<Real>::epsilon());
 }
 
 #endif

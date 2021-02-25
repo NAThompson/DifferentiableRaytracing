@@ -64,7 +64,6 @@ CAD programs *used* to render diagrams using smoother surfaces; e.g., Bezier and
 
 ![inline](https://youtu.be/qC5KtatMcUw?t=106)
 
-
 ---
 
 ## Interpolation in the scalar case
@@ -219,11 +218,13 @@ The ability to say "this ray *does not* intersect our object" in as few flops as
 
 ---
 
-## Non-minimal t
-
 The Newton fractal teaches us that it's difficult to predict *which* root Newton's method with a given starting point will converge to.
 
 In ray tracing, we need the *minimal* root to determine the closest intersection point to the ray.
+
+![inline](figures/newton_fractal.jpg)
+
+^ A Newton fractal colored by root reached.
 
 ---
 
@@ -259,11 +260,11 @@ So you need to find the $$t$$ *closest* to $$t_{\min}$$ that hits the object, bu
 
 ---
 
-## Multivariate root-finding is the worst!
+And numerical imprecision might mean your $$t = t_{\min} + \epsilon$$ solution is essentially the *same* as your $$t = t_{\min}$$ solution.
 
-And numerical imprecision might mean your $$t = t_{\min} + \epsilon$$ solution is the *same* as your original solution.
+This generates a visual artefact known as [shadow acne](https://digitalrune.github.io/DigitalRune-Documentation/html/3f4d959e-9c98-4a97-8d85-7a73c26145d7.htm).
 
-This is called "shadow acne".
+![inline](figures/shadow_acne.jpg)
 
 ---
 

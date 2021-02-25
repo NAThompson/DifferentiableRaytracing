@@ -27,8 +27,8 @@ Real newton(std::function<std::pair<Real,Real>(Real)> f, Real tmin, Real tmax) {
     Real eps = std::numeric_limits<Real>::epsilon();
     auto [y, dydt] = f(t);
 #ifdef DEBUG
-std::cerr << std::setprecision(std::numeric_limits<Real>::digits10 + 1);
-std::cerr << "Newton iterate:\n";
+//std::cerr << std::setprecision(std::numeric_limits<Real>::digits10 + 1);
+//std::cerr << "Newton iterate:\n";
 #endif
     int iterations = 0;
     do {
@@ -46,7 +46,7 @@ std::cerr << "Newton iterate:\n";
             }
         }
 #ifdef DEBUG
-        std::cerr << "\t(t, f(t), f'(t), i) = ("  << t << ", " << y << ", "  << dydt << ", " << iterations << ")\n";
+        //std::cerr << "\t(t, f(t), f'(t), i) = ("  << t << ", " << y << ", "  << dydt << ", " << iterations << ")\n";
 #endif
         std::tie(y, dydt) = f(t);
     // This termination is a bit weird. t and abs(y) are not sync'd, intentionally.
@@ -58,37 +58,45 @@ std::cerr << "Newton iterate:\n";
     if (abs(y) > eps*abs(t*dydt)) {
         return bisect_backup(f, tmin, tmax);
     }
-    return t - y/dydt;
+    return t;
 }
 
 
 // See Numerical Recipes, section 9.7: Globally Convergent Methods for Nonlinear Systems of Equations.
 template<typename Real>
-vec<Real, 2> newton(std::function<std::pair<vec<Real, 2>, mat<Real,2,2>>(Real, Real)> f, Real tmin, Real tmax, Real umin, Real umax) {
+std::pair<Real, Real> newton(std::function<std::pair<vec<Real, 2>, mat<Real,2,2>>(Real, Real)> f, Real tmin, Real tmax, Real umin, Real umax) {
     using std::abs;
     using std::sqrt;
     Real t = tmin;
-    Real rteps = sqrt(std::numeric_limits<Real>::epsilon());
-    auto [v, J] = f(t);
+    Real u = (umin + umax)/2;
+    Real eps = std::numeric_limits<Real>::epsilon();
+    auto [v, J] = f(t, u);
 #ifdef DEBUG
-    std::cerr << "2D Newton iterate:\n";
+    //std::cerr << "2D Newton: t, u , f(t,u), ‖f‖, δv, iteration \n";
 #endif
 
+    int i = 1;
     do {
-        Real det = determinant(J);
-        if (det == 0) {
-#ifdef DEBUG
-            std::cerr << "\tNewton's method encountered a zero derivative; moreover bisection failed to find a region of changing sign.\n";
-#endif
-            return std::numeric_limits<Real>::quiet_NaN();
+        auto dv = J.solve(v);
+        //std::cerr << "\t" << t << ", " << u << ", " << v << ", " << norm(v) << ", " << dv << ", " << i << "\n";
+        //std::cerr << "Jacobian:\n" << J << "\n";
+        t -= dv[0];
+        u -= dv[1];
+        if (t < tmin || t > tmax || u < umin || u > umax) {
+            // Oh boy how bad is this.
+            //std::cerr << "\tRandomizing do to oobs.\n";
+            std::random_device rd;
+            auto tdis = std::uniform_real_distribution<Real>(tmin, tmax);
+            auto udis = std::uniform_real_distribution<Real>(umin, umax);
+            t = tdis(rd);
+            u = udis(rd);
+            std::tie(v, J) = f(t, u);
+            continue;
         }
+        std::tie(v, J) = f(t, u);
+    } while (norm(v) > eps*(abs(t) + abs(u)) && i++ < 32);
 
-#ifdef DEBUG
-        //std::cerr << "\tResidual = " << y << ", root guess = " << t << ", dydt = " << dydt << "\n";
-#endif
-    } while (norm(v) > rteps*abs(1));
-
-    return vec<Real,2>(t, umin);
+    return std::make_pair(t, u);
 }
 
 }
