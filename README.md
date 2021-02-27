@@ -222,17 +222,17 @@ The Newton fractal teaches us that it's difficult to predict *which* root Newton
 
 In ray tracing, we need the *minimal* root to determine the closest intersection point to the ray.
 
-![inline](figures/newton_fractal.jpg)
+![left](figures/newton_fractal.jpg)
 
 ^ A Newton fractal colored by root reached.
 
 ---
 
-## Non-minimal roots
 
-![inline](figures/wrong_solutions.png)
 
-^ The pseudocoloring changes discontinuously where the non-minial roots are identified.
+![left](figures/wrong_solutions.png)
+
+A helicoid pseudocolored by Gaussian curvature. openThe pseudocoloring changes discontinuously where the non-minial roots are identified.
 
 ---
 
@@ -264,7 +264,7 @@ And numerical imprecision might mean your $$t = t_{\min} + \epsilon$$ solution i
 
 This generates a visual artefact known as [shadow acne](https://digitalrune.github.io/DigitalRune-Documentation/html/3f4d959e-9c98-4a97-8d85-7a73c26145d7.htm).
 
-![inline](figures/shadow_acne.jpg)
+![left](figures/shadow_acne.jpg)
 
 ---
 
@@ -291,6 +291,12 @@ If $$f(t_{k+1}, u_{k+1}, v_{k+1}) > f(t_{k}, u_{k}, v_{k})$$ or $$(t_{k+1}, u_{k
 Define $$g(\lambda) := f(t_{k} + \lambda \delta t, u_{k} + \lambda \delta u, v_{k} + \lambda \delta v)$$, $$\lambda \in (0,1)$$.
 
 Choose $$\lambda$$ that minimizes $$g$$.
+
+---
+
+![left](figures/helicoid_newton_wbacktracking.png)
+
+Helicoid rendered with Newton's method patched with backtracking. Initial guess for $$t$$ provided by bounding cylinder intersection, no bounced rays. Note: Non-existence + Newton's method = Performance bug!
 
 ---
 

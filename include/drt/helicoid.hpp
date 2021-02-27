@@ -3,7 +3,9 @@
 
 #include <drt/hittable.hpp>
 #include <drt/vec.hpp>
+#include <drt/mat.hpp>
 #include <drt/roots.hpp>
+#include <drt/newton.hpp>
 
 
 namespace drt {
@@ -256,47 +258,36 @@ private:
             return w;
         }
 
-        auto [umin, umax] = this->ubounds(o, d, t_min, t_max);
         auto [vmin, vmax] = this->vbounds(o, d, t_min, t_max);
-
-        Real min_residual = std::numeric_limits<Real>::max();
-        int rt_samples = 32;
-        for (int i = 0; i < rt_samples; ++i) {
-            Real u_ = umin + i*(umax - umin)/(rt_samples-1);
-            for (int j = 0; j < rt_samples; ++j) {
-                Real v_ = vmin + j*(vmax - vmin)/(rt_samples-1);
-                Real residual = squared_norm(g(o, d, u_, v_));
-                if (residual < min_residual)
-                {
-                    u = u_;
-                    v = v_;
-                    min_residual = residual;
-                }
-            }
-        }
-        if (min_residual > 0.1) {
-            //std::cerr << "Min residual = " << min_residual << "\n";
-            return w;
-        }
-        /*Real jac_g00 = speed_*d[0]/d[2] + 2*M_PI*radius_*v*sin(2*M_PI*u);
-        Real jac_g10 = speed_*d[1]/d[2] - 2*M_PI*radius_*v*cos(2*M_PI*u);
-        Real jac_g01 = -radius_*cos(2*M_PI*u);
-        Real jac_g11 = -radius_*sin(2*M_PI*u);
-
-        std::function<Real(Real)> g2 = [&o, &d, this](Real u) -> Real {
-            Real t = (speed_*(u - 0.5) - o[2])/d[2];
-            Real angle = std::atan2(o[1] + t*d[1], o[0] + t*d[0])/(2*M_PI);
-            if (angle < 0) {
-                angle += 1;
-            }
-            return angle - u;
+        #ifdef DEBUG
+        std::cerr << "Origin " << o << ", direction " << d << " speed " << speed_ << ", radius = " << radius_ << "\n";
+        std::cerr << "[tmin, tmax] = [" << t_min << ", " << t_max << "]\n";
+        std::cerr << "[vmin, vmax] = [" << vmin << ", " << vmax << "]\n";
+        #endif
+        auto f = [&o, &d, this](Real t, Real v) {
+            vec<Real, 2> g;
+            Real k = 2*M_PI/speed_;
+            Real x = o[0] + t*d[0];
+            Real y = o[1] + t*d[1];
+            Real z = o[2] + t*d[2];
+            Real rckz = radius_*cos(k*z);
+            Real rskz = radius_*sin(k*z);
+            Real rvckz = v*rckz;
+            Real rvskz = v*rskz;
+            g[0] = x + rvckz;
+            g[1] = y + rvskz;
+            mat<Real, 2,2> J;
+            J(0,0) = d[0] - k*d[2]*rvskz;
+            J(1,0) = d[1] + k*d[2]*rvckz;
+            J(0,1) = rckz;
+            J(1,1) = rskz;
+            return std::make_pair(g, J);
         };
-        std::tie(umin, umax) = drt::bisect(g2, umin, umax);
-        if (std::isnan(umin)) {
-            return w;
-        }
-        u = umin;*/
-        t = (speed_*(u-Real(1)/Real(2)) - o[2])/d[2];
+
+        std::tie(t, v) = newton<Real>(f, t_min, t_max, vmin, vmax);
+        assert(t <= t_max && t >= t_min);
+        assert(v <= vmax && v >= vmin);
+        u = (o[2] + t*d[2])/speed_ + 0.5;
 
         std::get<0>(w) = t;
         std::get<1>(w) = std::clamp(u, Real(0), Real(1));
@@ -368,7 +359,7 @@ bool helicoid<Real>::hit(const ray<Real>& r, Real t_min, Real t_max, hit_record<
     rec.set_face_normal(r, outward_normal);
     Real residual = norm(rec.p - this->operator()(rec.u, rec.v));
     //Real expected_residual = this->expected_residual(rec.p);
-    if (std::abs(residual) > 1) {
+    if (std::abs(residual) > 0.00001) {
         ++helicoid_error_count;
 #ifdef DEBUG
         std::cerr << "Residual for a helicoid with r = " << radius_ << " and λ = " << speed_ << " is " << residual << ".\n";

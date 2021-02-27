@@ -39,6 +39,11 @@ hittable_list<Real> helicoid_scene() {
     auto mat = make_shared<diffuse_light<Real>>(texture);
     objects.add(heli, mat);
 
+    // Adding this bounding cylinder is a really nice effect with a lot of samples per pixel.
+    // Not so much without.
+    auto cyl = make_shared<cylinder<Real>>(radius, -speed/2, speed/2);
+    auto emat =  make_shared<dielectric<Real>>(1.0);
+    objects.add(cyl, emat);
     return objects;
 }
 
@@ -49,7 +54,7 @@ int main() {
     const Real aspect_ratio = 1.0;
     const int64_t image_width = 800;
     const int64_t image_height = static_cast<int64_t>(image_width/aspect_ratio);
-    const int64_t samples_per_pixel = 32;
+    const int64_t samples_per_pixel = 8;
 
     auto world = helicoid_scene<Real>();
     drt::vec<Real> lookat(0,0,0);

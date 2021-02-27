@@ -71,31 +71,106 @@ std::pair<Real, Real> newton(std::function<std::pair<vec<Real, 2>, mat<Real,2,2>
     Real u = (umin + umax)/2;
     Real eps = std::numeric_limits<Real>::epsilon();
     auto [v, J] = f(t, u);
+    Real g = squared_norm(v)/2;
 #ifdef DEBUG
-    //std::cerr << "2D Newton: t, u , f(t,u), ‖f‖, δv, iteration \n";
+    std::cerr << std::fixed;
+    std::cerr << "2D Newton: t,        u,        f(t,u),              ‖f‖^2/2,          δw,        iteration\n";
 #endif
 
     int i = 1;
     do {
-        auto dv = J.solve(v);
-        //std::cerr << "\t" << t << ", " << u << ", " << v << ", " << norm(v) << ", " << dv << ", " << i << "\n";
-        //std::cerr << "Jacobian:\n" << J << "\n";
-        t -= dv[0];
-        u -= dv[1];
-        if (t < tmin || t > tmax || u < umin || u > umax) {
+        auto dw = J.solve(-v);
+#ifdef DEBUG
+        std::cerr << "\t" << t << ", " << u << ", " << v << ", " << g << ", " << dw << ", " << i << "\n";
+#endif
+        Real tnew = t + dw[0];
+        Real unew = u + dw[1];
+        Real lambda_max = 1;
+        if (tnew < tmin) {
+            assert(t >= tmin);
+            assert(dw[0] < 0);
+            lambda_max = std::min((tmin - t)/dw[0], lambda_max);
+        }
+        if (tnew > tmax) {
+            assert(t <= tmax);
+            assert(dw[0] > 0);
+            lambda_max = std::min((tmax - t)/dw[0], lambda_max);
+        }
+        if (unew < umin) {
+            assert(u >= umin);
+            assert(dw[1] < 0);
+            lambda_max = std::min((umin - u)/dw[1], lambda_max);
+        }
+        if (unew > umax) {
+            assert(u <= umax);
+            assert(dw[1] > 0);
+            lambda_max = std::min((umax - u)/dw[1], lambda_max);
+        }
+        // I'm not sure about this . . .
+        // For sure, if lambda_max <= 0, this has to be done.
+        if (lambda_max <= 0.1) {
             // Oh boy how bad is this.
-            //std::cerr << "\tRandomizing do to oobs.\n";
             std::random_device rd;
             auto tdis = std::uniform_real_distribution<Real>(tmin, tmax);
             auto udis = std::uniform_real_distribution<Real>(umin, umax);
             t = tdis(rd);
             u = udis(rd);
+            #ifdef DEBUG
+            std::cerr << "\tRandomizing as update is out of domain; random choices: (t,u) = (" << t << ", " << u << ").\n";
+            #endif
             std::tie(v, J) = f(t, u);
+            g = squared_norm(v)/2;
             continue;
         }
-        std::tie(v, J) = f(t, u);
+
+        // Stay in the domain:
+        if (lambda_max < 1) {
+            #ifdef DEBUG
+            std::cerr << "\tNewton step leaves domain; taking step λ = " << lambda_max << "\n";
+            #endif
+            dw *= lambda_max;
+            tnew = t + lambda_max*dw[0];
+            unew = u + lambda_max*dw[1];
+        }
+
+        auto [vnew, Jnew] = f(tnew, unew);
+        Real gnew = squared_norm(vnew)/2;
+        if (gnew >= g) {
+            // Backtrack:
+            // NR 9.7.11:
+            Real g1 = gnew;
+            Real g0 = g;
+            Real gprime0 = dot(J*dw, v);
+            Real lambda = -gprime0/(2*(g1 - g0 - gprime0));
+            #ifdef DEBUG
+            std::cerr << "\tBacktracking. Chosen λ = " << lambda << "\n";
+            #endif
+            tnew = t + lambda*dw[0];
+            unew = u + lambda*dw[1];
+            std::tie(vnew, Jnew) = f(tnew, unew);
+            gnew = squared_norm(vnew)/2;
+            if(gnew > g) {
+                std::random_device rd;
+                auto tdis = std::uniform_real_distribution<Real>(tmin, tmax);
+                auto udis = std::uniform_real_distribution<Real>(umin, umax);
+                t = tdis(rd);
+                u = udis(rd);
+                std::tie(v, J) = f(t, u);
+                g = squared_norm(v)/2;
+            }
+        }
+
+        g = gnew;
+        t = tnew;
+        u = unew;
+        v = vnew;
+        J = Jnew;
+    // TODO: Some actual analysis on this termination condition:
     } while (norm(v) > eps*(abs(t) + abs(u)) && i++ < 32);
 
+#ifdef DEBUG
+        std::cerr << "\t" << t << ", " << u << ", " << v << ", " << g << "\n";
+#endif
     return std::make_pair(t, u);
 }
 
