@@ -232,7 +232,7 @@ In ray tracing, we need the *minimal* root to determine the closest intersection
 
 ![left](figures/wrong_solutions.png)
 
-A helicoid pseudocolored by Gaussian curvature. openThe pseudocoloring changes discontinuously where the non-minial roots are identified.
+A helicoid pseudocolored by Gaussian curvature. The pseudocoloring changes discontinuously where the non-minial roots are identified.
 
 ---
 
