@@ -268,6 +268,32 @@ This generates a visual artefact known as [shadow acne](https://digitalrune.gith
 
 ---
 
+![inline](figures/bad_mkay.jpg)
+
+But let's examine a hack that makes it a bit better.
+
+---
+
+## "Patched" Newton's method: NR§9.7
+
+Given $$\mathbf{f}\colon \Omega \subset \mathbb{R}^3 \to \mathbb{R}^3$$ defined as $$\mathbf{f}(t,u,v) = \mathbf{o} + t\mathbf{d} - \sigma(u,v)$$, we wish to find $$(t,u,v)$$ s.t. $$\mathbf{f}(t,u,v) = \mathbf{0}$$.
+
+Newton update: $$(t_{k+1}, u_{k+1}, v_{k+1}) = (t_{k}, u_{k}, v_{k}) -\mathbf{J}_{\mathbf{f}}^{-1}\mathbf{f}(t,u,v)$$.
+
+Patch: Define $$f(t,u,v) := \frac{1}{2}\left<\mathbf{f}(t,u,v), \mathbf{f}(t,u,v) \right>$$.
+
+---
+
+## Patched Newton's method
+
+If $$f(t_{k+1}, u_{k+1}, v_{k+1}) > f(t_{k}, u_{k}, v_{k})$$ or $$(t_{k+1}, u_{k+1}, v_{k+1}) \not \in \Omega$$, reject the Newton step.
+
+Define $$g(\lambda) := f(t_{k} + \lambda \delta t, u_{k} + \lambda \delta u, v_{k} + \lambda \delta v)$$, $$\lambda \in (0,1)$$.
+
+Choose $$\lambda$$ that minimizes $$g$$.
+
+---
+
 ## Ray-tracers are 3D radiation transport codes!
 
 What information do physically based renderers like [PBRT](http://www.pbr-book.org/3ed-2018/Shapes/Spheres.html) require for the intersection of a surface $$f(u,v)$$ with a ray?
