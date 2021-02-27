@@ -93,6 +93,26 @@ TEST(NewtonTest, 2DCuyt) {
     EXPECT_LE(abs(u), std::numeric_limits<Real>::epsilon());
 }
 
+TEST(NewtonTest, Corless) {
+    // From Corless, "A Graduate Introduction to Numerical Methods", Example 3.14.
+    auto f = [](Real x, Real y) {
+        vec<Real, 2> v;
+        v[0] = x*x + y*y - 1;
+        v[1] = 25*x*y - 12;
+
+        mat<Real, 2,2> M;
+        M(0,0) = 2*x;
+        M(0,1) = 2*y;
+        M(1,0) = 25*y;
+        M(1,1) = 25*x;
+        return std::make_pair(v, M);
+    };
+
+    auto [x, y] = newton<Real>(f, 0.0, 1.0, 0.0, 1.0);
+    EXPECT_FLOAT_EQ(x, 3.0/5);
+    EXPECT_FLOAT_EQ(y, 4.0/5);
+}
+
 TEST(NewtonTest, 2DBroyden) {
     // From Broyden, "A Class of  Methods for  Solving Nonlinear Simultaneous Equations" Case 9:
     // (t,u) = (-0.330435, -0.869239) induce backtracking.
