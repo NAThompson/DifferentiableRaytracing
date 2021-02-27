@@ -122,6 +122,11 @@ vec<Real, cols> mat<Real, rows, cols>::solve(vec<Real, rows> const & b) const
             v[0] = (b[0] - M_[1]*v[1])/M_[0];
             return v;
         }
+        else if (M_[0] == 0)
+        {
+            v[1] = b[0]/M_[1];
+            v[0] = (b[1] - M_[3]*v[1])/M_[2];
+        }
         else {
             Real b1 = b[0] - M_[0]*b[1]/M_[2];
             v[1] = b1/(M_[1] - M_[0]*M_[3]/M_[2]);

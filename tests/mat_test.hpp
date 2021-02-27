@@ -33,6 +33,82 @@ TEST(MatTest, TwoByTwo) {
     v = M.solve(w);
     EXPECT_FLOAT_EQ(v[0], 3);
     EXPECT_FLOAT_EQ(v[1], 8);
+
+    std::mt19937_64 gen(12345);
+    std::uniform_real_distribution<Real> dis;
+
+    int i = 0;
+    while (i++ < 512) {
+        vec<Real, 2> b;
+        b[0] = dis(gen);
+        b[1] = dis(gen);
+        M(0,0) = dis(gen);
+        M(0,1) = dis(gen);
+        M(1,0) = dis(gen);
+        M(1,1) = dis(gen);
+        // Mx = b
+        auto x1 = M.solve(b);
+        auto M_inv = inverse(M);
+        auto x2 = M_inv*b;
+        EXPECT_FLOAT_EQ(x1[0], x2[0]);
+        EXPECT_FLOAT_EQ(x1[1], x2[1]);
+
+        M(0,0) = 0;
+        M(0,1) = dis(gen);
+        M(1,0) = dis(gen);
+        M(1,1) = dis(gen);
+        // Mx = b
+        x1 = M.solve(b);
+        M_inv = inverse(M);
+        x2 = M_inv*b;
+        EXPECT_FLOAT_EQ(x1[0], x2[0]);
+        EXPECT_FLOAT_EQ(x1[1], x2[1]);
+
+        M(0,0) = dis(gen);
+        M(0,1) = dis(gen);
+        M(1,0) = dis(gen);
+        M(1,1) = 0;
+        // Mx = b
+        x1 = M.solve(b);
+        M_inv = inverse(M);
+        x2 = M_inv*b;
+        EXPECT_FLOAT_EQ(x1[0], x2[0]);
+        EXPECT_FLOAT_EQ(x1[1], x2[1]);
+
+        M(0,0) = dis(gen);
+        M(0,1) = 0;
+        M(1,0) = dis(gen);
+        M(1,1) = dis(gen);
+        // Mx = b
+        x1 = M.solve(b);
+        M_inv = inverse(M);
+        x2 = M_inv*b;
+        EXPECT_FLOAT_EQ(x1[0], x2[0]);
+        EXPECT_FLOAT_EQ(x1[1], x2[1]);
+
+        M(0,0) = dis(gen);
+        M(0,1) = dis(gen);
+        M(1,0) = dis(gen);
+        M(1,1) = 0;
+        // Mx = b
+        x1 = M.solve(b);
+        M_inv = inverse(M);
+        x2 = M_inv*b;
+        EXPECT_FLOAT_EQ(x1[0], x2[0]);
+        EXPECT_FLOAT_EQ(x1[1], x2[1]);
+
+        M(0,0) = dis(gen);
+        M(0,1) = 0;
+        M(1,0) = 0;
+        M(1,1) = dis(gen);
+        // Mx = b
+        x1 = M.solve(b);
+        M_inv = inverse(M);
+        x2 = M_inv*b;
+        EXPECT_FLOAT_EQ(x1[0], x2[0]);
+        EXPECT_FLOAT_EQ(x1[1], x2[1]);
+
+    }
 }
 
 
