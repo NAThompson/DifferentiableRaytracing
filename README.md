@@ -91,11 +91,12 @@ Try solving your ODEs with Euler's method, or PDEs with first-order accurate fin
 
 ---
 
-# Goal for Rendering Simulations
+# Goal (dream?) for rendering simulations
 
-Render that data in the same way it's represented in the solver.
+Render the data in the same way it's represented in the solver.
 
-Barring that, render the data to the same order of accuracy that the solver produces.
+If you do your simulation using Chebyshev spectral elements, VTK-m should be rendering your data using your Clenshaw recurrence.
+
 
 ---
 
@@ -103,7 +104,7 @@ Barring that, render the data to the same order of accuracy that the solver prod
 
 - Read [Raytracing in a Weekend](https://raytracing.github.io/) by Peter Shirley.
 
-- Compute intersection of ray $$\mathbf{P}(t) = \mathbf{O} + t\mathrm{D}$$ with parametric surface $$f(u,v)$$, or implicit surface $$f(x,y,z) = 0$$.
+- Compute intersection of ray $$\mathbf{P}(t) = \mathbf{O} + t\mathrm{D}$$ with parametric surface $$\sigma(u,v)$$, or implicit surface $$f(x,y,z) = 0$$.
 
 - Determine axis aligned bounding box of objects to place it in the bounding volume hierarchy.
 
@@ -270,6 +271,17 @@ This generates a visual artefact known as [shadow acne](https://digitalrune.gith
 
 ![inline](figures/bad_mkay.jpg)
 
+---
+
+## Newton's method is bad
+
+- Need to compute derivatives/Jacobians
+- Sensitive to rounding errors
+- Difficulty with multiple roots
+- There can exist full-measure regions of initial conditions where it diverges.
+- The Newton iterate can converge, but to a value which is not a root.
+- Converges to the "wrong root"
+
 But let's examine a hack that makes it a bit better.
 
 ---
@@ -296,7 +308,84 @@ Choose $$\lambda$$ that minimizes $$g$$.
 
 ![left](figures/helicoid_newton_wbacktracking.png)
 
-Helicoid rendered with Newton's method patched with backtracking. Initial guess for $$t$$ provided by bounding cylinder intersection, no bounced rays. Note: Non-existence + Newton's method = Performance bug!
+Helicoid rendered with Newton's method patched with backtracking. Initial guess for $$t$$ provided by bounding cylinder intersection, no bounced rays.
+
+Note: Non-existence + Newton's method = Performance bug!
+
+---
+
+## Performance
+
+Since we are restricted to $$n \le 4$$ in computer graphics, we can soberly consider rootfinding methods that are asymptotically ill-advised.
+
+e.g., multivariate Halley's method, which requires formation of Hessian tensors.
+
+---
+
+## Halley's method
+
+$$t_{k+1} = t_{k} - \frac{2f(t_k)f'(t_k)}{2f'(t_k)^2 - f(t_k)f''(t_k)}$$
+
+Convergence is cubic, much more importantly, *which* root Halley's method converges to is much more predictable; see [here](http://faculty.nps.edu/bneta/papers/BasinsThirdFourth.pdf) and [here](http://dx.doi.org/10.1016/j.amc.2011.07.076).
+
+---
+
+![left](figures/z5m1_newton.jpg)
+![right](figures/z5m1_halley.jpg)
+
+^ [Newton vs Halley fractals](http://www.hpdz.net/StillImages/Newton-Halley.htm)
+
+---
+
+## Multivariate Halley Iterate
+
+Given $$\mathbf{f}\colon \Omega \subset \mathbb{R}^{3} \to \mathbb{R}^3$$, (e.g., $$\mathbf{f}(t,u,v) = \mathbf{o} + t\mathbf{d} - \sigma(u,v)$$), define
+
+Then the Jacobian $$\mathbf{J}_f \colon \Omega \subset \mathbb{R}^{3} \to \mathbb{R}^{3\times 3}$$ is a linear operator for each $$\mathbf{q} \in \Omega$$.
+
+And the Hessian $$\mathbf{H}_f\colon \Omega \subset \mathbb{R}^{3} \to \mathbb{R}^{3\times 3 \times 3}$$ is a bilinear operator for each $$\mathbf{q} \in \Omega$$.
+
+---
+
+## Multivariate Halley iterate
+
+Define $$\mathbf{a}^{\nu} \in \mathbb{R}^3$$ as the solution to $$\mathbf{J}_{f(\mathbf{q}^{\nu})}\mathbf{a}^{\nu} = -\mathbf{f}(\mathbf{q}^{\nu})$$.
+
+Define $$\mathbf{b}^{\nu} \in \mathbb{R}^3$$ as the solution to  $$\mathbf{J}_{f(\mathbf{q}^{\nu})}\mathbf{b}^{\nu} = \mathbf{H}_{f(\mathbf{q}^{\nu})}(\mathbf{a}^{\nu}, \mathbf{a}^{\nu})$$.
+
+Then the multivariate Halley iterate is
+
+$$\mathbf{q}^{\nu + 1} = \mathbf{q}^{\nu} + (\mathbf{a}^{\nu} \otimes \mathbf{a}^{\nu})\oslash(\mathbf{a}^{\nu} + \mathbf{b}^{\nu}/2)$$.
+
+The $$\otimes$$ and $$\oslash$$ are bizarre componentwise multiplications and divisions; see [Cuyt](https://dl.acm.org/doi/pdf/10.1145/3147.3162) for details.
+
+
+---
+
+## Implicitization
+
+Ray intersection with a parametric surface is a multivariate rootfinding problem.
+
+Ray intersection with an implicit surface is a scalar rootfinding problem-much easier! Non-existence characterization simpler, fallback to bisection possible.
+
+Consider [converting](https://www.cs.cmu.edu/~hulya/Publications/IJCV03Paper.pdf) your parametric surfaces into implicit surfaces!
+
+---
+
+## So many more techniques
+
+- Use hit points from adjacent pixels as starting values for Newton/Halley iterates.
+- Using fundamental forms, change into a coordinate system where rays are bent and surfaces are flat; see [Barr](https://dl.acm.org/doi/pdf/10.1145/15886.15918).
+- Do a coarse triangulation of the surface, then use a Halley or Newton iterate to refine the hit points off the triangulation.
+- Bounding volume hierarchies.
+
+---
+
+## So many more techniques
+
+- Is $$\mathbf{f}(t,u,v) = \sigma(u,v) - \mathbf{o} - t \mathbf{d}$$ contractive? Banach fixed point theorem.
+- Load balancing and parallelization: Discussed in [Physically Based Rendering](http://www.pbr-book.org/3ed-2018/Utilities/Parallelism.html).
+
 
 ---
 
@@ -354,16 +443,6 @@ $$
 
 ---
 
-## Implicit surfaces
-
-Given a surface $$\mathcal{S} := \{ \mathbf{r} \colon f(\mathbf{r}) = 0\}$$, how do we generate ray intersections?
-
-Naive idea: Use Newton's method:
-
-$$t_{k+1} = t_{k} - \frac{\nabla f(r(t_k)) \cdot \mathbf{d}}{f(r(t_k))}$$
-
----
-
 References:
 
 - [_Ray Tracing in One Weekend_](https://raytracing.github.io/books/RayTracingInOneWeekend.html)
@@ -385,3 +464,15 @@ References:
 - Press, William H., et al. "Numerical recipes in C++." The art of scientific computing 2 (1992): 1002.
 
 ---
+
+- Scott, Melvin, Beny Neta, and Changbum Chun. "Basin attractors for various methods." Applied Mathematics and Computation 218.6 (2011): 2584-2599.
+
+- Yalcin, Hulya, Mustafa Unel, and William Wolovich. "Implicitization of parametric curves by matrix annihilation." International Journal of Computer Vision 54.1 (2003): 105-115.
+
+- Cuyt, Annie AM, and Louis B. Rall. "Computational implementation of the multivariate Halley method for solving nonlinear systems of equations." ACM Transactions on Mathematical Software (TOMS) 11.1 (1985): 20-36.
+
+- Barr, Alan H. "Ray tracing deformed surfaces." ACM SIGGRAPH Computer Graphics 20.4 (1986): 287-296.
+
+---
+
+- Park, Taezoon, Joonghyun Ji, and Kwang Hee Ko. "A second order geometric method for ray/parametric surface intersection." Computer Aided Geometric Design 30.8 (2013): 795-804.
