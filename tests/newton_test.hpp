@@ -80,7 +80,7 @@ TEST(NewtonTest, 2DCuyt) {
         v[0] = expmp - 0.1;
         v[1] = expmm - 0.1;
 
-        mat<Real, 2,2> M;
+        matrix<Real, 2,2> M;
         M(0,0) = -expmp;
         M(0,1) = expmp;
         M(1,0) = -expmm;
@@ -100,7 +100,7 @@ TEST(NewtonTest, Corless) {
         v[0] = x*x + y*y - 1;
         v[1] = 25*x*y - 12;
 
-        mat<Real, 2,2> M;
+        matrix<Real, 2,2> M;
         M(0,0) = 2*x;
         M(0,1) = 2*y;
         M(1,0) = 25*y;
@@ -115,13 +115,13 @@ TEST(NewtonTest, Corless) {
 
 TEST(NewtonTest, 2DBroyden) {
     // From Broyden, "A Class of  Methods for  Solving Nonlinear Simultaneous Equations" Case 9:
-    // (t,u) = (-0.330435, -0.869239) induce backtracking.
+    // (t,u) = (-0.330435, -0.869239) induces backtracking.
     auto f = [](Real x0, Real x1) {
         vec<Real, 2> v;
         v[0] = 10*(x1 - x0*x0);
         v[1] = 1 - x0;
 
-        mat<Real, 2,2> J;
+        matrix<Real, 2,2> J;
         J(0,0) = -20*x0;
         J(0,1) = 10;
         J(1,0) = -1;
@@ -154,7 +154,7 @@ TEST(NewtonTest, Helicoid) {
             Real rvskz = v*rskz;
             g[0] = x + rvckz;
             g[1] = y + rvskz;
-            mat<Real, 2,2> J;
+            matrix<Real, 2,2> J;
             J(0,0) = d[0] - k*d[2]*rvskz;
             J(1,0) = d[1] + k*d[2]*rvckz;
             J(0,1) = rckz;
@@ -207,8 +207,16 @@ TEST(NewtonTest, 3DCuyt) {
         v[1] = x0_sq + x1_sq + x2_sq - 3;
         v[2] = x0_sq*x0 - x1;
 
-        mat<Real,3,3> J;
+        matrix<Real,3,3> J;
         J(0,0) = 16*4*x0_sq*x0;
+        J(0,1) = 16*4*x1_sq*x1;
+        J(0,2) = 4*x2_sq*x2;
+        J(1,0) = 2*x0;
+        J(1,1) = 2*x1;
+        J(1,2) = 2*x2;
+        J(2,0) = 3*x0_sq;
+        J(2,1) = -1;
+        J(2,2) = 0;
         return std::make_pair(v, J);
     };
 

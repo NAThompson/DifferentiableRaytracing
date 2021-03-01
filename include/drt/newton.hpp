@@ -5,7 +5,7 @@
 #include <iostream>
 #include <drt/roots.hpp>
 #include <drt/vec.hpp>
-#include <drt/mat.hpp>
+#include <drt/matrix.hpp>
 
 namespace drt {
 
@@ -64,7 +64,7 @@ Real newton(std::function<std::pair<Real,Real>(Real)> f, Real tmin, Real tmax) {
 
 // See Numerical Recipes, section 9.7: Globally Convergent Methods for Nonlinear Systems of Equations.
 template<typename Real>
-std::pair<Real, Real> newton(std::function<std::pair<vec<Real, 2>, mat<Real,2,2>>(Real, Real)> f, Real tmin, Real tmax, Real umin, Real umax) {
+std::pair<Real, Real> newton(std::function<std::pair<vec<Real, 2>, matrix<Real,2,2>>(Real, Real)> f, Real tmin, Real tmax, Real umin, Real umax) {
     using std::abs;
     using std::sqrt;
     Real t = tmin;

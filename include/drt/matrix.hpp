@@ -1,5 +1,5 @@
-#ifndef DRT_MAT_HPP
-#define DRT_MAT_HPP
+#ifndef DRT_MATRIX_HPP
+#define DRT_MATRIX_HPP
 #include <cmath>
 #include <array>
 #include <iostream>
@@ -8,10 +8,10 @@
 namespace drt {
 
 template<typename Real, int64_t rows = 3, int64_t cols = 3>
-class mat {
+class matrix {
 public:
 
-    mat() {};
+    matrix() {};
 
     Real operator()(int64_t i, int64_t j) const {
         return M_[i*cols + j];
@@ -24,7 +24,7 @@ public:
     // Return an x that satisfies Ax = b.
     vec<Real, cols> solve(vec<Real, rows> const & b) const;
 
-    friend std::ostream& operator<<(std::ostream & os, const mat<Real, rows, cols> & v)
+    friend std::ostream& operator<<(std::ostream & os, const matrix<Real, rows, cols> & v)
     {
         for (int64_t i = 0; i < rows; ++i) {
             os << "[";
@@ -41,7 +41,7 @@ private:
 };
 
 template<typename Real, int64_t rows, int64_t cols>
-Real determinant(mat<Real, rows, cols> const & m)
+Real determinant(matrix<Real, rows, cols> const & m)
 {
     static_assert(rows == cols, "Must have the same number of rows as columns to compute a determinant.");
     static_assert(rows < 4, "Determinant not implemented for n > 3.");
@@ -56,9 +56,9 @@ Real determinant(mat<Real, rows, cols> const & m)
 }
 
 template<typename Real, int64_t rows, int64_t cols>
-mat<Real, rows, cols> inverse(mat<Real, rows, cols> const & m)
+matrix<Real, rows, cols> inverse(matrix<Real, rows, cols> const & m)
 {
-    mat<Real, rows, cols> m_inv;
+    matrix<Real, rows, cols> m_inv;
     if (!inverse(m, m_inv)) {
         std::cerr << "Inversion failed.\n";
     }
@@ -66,7 +66,7 @@ mat<Real, rows, cols> inverse(mat<Real, rows, cols> const & m)
 }
 
 template<typename Real, int64_t rows, int64_t cols>
-bool inverse(mat<Real, rows, cols> const & m, mat<Real, rows, cols>& m_inv)
+bool inverse(matrix<Real, rows, cols> const & m, matrix<Real, rows, cols>& m_inv)
 {
     static_assert(rows == cols, "Must have the same number of rows as columns to compute a matrix inverse.");
     static_assert(rows < 4, "inverse not implemented for n > 3.");
@@ -99,7 +99,7 @@ bool inverse(mat<Real, rows, cols> const & m, mat<Real, rows, cols>& m_inv)
 }
 
 template<typename Real, int64_t rows, int64_t cols>
-inline vec<Real, rows> operator*(const mat<Real, rows, cols> & M, const vec<Real, cols> &v) {
+inline vec<Real, rows> operator*(const matrix<Real, rows, cols> & M, const vec<Real, cols> &v) {
     vec<Real, rows> w;
     for (int64_t i = 0; i < rows; ++i) {
         w[i] = 0;
@@ -111,7 +111,7 @@ inline vec<Real, rows> operator*(const mat<Real, rows, cols> & M, const vec<Real
 }
 
 template<typename Real, int64_t rows, int64_t cols>
-vec<Real, cols> mat<Real, rows, cols>::solve(vec<Real, rows> const & b) const
+vec<Real, cols> matrix<Real, rows, cols>::solve(vec<Real, rows> const & b) const
 {
     static_assert(rows == cols, "Rows must = columns in solve.");
     static_assert(rows == 2, "Only 2x2 matrices have been implemented.");

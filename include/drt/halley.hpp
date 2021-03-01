@@ -6,7 +6,7 @@
 #include <iostream>
 #include <drt/roots.hpp>
 #include <drt/vec.hpp>
-#include <drt/mat.hpp>
+#include <drt/matrix.hpp>
 
 namespace drt {
 

@@ -3,9 +3,10 @@
 
 #include <drt/hittable.hpp>
 #include <drt/vec.hpp>
-#include <drt/mat.hpp>
+#include <drt/matrix.hpp>
 #include <drt/roots.hpp>
 #include <drt/newton.hpp>
+#include <drt/tensor.hpp>
 
 
 namespace drt {
@@ -39,11 +40,39 @@ public:
 
     virtual ~helicoid() {};
 
-    vec<Real> operator()(Real u, Real v) const {
-        Real x = radius_*v*std::cos(2*M_PI*u);
-        Real y = radius_*v*std::sin(2*M_PI*u);
-        Real z = speed_*(u-0.5);
-        return vec<Real>(x,y,z);
+    template<int64_t derivatives = 0>
+    auto operator()(Real u, Real v) const {
+        vec<Real> w;
+        w[0] = radius_*v*std::cos(2*M_PI*u);
+        w[1] = radius_*v*std::sin(2*M_PI*u);
+        w[2] = speed_*(u-0.5);
+        if constexpr (derivatives >= 1) {
+            // Note that a function σ:ℝ² -> ℝ³, the Jacobian is a 3x2 matrix.
+            // However, that's pretty much useless for the purpose people actually use Jacobians for.
+            // Hence, this returns a 3x3 matrix. The final column is filled with nans,
+            // and must be populated by the user. The most common filling would be with -d for a ray
+            // with r(t) = o + td.
+            matrix<Real,3,3> J;
+            J(0,2) = std::numeric_limits<Real>::quiet_NaN();
+            J(1,2) = std::numeric_limits<Real>::quiet_NaN();
+            J(2,2) = std::numeric_limits<Real>::quiet_NaN();
+
+            J(0,0) = -2*M_PI*w[1];
+            J(1,0) = 2*M_PI*w[0];
+            J(2,0) = speed_;
+
+            J(0,1) = radius_*std::cos(2*M_PI*u);
+            J(1,1) = radius_*std::sin(2*M_PI*u);
+            J(2,1) = 0;
+
+            if constexpr (derivatives == 2) {
+                tensor<Real, 3, 3> H;
+            }
+            return std::make_pair(w, J);
+        }
+        else {
+            return w;
+        }
     }
 
     std::pair<Real, Real> gaussian_curvature_bounds() const {
@@ -276,7 +305,7 @@ private:
             Real rvskz = v*rskz;
             g[0] = x + rvckz;
             g[1] = y + rvskz;
-            mat<Real, 2,2> J;
+            matrix<Real, 2,2> J;
             J(0,0) = d[0] - k*d[2]*rvskz;
             J(1,0) = d[1] + k*d[2]*rvckz;
             J(0,1) = rckz;
