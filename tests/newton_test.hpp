@@ -192,4 +192,39 @@ TEST(NewtonTest, Helicoid) {
 
 }
 
+TEST(NewtonTest, 3DCuyt) {
+    // From Cuyt, "Computational implementation of the Multivariate Halley Method"
+    auto f = [](Real x0, Real x1, Real x2) {
+        vec<Real, 3> v;
+        Real x0_sq = x0*x0;
+        Real x0_4 = x0_sq*x0_sq;
+        Real x1_sq = x1*x1;
+        Real x1_4 = x1_sq*x1_sq;
+        Real x2_sq = x2*x2;
+        Real x2_4 = x2_sq*x2_sq;
+
+        v[0] = 16*x0_4 + 16*x1_4 + x2_4 - 16;
+        v[1] = x0_sq + x1_sq + x2_sq - 3;
+        v[2] = x0_sq*x0 - x1;
+
+        mat<Real,3,3> J;
+        J(0,0) = 16*4*x0_sq*x0;
+        return std::make_pair(v, J);
+    };
+
+    // Cuyt uses initial guesses x0 = x1 = x2 = 1.0.
+    // She lists the solution as
+    Real x0_expected = 0.877965760274;
+    Real x1_expected = 0.676756970518;
+    Real x2_expected = 1.33085541162;
+    auto [v, M] = f(x0_expected, x1_expected, x2_expected);
+    EXPECT_LE(squared_norm(v), std::numeric_limits<Real>::epsilon());
+
+    //auto [x1, x2] = newton<Real>(f, -2, 2, -10.0, 10.0);
+    //auto [v, M] = f(x1,x2);
+    //EXPECT_LE(squared_norm(v), std::numeric_limits<Real>::epsilon());
+    //EXPECT_EQ(x1, 1);
+    //EXPECT_EQ(x2, 1);
+}
+
 #endif
