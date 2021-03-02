@@ -7,7 +7,7 @@
 
 namespace drt {
 
-template<typename Real, int64_t rows = 3, int64_t cols = 3, int64_t panels = 3>
+template<typename Real, int64_t panels = 3, int64_t rows = 3, int64_t cols = 3>
 class tensor {
 public:
 
@@ -21,15 +21,22 @@ public:
         return T_[i*panels + j*cols + k];
     }
 
-    friend std::ostream& operator<<(std::ostream & os, const tensor<Real, rows, cols, panels> & v)
+    // Tensor contraction. T is a bilinear map from ℝⁿxℝⁿ -> ℝⁿ so that T(x,y) \in ℝⁿ
+    vec<Real, panels> operator()(vec<Real, rows> const & x, vec<Real, cols> const & y) const {
+
+    }
+
+    friend std::ostream& operator<<(std::ostream & os, const tensor<Real, panels, rows, cols> & v)
     {
         // This is totally wrong.
         for (int64_t i = 0; i < panels; ++i) {
-            os << "[";
-            for (int64_t j = 0; j < cols - 1; ++j) {
-                os << v.T_[i*panels + j*cols] << ", ";
+            for (int64_t j = 0; j < cols; ++j) {
+                os << "[";
+                for (int64_t k = 0; k < panels; ++k) {
+                    os << v.T_[i*panels + j*cols] << ", ";
+                }
+                os << v.T_[i*panels + cols] << "]\n";
             }
-            os << v.T_[i*panels + cols] << "]\n";
         }
         return os;
     }

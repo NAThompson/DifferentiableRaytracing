@@ -84,39 +84,6 @@ public:
 
 private:
 
-    std::tuple<Real, Real, Real> f(Real t, vec<Real> const & o, vec<Real> const & d) const {
-        // Mathematica:
-        // f[t_] := (Subscript[\[Sigma], x] + t*Subscript[d, x])*Tan[2*Pi*(Subscript[\[Sigma], z] + 
-        // t*Subscript[d, z])/\[Lambda]] - (Subscript[\[Sigma], y] + t*Subscript[d, y])
-        using std::tan;
-        using std::cos;
-        Real k = 2*M_PI/speed_;
-        Real arg = k*(o[2] + t*d[2]);
-        Real tn = tan(arg);
-        Real sc = 1/cos(arg);
-        Real x = o[0] + t*d[0];
-        Real y = x*tn - (o[1] + t*d[1]);
-        Real dydt = -d[1] + d[0]*tn + k*sc*sc*d[2]*x;
-        Real d2ydt2 = 2*k*sc*sc*d[0]*d[2]+ 2*k*k*sc*sc*d[2]*d[2]*x*tn;
-        return std::make_tuple(y, dydt, d2ydt2);
-    }
-
-    std::tuple<Real, Real, Real> f2(Real t, vec<Real> const & o, vec<Real> const & d) const {
-        using std::atan2;
-        Real x = o[0] + t*d[0];
-        Real y = o[1] + t*d[1];
-        Real z = o[2] + t*d[2];
-        Real theta = atan2(y, x);
-        if (theta < 0) {
-            theta += 2*M_PI;
-        }
-        Real f = (2*M_PI/speed_)*z + M_PI - theta;
-        Real rdenom = 1/(x*x + y*y);
-        Real dfdt = (2*M_PI/speed_)*d[2]  + rdenom*(d[1]*x - d[0]*y);
-        Real d2fdt2 = std::numeric_limits<Real>::quiet_NaN();
-        return std::make_tuple(f, dfdt, d2fdt2);
-    }
-
     // For a ray that intersects a cylinder at {tmin, tmax}, what is the corresponding [umin, umax]?
     std::pair<Real, Real> ubounds(vec<Real> const & o, vec<Real> const & d, Real t_min, Real t_max) const
     {
@@ -137,12 +104,12 @@ private:
     std::pair<Real, Real> vbounds(vec<Real> const & o, vec<Real> const & d, Real tmin, Real tmax) const
     {
         using std::sqrt;
-        // v^2r^2 = (ox+tdx)^2 + (oy+tdy)^2 which is minimized at
-        // t_c = -(oxdx + oydz)/(dx^2 + dy^2).
+        // v²r² = (ox+tdx)² + (oy+tdy)² which is minimized at
+        // t_c = -(oxdx + oydz)/(dx² + dy²).
         Real tc = -(o[0]*d[0] + o[1]*d[1])/(d[0]*d[0] + d[1]*d[1]);
         if (tc < tmin || tc > tmax)
         {
-            // Then (ox+tdx)^2 + (oy+tdy)^2 in monotonic on [t_min, t_max].
+            // Then (ox+tdx)² + (oy+tdy)² in monotonic on [t_min, t_max].
             Real x = o[0] + tmin*d[0];
             Real y = o[1] + tmin*d[1];
             Real vmin = sqrt(x*x + y*y)/radius_;
@@ -178,17 +145,6 @@ private:
             return std::make_pair(vmin, vmax1);
         }
         return std::make_pair(vmin, vmax2);
-    }
-
-    vec<Real, 2> g(vec<Real, 3> const & o, vec<Real, 3> const & d, Real u, Real v) const
-    {
-        // g(u, v)_x = ox + tdx - rvcos(2πu), t = (λ(u-1/2) - oz)/dz
-        // g(u, v)_y = oy + tdy - rvsin(2πu), t = (λ(u-1/2) - oz)/dz
-        Real t = (speed_*(u - 0.5) - o[2])/d[2];
-        vec<Real, 2> w;
-        w[0] = o[0] + t*d[0] - radius_*v*cos(2*M_PI*u);
-        w[1] = o[1] + t*d[1] - radius_*v*sin(2*M_PI*u);
-        return w;
     }
 
     std::tuple<Real, Real, Real> compute_tuv(vec<Real> const & o, vec<Real> const & d, Real t_min, Real t_max) const

@@ -8,6 +8,7 @@
 #include "ellipsoid_test.hpp"
 #include "newton_test.hpp"
 #include "halley_test.hpp"
+#include "tensor_test.hpp"
 
 int main(int argc, char **argv) {
   ::testing::InitGoogleTest(&argc, argv);
