@@ -1,10 +1,10 @@
-#ifndef MAT_TEST_HPP
-#define MAT_TEST_HPP
+#ifndef MATRIX_TEST_HPP
+#define MATRIX_TEST_HPP
 #include <drt/matrix.hpp>
 
 using namespace drt;
 
-TEST(MatTest, TwoByTwo) {
+TEST(MatrixTest, TwoByTwo) {
     using Real = double;
     matrix<Real,2,2> M;
     M(0,0) = 1;
@@ -112,7 +112,7 @@ TEST(MatTest, TwoByTwo) {
 }
 
 
-TEST(MatTest, ThreeByThree) {
+TEST(MatrixTest, ThreeByThree) {
     using Real = double;
     // Inverse[{{1, -1, 1}, {1, 2, 1}, {2, 1, 1}}]
     // {{-(1/3), -(2/3), 1}, {-(1/3), 1/3, 0}, {1, 1, -1}}
