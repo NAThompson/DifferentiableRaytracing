@@ -46,6 +46,16 @@ public:
         w[0] = radius_*v*std::cos(2*M_PI*u);
         w[1] = radius_*v*std::sin(2*M_PI*u);
         w[2] = speed_*(u-0.5);
+        return w;
+    }
+
+    template<int64_t derivatives = 0>
+    auto derivatives(Real u, Real v) const {
+        static_assert(derivatives >= 0 && derivatives <= 2, "Not implemented past two derivatives.");
+        vec<Real> w;
+        w[0] = radius_*v*std::cos(2*M_PI*u);
+        w[1] = radius_*v*std::sin(2*M_PI*u);
+        w[2] = speed_*(u-0.5);
         if constexpr (derivatives >= 1) {
             // Note that a function σ:ℝ² -> ℝ³, the Jacobian is a 3x2 matrix.
             // However, that's pretty much useless for the purpose people actually use Jacobians for.
@@ -65,10 +75,43 @@ public:
             J(1,1) = radius_*std::sin(2*M_PI*u);
             J(2,1) = 0;
 
+            // H(i,j,k) := ∂ⱼ∂ₖσᵢ = H(i,k,j).
             if constexpr (derivatives == 2) {
                 tensor<Real, 3, 3> H;
+                H(0,0,0) = -4*M_PI*M_PI*w[0];
+                H(0,0,1) = -2*M_PI*sin(2*M_PI*u);
+                H(0,0,2) = 0;
+
+                H(0,1,0) = H(0,0,1);
+                H(0,1,1) = 0;
+                H(0,1,2) = 0;
+
+                H(0,2,0) = 0;
+                H(0,2,1) = 0;
+                H(0,2,2) = 0;
+
+                H(1,0,0) = -4*M_PI*M_PI*w[1];
+                H(1,0,1) = 2*M_PI*cos(2*M_PI*u);
+                H(1,0,2) = 0;
+
+                H(1,1,0) = H(1,0,1);
+                H(1,1,1) = 0;
+                H(1,1,2) = 0;
+
+                H(1,2,0) = 0;
+                H(1,2,1) = 0;
+                H(1,2,2) = 0;
+
+                for (int64_t j = 0; j < 3; ++j) {
+                    for (int64_t k = 0; k < 3; ++k) {
+                        H(2,j,k) = 0;
+                    }
+                }
+                return std::make_tuple(w, J, H);
             }
-            return std::make_pair(w, J);
+            else {
+                return std::make_pair(w, J);
+            }
         }
         else {
             return w;

@@ -288,19 +288,19 @@ But let's examine a hack that makes it a bit better.
 
 ## "Patched" Newton's method: NR§9.7
 
-Given $$\mathbf{f}\colon \Omega \subset \mathbb{R}^3 \to \mathbb{R}^3$$ defined as $$\mathbf{f}(t,u,v) = \mathbf{o} + t\mathbf{d} - \sigma(u,v)$$, we wish to find $$(t,u,v)$$ s.t. $$\mathbf{f}(t,u,v) = \mathbf{0}$$.
+Given $$\mathbf{f}\colon \Omega \subset \mathbb{R}^3 \to \mathbb{R}^3$$ defined as $$\mathbf{f}(u,v,t) = \sigma(u,v) - (\mathbf{o} + t\mathbf{d})$$, we wish to find $$(u,v, t)$$ s.t. $$\mathbf{f}(u,v,t) = \mathbf{0}$$.
 
-Newton update: $$(t_{k+1}, u_{k+1}, v_{k+1}) = (t_{k}, u_{k}, v_{k}) -\mathbf{J}_{\mathbf{f}}^{-1}\mathbf{f}(t,u,v)$$.
+Newton update: $$(u_{k+1}, v_{k+1}, t_{k+1}) = (u_{k}, v_{k}, t_{k}) -\mathbf{J}_{\mathbf{f}}^{-1}\mathbf{f}(u,v,t)$$.
 
-Patch: Define $$f(t,u,v) := \frac{1}{2}\left<\mathbf{f}(t,u,v), \mathbf{f}(t,u,v) \right>$$.
+Patch: Define $$f(u,v,t) := \frac{1}{2}\left<\mathbf{f}(u,v,t), \mathbf{f}(u,v,t) \right>$$.
 
 ---
 
 ## Patched Newton's method
 
-If $$f(t_{k+1}, u_{k+1}, v_{k+1}) > f(t_{k}, u_{k}, v_{k})$$ or $$(t_{k+1}, u_{k+1}, v_{k+1}) \not \in \Omega$$, reject the Newton step.
+If $$f(u_{k+1}, v_{k+1}, t_{k+1}) > f(u_{k}, v_{k}, t_k)$$ or $$(u_{k+1}, v_{k+1}, t_{k+1}) \not \in \Omega$$, reject the Newton step.
 
-Define $$g(\lambda) := f(t_{k} + \lambda \delta t, u_{k} + \lambda \delta u, v_{k} + \lambda \delta v)$$, $$\lambda \in (0,1)$$.
+Define $$g(\lambda) := f(u_{k} + \lambda \delta u, v_{k} + \lambda \delta v, t_{k} + \lambda \delta t)$$, $$\lambda \in (0,1)$$.
 
 Choose $$\lambda$$ that minimizes $$g$$.
 
@@ -339,7 +339,7 @@ Convergence is cubic, much more importantly, *which* root Halley's method conver
 
 ## Multivariate Halley Iterate
 
-Given $$\mathbf{f}\colon \Omega \subset \mathbb{R}^{3} \to \mathbb{R}^3$$, (e.g., $$\mathbf{f}(t,u,v) = \mathbf{o} + t\mathbf{d} - \sigma(u,v)$$), define
+Given $$\mathbf{f}\colon \Omega \subset \mathbb{R}^{3} \to \mathbb{R}^3$$, (e.g., $$\mathbf{f}(u,v,t) = \sigma(u,v) - \mathbf{o} - t\mathbf{d}$$), define
 
 Then the Jacobian $$\mathbf{J}_f \colon \Omega \subset \mathbb{R}^{3} \to \mathbb{R}^{3\times 3}$$ is a linear operator for each $$\mathbf{q} \in \Omega$$.
 
@@ -383,7 +383,7 @@ Consider [converting](https://www.cs.cmu.edu/~hulya/Publications/IJCV03Paper.pdf
 
 ## So many more techniques
 
-- Is $$\mathbf{f}(t,u,v) = \sigma(u,v) - \mathbf{o} - t \mathbf{d}$$ contractive? Banach fixed point theorem.
+- Is $$\mathbf{f}(u,v,t) = \sigma(u,v) - \mathbf{o} - t \mathbf{d}$$ contractive? Banach fixed point theorem.
 - Load balancing and parallelization: Discussed in [Physically Based Rendering](http://www.pbr-book.org/3ed-2018/Utilities/Parallelism.html).
 
 
@@ -391,7 +391,7 @@ Consider [converting](https://www.cs.cmu.edu/~hulya/Publications/IJCV03Paper.pdf
 
 ## Ray-tracers are 3D radiation transport codes!
 
-What information do physically based renderers like [PBRT](http://www.pbr-book.org/3ed-2018/Shapes/Spheres.html) require for the intersection of a surface $$f(u,v)$$ with a ray?
+What information do physically based renderers like [PBRT](http://www.pbr-book.org/3ed-2018/Shapes/Spheres.html) require for the intersection of a surface $$\sigma(u,v)$$ with a ray?
 
 - The intersection point $$\mathbf{p}$$, as well as $$t$$ and $$(u,v)$$.
 - The normal to the surface $$\mathbf{n}$$.

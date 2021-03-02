@@ -124,6 +124,38 @@ TEST(HelicoidTest, Intersection) {
         EXPECT_LE(hr.gaussian_curvature(), Kmax);
     }
 
+    auto [v1, J1, H] = h.derivatives<2>(0.385, 0.768);
+    //std::cout << std::fixed << std::showpos;
+    //std::cout << H << "\n";
+
+    // This holds for all H, independent of geometry:
+    for (int64_t i = 0; i < 3; ++i) {
+        for (int64_t j = 0; j < 3; ++j) {
+            EXPECT_FLOAT_EQ(H(i,j,2), 0);
+            EXPECT_FLOAT_EQ(H(i,2,j), 0);
+            // Equality of mixed partials:
+            for (int64_t k = 0; k < 3; ++k) {
+                EXPECT_FLOAT_EQ(H(i,j,k), H(i,k,j));
+            }
+        }
+    }
+
+    // This holds for the Helicoid:
+    for (int64_t i = 0; i < 3; ++i) {
+        for (int64_t j = 0; j < 3; ++j) {
+            EXPECT_FLOAT_EQ(H(2,i,j), 0);
+        }
+    }
+
+    vec<Real, 3> dw(1,1,1);
+    auto Hww = H(dw, dw);
+    EXPECT_FLOAT_EQ(Hww[2], 0);
+    // Calculation is independent of dt:
+    dw[2] = 7.3;
+    auto Hww2 = H(dw, dw);
+    EXPECT_FLOAT_EQ(Hww2[0], Hww[0]);
+    EXPECT_FLOAT_EQ(Hww2[1], Hww[1]);
+    EXPECT_FLOAT_EQ(Hww2[2], 0);
 }
 
 #endif
