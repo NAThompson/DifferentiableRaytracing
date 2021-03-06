@@ -74,5 +74,47 @@ TEST(HalleyTest, CubeRoot) {
     EXPECT_TRUE(abs(rt) <= sqrt(std::numeric_limits<Real>::epsilon()));
 }
 
+TEST(HalleyTest, CuytExpProblem)
+{
+    // Cuyt, "Computational Implementation of the Multivariate Halley Method for Solving Nonlinear Systems of Equations",
+    // Equation 4.8
+    // exp(-x₀ + x₁) = d₀
+    // exp(-x₀ - x₁) = d₁
+    // Has solution x₀ = -ln(d₁d₀)/2, x₁ = ln(d₀/d₁)/2.
+    Real d0 = 0.1;
+    Real d1 = 0.2;
+    auto f = [&d0, &d1](vec<Real, 2> const & x) {
+        vec<Real,2> y;
+        Real expmp = exp(-x[0] + x[1]);
+        Real expmm = exp(-x[0] - x[1]);
+        y[0] = expmp - d0;
+        y[1] = expmm - d1;
+
+        matrix<Real,2,2> J;
+        J(0,0) = -expmp;
+        J(0,1) = expmp;
+        J(1,0) = -expmm;
+        J(1,1) = -expmm;
+
+        tensor<Real, 2,2,2> H;
+        H(0,0,0) = expmp;
+        H(0,0,1) = -expmp;
+        H(0,1,0) = -expmp;
+        H(0,1,1) = expmp;
+        H(1,0,0) = expmm;
+        H(1,0,1) = expmm;
+        H(1,1,0) = expmm;
+        H(1,1,1) = expmm;
+        return std::make_tuple(y, J, H);
+    };
+
+    bounds<Real, 2> b({-5,5}, {-5,5});
+
+    auto sol = halley<Real,2>(f, b, b.center());
+    vec<Real,2> expected_sol(-std::log(d0*d1)/2, std::log(d0/d1)/2);
+    EXPECT_FLOAT_EQ(sol[0], expected_sol[0]);
+    EXPECT_FLOAT_EQ(sol[1], expected_sol[1]);
+}
+
 
 #endif

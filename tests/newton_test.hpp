@@ -226,6 +226,7 @@ TEST(NewtonTest, 3DCuyt) {
     Real x1_expected = 0.676756970518;
     Real x2_expected = 1.33085541162;
     auto [v, M] = f(x0_expected, x1_expected, x2_expected);
+    // Her solution is indeed very accurate:
     EXPECT_LE(squared_norm(v), std::numeric_limits<Real>::epsilon());
 
     //auto [x1, x2] = newton<Real>(f, -2, 2, -10.0, 10.0);
