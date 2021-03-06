@@ -40,7 +40,6 @@ public:
 
     virtual ~helicoid() {};
 
-    template<int64_t derivatives = 0>
     auto operator()(Real u, Real v) const {
         vec<Real> w;
         w[0] = radius_*v*std::cos(2*M_PI*u);
@@ -135,8 +134,8 @@ private:
     std::pair<Real, Real> vbounds(vec<Real> const & o, vec<Real> const & d, Real tmin, Real tmax) const
     {
         using std::sqrt;
-        // v²r² = (ox+tdx)² + (oy+tdy)² which is minimized at
-        // t_c = -(oxdx + oydz)/(dx² + dy²).
+        // v²r² = (oₓ+tdₓ)² + (oy+tdy)² which is minimized at
+        // t_c = -(oₓdₓ + oydz)/(dₓ² + dy²).
         Real tc = -(o[0]*d[0] + o[1]*d[1])/(d[0]*d[0] + d[1]*d[1]);
         if (tc < tmin || tc > tmax)
         {
