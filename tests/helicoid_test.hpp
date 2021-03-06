@@ -24,7 +24,7 @@ TEST(HelicoidTest, Intersection) {
     EXPECT_FLOAT_EQ(hr.u, 0.5);
     EXPECT_FLOAT_EQ(hr.v, 0);
     EXPECT_FLOAT_EQ(hr.t, 2);
-    // E = 4π^2r^2v^2 + λ^2
+    // E = 4π²r²v² + λ²
     EXPECT_FLOAT_EQ(hr.E, 4*M_PI*M_PI*hr.v*hr.v + 1);
     EXPECT_FLOAT_EQ(hr.F, 0);
     EXPECT_FLOAT_EQ(hr.G, 4*M_PI*M_PI);
@@ -130,32 +130,24 @@ TEST(HelicoidTest, Intersection) {
 
     // This holds for all H, independent of geometry:
     for (int64_t i = 0; i < 3; ++i) {
-        for (int64_t j = 0; j < 3; ++j) {
-            EXPECT_FLOAT_EQ(H(i,j,2), 0);
-            EXPECT_FLOAT_EQ(H(i,2,j), 0);
+        for (int64_t j = 0; j < 2; ++j) {
             // Equality of mixed partials:
-            for (int64_t k = 0; k < 3; ++k) {
+            for (int64_t k = 0; k < 2; ++k) {
                 EXPECT_FLOAT_EQ(H(i,j,k), H(i,k,j));
             }
         }
     }
 
     // This holds for the Helicoid:
-    for (int64_t i = 0; i < 3; ++i) {
-        for (int64_t j = 0; j < 3; ++j) {
+    for (int64_t i = 0; i < 2; ++i) {
+        for (int64_t j = 0; j < 2; ++j) {
             EXPECT_FLOAT_EQ(H(2,i,j), 0);
         }
     }
 
-    vec<Real, 3> dw(1,1,1);
+    vec<Real, 2> dw(1,1);
     auto Hww = H(dw, dw);
     EXPECT_FLOAT_EQ(Hww[2], 0);
-    // Calculation is independent of dt:
-    dw[2] = 7.3;
-    auto Hww2 = H(dw, dw);
-    EXPECT_FLOAT_EQ(Hww2[0], Hww[0]);
-    EXPECT_FLOAT_EQ(Hww2[1], Hww[1]);
-    EXPECT_FLOAT_EQ(Hww2[2], 0);
 }
 
 #endif

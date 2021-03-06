@@ -19,6 +19,13 @@ public:
         v_[2] = z;
     }
 
+    vec(Real x, Real y)
+    {
+        static_assert(dimension == 2, "Must have dimension = 2 to call this constructor");
+        v_[0] = x;
+        v_[1] = y;
+    }
+
     Real operator[](int64_t i) const {
         return v_[i];
     }

@@ -91,7 +91,7 @@ Try solving your ODEs with Euler's method, or PDEs with first-order accurate fin
 
 ---
 
-# Goal (dream?) for rendering simulations
+## Goal (dream?) for rendering simulations
 
 Render the data in the same way it's represented in the solver.
 
@@ -389,6 +389,20 @@ Consider [converting](https://www.cs.cmu.edu/~hulya/Publications/IJCV03Paper.pdf
 
 ---
 
+## Rendering space curves
+
+The probability that a space curve $$\gamma \colon [t_0, t_f] \to \mathbb{R}^{3}$$ intersects a ray $$\mathbf{o} + t\mathbf{d}$$ is zero!
+
+Space curves must be extended, either via glyphs, or as "tubes". Constructing a tube from a space curve $$\gamma$$:
+
+$$
+\sigma(\theta, t) = \gamma(t) + r(\mathbf{n}(t)\cos(\theta) + \mathbf{b}(t) \sin(\theta))
+$$
+
+where $$\mathbf{n}$$ is the principle normal, and $$\mathbf{b}$$ is the binormal.
+
+---
+
 ## Ray-tracers are 3D radiation transport codes!
 
 What information do physically based renderers like [PBRT](http://www.pbr-book.org/3ed-2018/Shapes/Spheres.html) require for the intersection of a surface $$\sigma(u,v)$$ with a ray?
@@ -443,6 +457,56 @@ $$
 
 ---
 
+## Vision
+
+Without clean abstractions, we cannot form teams of teams.
+
+These techniques are a technical path to ensuring users of SciViz have only a single abstraction they are responsible for: Constructing a method of evaluating a continuous function.
+
+---
+
+## Vision: The *only* technical knowledge other teams should need to have to use our software
+
+I have $$f\colon \mathbb{R}^3 \to \mathbb{R}$$. I can isocontour and volume render. Pseudocode:
+
+```cpp
+auto f = [&](double x, double y, double z) -> double {
+    // implementation or binding to your function
+    };
+auto actor1 = vtkm::isocontour(f, domain, iso_value, pseudocolor_lambda);
+auto actor2 = vtkm::volume_render(f, domain, another_pseudocoloring);
+```
+
+![](figures/ProtonVis.png)
+
+---
+
+## Vision
+
+I have a parametric surface $$\sigma \colon \mathbb{R}^{2} \to \mathbb{R}^3$$. I can render geometry. Pseudocode:
+
+```cpp
+auto pseudocolor = [&](double u, double v) { return viridis(sigma.gaussian_curvature(u,v)); };
+auto actor = vtkm::parametric_surface(sigma, pseudocolor);
+auto image = vtkm::render(actor);
+```
+
+---
+
+## Vision
+
+I have $$\gamma\colon [t_0, t_f] \subset \mathbb{R} \to \mathbb{R}^{3}$$. I can render a space curve via
+
+```cpp
+auto actor1 = vtkm::tube_curve(gamma, t0, tf);
+auto actor2 = vtkm::frenet_frame(gamma, t0, tf);
+auto image = vtkm::render(actor1, actor2, ...);
+```
+
+![left](figures/FrenetFrame.png)
+
+---
+
 References:
 
 - [_Ray Tracing in One Weekend_](https://raytracing.github.io/books/RayTracingInOneWeekend.html)
@@ -476,3 +540,5 @@ References:
 ---
 
 - Park, Taezoon, Joonghyun Ji, and Kwang Hee Ko. "A second order geometric method for ray/parametric surface intersection." Computer Aided Geometric Design 30.8 (2013): 795-804.
+
+- Axel Huebl, David Pugmire, Felix Schmitt, Richard Pausch, and Michael Bussmann. “Visualizing the Radiation of the Kelvin–Helmholtz Instability.” IEEE Transactions on Plasma Science 42 (10), October 2014.
