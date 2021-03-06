@@ -193,6 +193,14 @@ TEST(MatrixTest, 3x3Solve)
         EXPECT_FLOAT_EQ(Mx[0], b[0]);
         EXPECT_FLOAT_EQ(Mx[1], b[1]);
         EXPECT_FLOAT_EQ(Mx[2], b[2]);
+
+        M(0,0) = 0;
+        x = M.solve(b);
+        Mx = M*x;
+        EXPECT_FLOAT_EQ(Mx[0], b[0]);
+        EXPECT_FLOAT_EQ(Mx[1], b[1]);
+        EXPECT_FLOAT_EQ(Mx[2], b[2]);
+
     }
 }
 #endif

@@ -135,9 +135,9 @@ vec<Real, cols> matrix<Real, rows, cols>::solve(vec<Real, rows> const & b) const
         }
     }
     else if constexpr (rows == 3) {
+        matrix<Real, 3,3> A;
+        vec<Real, 3> y;
         if (M_[0] != 0) {
-            matrix<Real, 3,3> A;
-            vec<Real, 3> y;
             A(0,0) = 1;
             A(0,1) = M_[1]/M_[0];
             A(0,2) = M_[2]/M_[0];
@@ -181,7 +181,44 @@ vec<Real, cols> matrix<Real, rows, cols>::solve(vec<Real, rows> const & b) const
             }
         }
         else {
-            std::cerr << __FILE__ << ":" << __LINE__ << ": All hell just broke loose M(0,0) = 0.\n";
+            // M(0,0) = 0, so make it lower triangular.
+            A(0,0) = 0;
+            if (M_[6] != 0) {
+                A(2,1) = M_[7]/M_[6];
+                A(2,2) = M_[8]/M_[6];
+                y[2] = b[2]/M_[6];
+                A(2,0) = 1;
+                if (M_[3] != 0) {
+                    A(1,0) = 0;
+                    A(1,1) = A(2,1) - M_[4]/M_[3];
+                    A(1,2) = A(2,2) - M_[5]/M_[3];
+                    y[1] = y[2] - b[1]/M_[3];
+                }
+                if (A(1,1) == 0) {
+                    std::cerr << __FILE__ << ":" << __LINE__ <<  ": All hell just broke loose; A(1,1) = 0.\n";
+                }
+                else {
+                    A(1,2) = A(1,2)/A(1,1);
+                    y[1] = y[1]/A(1,1);
+                    A(1,1) = 1;
+                }
+                A(0,1) = 0;
+                A(0,2) = A(1,2) - M_[2]/M_[1];
+                y[0] = y[1] -b[0]/M_[1];
+                if (A(0,2) == 0) {
+                    std::cerr << __FILE__ << ":" << __LINE__ << " Matrix is singular.\n";
+                }
+                y[0] = y[0]/A(0,2);
+                A(0,2) = 1;
+                v[2] = y[0];
+                v[1] = y[1] - A(1,2)*v[2];
+                v[0] = y[2] - A(2,1)*v[1] - A(2,2)*v[2];
+                return v;
+            }
+            else {
+                std::cerr << __FILE__ << ":" << __LINE__ <<  ": All hell just broke loose; M(2,0) = 0.\n";
+            }
+
         }
     }
     else {
