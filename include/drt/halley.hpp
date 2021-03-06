@@ -7,6 +7,7 @@
 #include <drt/roots.hpp>
 #include <drt/vec.hpp>
 #include <drt/matrix.hpp>
+#include <drt/tensor.hpp>
 #include <drt/bounds.hpp>
 
 namespace drt {
@@ -112,7 +113,7 @@ vec<Real, dimension> halley(std::function<std::tuple<vec<Real, dimension>, matri
         }
         else
         {
-            std::cerr << __FILE__ << ":" << __LINE__ << " Out of bounds!\n";
+            //std::cerr << __FILE__ << ":" << __LINE__ << " Out of bounds!\n";
             guess = bound.random();
         }
 
@@ -120,7 +121,7 @@ vec<Real, dimension> halley(std::function<std::tuple<vec<Real, dimension>, matri
         g = squared_norm(v)/2;
 
     // TODO: Some actual analysis on this termination condition:
-    } while (g > eps*(abs(v[0]) + abs(v[1])) && i++ < 32);
+    } while (g > 100*eps*(abs(v[0]) + abs(v[1])) && i++ < 30);
 
 #ifdef DEBUG
         std::cerr << "\t" << guess << ", " << v << ", " << g << "\n";

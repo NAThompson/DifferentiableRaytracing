@@ -6,7 +6,9 @@
 #include <drt/matrix.hpp>
 #include <drt/roots.hpp>
 #include <drt/newton.hpp>
+#include <drt/halley.hpp>
 #include <drt/tensor.hpp>
+#include <drt/bounds.hpp>
 
 
 namespace drt {
@@ -274,7 +276,7 @@ private:
         }
 
         auto [vmin, vmax] = this->vbounds(o, d, t_min, t_max);
-        #ifdef DEBUG
+       /* #ifdef DEBUG
         std::cerr << "Origin " << o << ", direction " << d << " speed " << speed_ << ", radius = " << radius_ << "\n";
         std::cerr << "[tmin, tmax] = [" << t_min << ", " << t_max << "]\n";
         std::cerr << "[vmin, vmax] = [" << vmin << ", " << vmax << "]\n";
@@ -301,7 +303,43 @@ private:
 
         std::tie(t, v) = newton<Real>(f, t_min, t_max, vmin, vmax);
         assert(t <= t_max && t >= t_min);
-        assert(v <= vmax && v >= vmin);
+        assert(v <= vmax && v >= vmin);*/
+
+        drt::bounds<Real, 2> b({t_min, t_max}, {vmin, vmax});
+        auto f = [&o, &d, this](vec<Real,2> w) {
+            Real t = w[0];
+            Real v = w[1];
+            vec<Real, 2> g;
+            Real k = 2*M_PI/speed_;
+            Real x = o[0] + t*d[0];
+            Real y = o[1] + t*d[1];
+            Real z = o[2] + t*d[2];
+            Real rckz = radius_*cos(k*z);
+            Real rskz = radius_*sin(k*z);
+            Real rvckz = v*rckz;
+            Real rvskz = v*rskz;
+            g[0] = x + rvckz;
+            g[1] = y + rvskz;
+            matrix<Real, 2,2> J;
+            Real kdz = k*d[2];
+            J(0,0) = d[0] - kdz*rvskz;
+            J(1,0) = d[1] + kdz*rvckz;
+            J(0,1) = rckz;
+            J(1,1) = rskz;
+            tensor<Real, 2,2,2> H;
+            H(0,0,0) = -kdz*kdz*rvckz;
+            H(0,0,1) = -kdz*rskz;
+            H(0,1,0) = H(0,0,1);
+            H(0,1,1) = 0;
+            H(1,0,0) = -kdz*kdz*rvskz;
+            H(1,0,1) = kdz*rckz;
+            H(1,1,0) = H(1,0,1);
+            H(1,1,1) = 0;
+            return std::make_tuple(g, J, H);
+        };
+        vec<Real, 2> sol = halley<Real,2>(f, b, vec<Real,2>(t_min, (vmin + vmax)/2));
+        t = sol[0];
+        v = sol[1];
         u = (o[2] + t*d[2])/speed_ + 0.5;
 
         std::get<0>(w) = t;
