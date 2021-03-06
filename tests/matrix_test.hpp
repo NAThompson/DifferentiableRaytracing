@@ -1,5 +1,6 @@
 #ifndef MATRIX_TEST_HPP
 #define MATRIX_TEST_HPP
+#include <random>
 #include <drt/matrix.hpp>
 
 using namespace drt;
@@ -150,5 +151,48 @@ TEST(MatrixTest, ThreeByThree) {
     EXPECT_FLOAT_EQ(v[0], 1);
     EXPECT_FLOAT_EQ(v[1], 2);
     EXPECT_FLOAT_EQ(v[2], 3);
+}
+
+TEST(MatrixTest, 3x3Solve)
+{
+    using Real = double;
+    matrix<Real, 3, 3> M;
+    M(0,0) = 1; M(0,1) = 2; M(0,2) = 3;
+    M(1,0) = 4; M(1,1) = 5; M(1,2) = 6;
+    M(2,0) = 7; M(2,1) = 8; M(2,2) = 9;
+
+    vec<Real, 3> b(2,2,2);
+
+    vec<Real, 3> x(-2,2,0);
+
+    auto Mx = M*x;
+    EXPECT_FLOAT_EQ(Mx[0], b[0]);
+    EXPECT_FLOAT_EQ(Mx[1], b[1]);
+    EXPECT_FLOAT_EQ(Mx[2], b[2]);
+
+    auto x1 = M.solve(b);
+
+    EXPECT_FLOAT_EQ(x1[0], x[0]);
+    EXPECT_FLOAT_EQ(x1[1], x[1]);
+    EXPECT_FLOAT_EQ(x1[2], x[2]);
+
+
+    std::uniform_real_distribution<Real> dis(-1,1);
+    std::mt19937_64 gen;
+    int64_t n = 0;
+    while (n++ < 512) {
+        for (int64_t i = 0; i < 2; ++i) {
+            for (int64_t j = 0; j < 2; ++j) {
+                M(i,j) = dis(gen);
+            }
+        }
+        vec<Real, 3> b(dis(gen), dis(gen), dis(gen));
+
+        auto x = M.solve(b);
+        auto Mx = M*x;
+        EXPECT_FLOAT_EQ(Mx[0], b[0]);
+        EXPECT_FLOAT_EQ(Mx[1], b[1]);
+        EXPECT_FLOAT_EQ(Mx[2], b[2]);
+    }
 }
 #endif

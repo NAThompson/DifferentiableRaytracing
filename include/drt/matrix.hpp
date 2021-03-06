@@ -114,7 +114,7 @@ template<typename Real, int64_t rows, int64_t cols>
 vec<Real, cols> matrix<Real, rows, cols>::solve(vec<Real, rows> const & b) const
 {
     static_assert(rows == cols, "Rows must = columns in solve.");
-    static_assert(rows == 2, "Only 2x2 matrices have been implemented.");
+    static_assert(rows == 2 || rows == 3, "Only 2x2 or 3x3 matrices have been implemented.");
     vec<Real, cols> v;
     if constexpr (rows == 2) {
         if (M_[2] == 0) {
@@ -132,6 +132,56 @@ vec<Real, cols> matrix<Real, rows, cols>::solve(vec<Real, rows> const & b) const
             v[1] = b1/(M_[1] - M_[0]*M_[3]/M_[2]);
             v[0] = b[0] - M_[1]*v[1];
             v[0] /= M_[0];
+        }
+    }
+    else if constexpr (rows == 3) {
+        if (M_[0] != 0) {
+            matrix<Real, 3,3> A;
+            vec<Real, 3> y;
+            A(0,0) = 1;
+            A(0,1) = M_[1]/M_[0];
+            A(0,2) = M_[2]/M_[0];
+            y[0] = b[0]/M_[0];
+            // M(1,0) = M_[3]
+            if(M_[3] != 0) {
+                A(1,0) = 0;
+                A(1,1) = A(0,1) - M_[4]/M_[3];
+                A(1,2) = A(0,2) - M_[5]/M_[3];
+                y[1] = y[0] - b[1]/M_[3];
+            }
+            // M(2,0) = M_[6]
+            if (M_[6] != 0) {
+                A(2,0) = 0;
+                A(2,1) = A(0,1) - M_[7]/M_[6];
+                A(2,2) = A(0,2) - M_[8]/M_[6];
+                y[2] = y[0] - b[2]/M_[6];
+            }
+
+            // Now A and y are fully populated.
+            if (A(1,1) != 0) {
+                A(1,2) = A(1,2)/A(1,1);
+                y[1] = y[1]/A(1,1);
+                A(1,1) = 1;
+
+                A(2,2) = A(1,2) - A(2,2)/A(2,1);
+                y[2] = y[1] - y[2]/A(2,1);
+                A(2,1) = 0;
+
+                if (A(2,2) == 0) {
+                    std::cerr << "3x3 matrix is singular.\n";
+                }
+                y[2] /= A(2,2);
+                v[2] = y[2];
+                v[1] = y[1] - A(1,2)*v[2];
+                v[0] = y[0] - A(0,1)*v[1] - A(0,2)*v[2];
+                return v;
+            }
+            else {
+                std::cerr << __FILE__ << ":" << __LINE__ <<  ": All hell just broke loose; A(1,1) = 0.\n";
+            }
+        }
+        else {
+            std::cerr << __FILE__ << ":" << __LINE__ << ": All hell just broke loose M(0,0) = 0.\n";
         }
     }
     else {
