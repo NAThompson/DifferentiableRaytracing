@@ -40,7 +40,11 @@ public:
 
     virtual bool bounding_box(aabb<Real>& output_box) const override;
 
-    virtual ~helicoid() {};
+    virtual ~helicoid() {
+        #ifdef DEBUG
+        std::cerr << "Helicoid error count = " << helicoid_error_count << "\n";
+        #endif
+    };
 
     auto operator()(Real u, Real v) const {
         vec<Real> w;
@@ -277,12 +281,7 @@ private:
 
         auto [vmin, vmax] = this->vbounds(o, d, t_min, t_max);
         drt::bounds<Real, 2> b({t_min, t_max}, {vmin, vmax});
-        #ifdef DEBUG
-        std::cerr << "Origin " << o << ", direction " << d << " speed " << speed_ << ", radius = " << radius_ << "\n";
-        std::cerr << "[tmin, tmax] = [" << t_min << ", " << t_max << "]\n";
-        std::cerr << "[vmin, vmax] = [" << vmin << ", " << vmax << "]\n";
-        #endif
-        auto f = [&o, &d, this](vec<Real,2> w) {
+        /*auto f = [&o, &d, this](vec<Real,2> w) {
             Real t = w[0];
             Real v = w[1];
             vec<Real, 2> g;
@@ -306,10 +305,7 @@ private:
 
         vec<Real, 2> sol = newton<Real,2>(f, b, vec<Real,2>(t_min, (vmin + vmax)/2));
         t = sol[0];
-        v = sol[1];
-
-        /*
-        drt::bounds<Real, 2> b({t_min, t_max}, {vmin, vmax});
+        v = sol[1];*/
         auto f = [&o, &d, this](vec<Real,2> w) {
             Real t = w[0];
             Real v = w[1];
@@ -342,7 +338,6 @@ private:
             return std::make_tuple(g, J, H);
         };
         vec<Real, 2> sol = halley<Real,2>(f, b, vec<Real,2>(t_min, (vmin + vmax)/2));
-        */
         t = sol[0];
         v = sol[1];
         u = (o[2] + t*d[2])/speed_ + 0.5;
@@ -415,16 +410,21 @@ bool helicoid<Real>::hit(const ray<Real>& r, Real t_min, Real t_max, hit_record<
     rec.F = 0;
     rec.G = 4*M_PI*M_PI*radius_*radius_;
     rec.set_face_normal(r, outward_normal);
-    Real residual = norm(rec.p - this->operator()(rec.u, rec.v));
-    //Real expected_residual = this->expected_residual(rec.p);
-    if (std::abs(residual) > 0.01) {
+    auto [p, J] = this->derivatives<1>(rec.u, rec.v);
+    Real residual = max_norm(rec.p - p);
+    Real r0 = abs(rec.t*dir[0]) + abs(J(0,0)*rec.u) + abs(J(0,1)*rec.v);
+    Real r1 = abs(rec.t*dir[1]) + abs(J(1,0)*rec.u) + abs(J(1,1)*rec.v);
+    Real r2 = abs(rec.t*dir[2]) + abs(J(2,0)*rec.u) + abs(J(2,1)*rec.v);
+    Real expected_residual = std::max({r0,r1,r2});
+    expected_residual *= std::numeric_limits<Real>::epsilon();
+    if (residual > 100*expected_residual) {
         ++helicoid_error_count;
 #ifdef DEBUG
-        std::cerr << "Residual for a helicoid with r = " << radius_ << " and λ = " << speed_ << " is " << residual << ".\n";
+        std::cerr << "Residual for a helicoid with r = " << radius_ << " and λ = " << speed_ << " is " << residual;
+        std::cerr << ", but expected residual is " << expected_residual << ".\n";
         std::cerr << "r(" << rec.t << ") = " << r(rec.t) << ", but σ(" << rec.u << ", " << rec.v << ") = " << this->operator()(rec.u, rec.v) << "\n";
         std::cerr << "Ray: " << r << ", [t_min, t_max] = ["  << t_min << ", " << t_max << "]\n";
         std::cerr << rec << "\n";
-        std::cerr << "Error count: " << helicoid_error_count << "\n";
         std::cerr << "Hits = " << helicoid_hits << ", misses = " << helicoid_misses << "\n";
         std::cerr << "\n";
 #endif

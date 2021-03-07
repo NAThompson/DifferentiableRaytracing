@@ -19,18 +19,6 @@ Nick Thompson
 
 ---
 
-## History of raytracing
-
-- Credited to Albrecht Dürer, but general purpose computing revitalized its study.
-
----
-
-## Raytracing from a 1000 feet up
-
-![inline](figures/RaysViewportSchema.png)
-
----
-
 ## How to render a sphere
 
 Compute the intersection of a line and a sphere. Easy.
