@@ -168,7 +168,7 @@ vec<Real, cols> matrix<Real, rows, cols>::solve(vec<Real, rows> const & b) const
                 A(2,1) = 0;
 
                 if (A(2,2) == 0) {
-                    std::cerr << "3x3 matrix is singular.\n";
+                    std::cerr << __FILE__ << ":" << __LINE__ << "3x3 matrix is singular.\n";
                 }
                 y[2] /= A(2,2);
                 v[2] = y[2];
@@ -177,7 +177,16 @@ vec<Real, cols> matrix<Real, rows, cols>::solve(vec<Real, rows> const & b) const
                 return v;
             }
             else {
-                std::cerr << __FILE__ << ":" << __LINE__ <<  ": All hell just broke loose; A(1,1) = 0.\n";
+                if (A(1,2) == 0) {
+                    std::cerr << __FILE__ << ":" << __LINE__ << " 3x3 matrix is singular.\n";
+                }
+                if (A(2,1) == 0) {
+                    std::cerr << __FILE__ << ":" << __LINE__ << " 3x3 matrix is singular.\n";
+                }
+
+                v[2] = y[1]/A(1,2);
+                v[1] = (y[2] - A(2,2)*v[2])/A(2,1);
+                v[0] = (y[0] - A(0,1)*v[1] - A(0,2)*v[2]);
             }
         }
         else {

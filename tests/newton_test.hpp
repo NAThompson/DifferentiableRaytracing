@@ -73,7 +73,9 @@ TEST(NewtonTest, CubeRoot) {
 TEST(NewtonTest, 2DCuyt) {
     // From Annie Cuyt's paper
     // "Computational Implementation of the Multivariate Halley Method for Solving Nonlinear Systems of Equations."
-    auto f = [](Real t, Real u) {
+    auto f = [](vec<Real, 2> const & w) {
+        Real t = w[0];
+        Real u = w[1];
         vec<Real, 2> v;
         Real expmp = exp(-t+u);
         Real expmm = exp(-t-u);
@@ -88,14 +90,17 @@ TEST(NewtonTest, 2DCuyt) {
         return std::make_pair(v, M);
     };
 
-    auto [t, u] = newton<Real>(f, 0.0, 5.0, -1.0, 3.0);
-    EXPECT_FLOAT_EQ(t, -log(0.1));
-    EXPECT_LE(abs(u), std::numeric_limits<Real>::epsilon());
+    bounds<Real, 2> b({0.0, 5.0}, {-1.0, 3.0});
+    vec<Real,2> v = newton<Real, 2>(f, b, vec<Real,2>(0.0, 2.0));
+    EXPECT_FLOAT_EQ(v[0], -log(0.1));
+    EXPECT_LE(abs(v[1]), std::numeric_limits<Real>::epsilon());
 }
 
 TEST(NewtonTest, Corless) {
     // From Corless, "A Graduate Introduction to Numerical Methods", Example 3.14.
-    auto f = [](Real x, Real y) {
+    auto f = [](vec<Real, 2> w) {
+        Real x = w[0];
+        Real y = w[1];
         vec<Real, 2> v;
         v[0] = x*x + y*y - 1;
         v[1] = 25*x*y - 12;
@@ -108,15 +113,19 @@ TEST(NewtonTest, Corless) {
         return std::make_pair(v, M);
     };
 
-    auto [x, y] = newton<Real>(f, 0.0, 1.0, 0.0, 1.0);
-    EXPECT_FLOAT_EQ(x, 3.0/5);
-    EXPECT_FLOAT_EQ(y, 4.0/5);
+    bounds<Real, 2> b({0.0, 1.0}, {0.0, 1.0});
+    auto v = newton<Real, 2>(f, b, vec<Real,2>(0, 0.5));
+    EXPECT_FLOAT_EQ(v[0], 3.0/5);
+    EXPECT_FLOAT_EQ(v[1], 4.0/5);
 }
+
 
 TEST(NewtonTest, 2DBroyden) {
     // From Broyden, "A Class of  Methods for  Solving Nonlinear Simultaneous Equations" Case 9:
-    // (t,u) = (-0.330435, -0.869239) induces backtracking.
-    auto f = [](Real x0, Real x1) {
+    // (t,u) = (-0.330435, -0.869239), as well as many other initial conditions, induces backtracking.
+    auto f = [](vec<Real,2> w) {
+        Real x0 = w[0];
+        Real x1 = w[1];
         vec<Real, 2> v;
         v[0] = 10*(x1 - x0*x0);
         v[1] = 1 - x0;
@@ -128,12 +137,13 @@ TEST(NewtonTest, 2DBroyden) {
         J(1,1) = 0;
         return std::make_pair(v, J);
     };
+    bounds<Real,2> b({-2.0,2.0}, {-10.0,10.0});
 
-    auto [x1, x2] = newton<Real>(f, -2, 2, -10.0, 10.0);
-    auto [v, M] = f(x1,x2);
+    auto x = newton<Real,2>(f, b, vec<Real,2>(-2,0));
+    auto [v, M] = f(x);
     EXPECT_LE(squared_norm(v), std::numeric_limits<Real>::epsilon());
-    EXPECT_EQ(x1, 1);
-    EXPECT_EQ(x2, 1);
+    EXPECT_EQ(x[0], 1);
+    EXPECT_EQ(x[1], 1);
 }
 
 
@@ -142,7 +152,9 @@ TEST(NewtonTest, Helicoid) {
         vec<Real, 3> d(1, 0, -1.0/3.0);
         Real speed_ = 1;
         Real radius_ = 1;
-        auto f = [&o, &d, &speed_, &radius_](Real t, Real v) {
+        auto f = [&o, &d, &speed_, &radius_](vec<Real,2> w) {
+            Real t = w[0];
+            Real v = w[1];
             vec<Real, 2> g;
             Real k = 2*M_PI/speed_;
             Real x = o[0] + t*d[0];
@@ -162,15 +174,14 @@ TEST(NewtonTest, Helicoid) {
             return std::make_pair(g, J);
         };
 
-        Real tmin = 3;
-        Real tmax = 5;
-        Real vmin = 0;
-        Real vmax = 1;
-        auto [t, v] = newton<Real>(f, tmin, tmax, vmin, vmax);
-        EXPECT_LE(t, tmax);
-        EXPECT_GE(t, tmin);
-        EXPECT_LE(v, vmax);
-        EXPECT_GE(v, vmin);
+        bounds<Real,2> b({3,5}, {0,1});
+        auto w = newton<Real,2>(f, b, vec<Real,2>(3, 0.5));
+        Real t = w[0];
+        Real v = w[1];
+        EXPECT_LE(t, b[0].second);
+        EXPECT_GE(t, b[0].first);
+        EXPECT_LE(v, b[1].second);
+        EXPECT_GE(v, b[1].first);
         Real u = (o[2] + t*d[2])/speed_ + 0.5;
 
         // v = 1, u = 1/2.
@@ -194,7 +205,10 @@ TEST(NewtonTest, Helicoid) {
 
 TEST(NewtonTest, 3DCuyt) {
     // From Cuyt, "Computational implementation of the Multivariate Halley Method"
-    auto f = [](Real x0, Real x1, Real x2) {
+    auto f = [](vec<Real,3> w) {
+        Real x0 = w[0];
+        Real x1 = w[1];
+        Real x2 = w[2];
         vec<Real, 3> v;
         Real x0_sq = x0*x0;
         Real x0_4 = x0_sq*x0_sq;
@@ -222,18 +236,17 @@ TEST(NewtonTest, 3DCuyt) {
 
     // Cuyt uses initial guesses x0 = x1 = x2 = 1.0.
     // She lists the solution as
-    Real x0_expected = 0.877965760274;
-    Real x1_expected = 0.676756970518;
-    Real x2_expected = 1.33085541162;
-    auto [v, M] = f(x0_expected, x1_expected, x2_expected);
+
+    vec<Real,3> expected(0.877965760274, 0.676756970518, 1.33085541162);
+    auto [v, M] = f(expected);
     // Her solution is indeed very accurate:
     EXPECT_LE(squared_norm(v), std::numeric_limits<Real>::epsilon());
 
-    //auto [x1, x2] = newton<Real>(f, -2, 2, -10.0, 10.0);
-    //auto [v, M] = f(x1,x2);
-    //EXPECT_LE(squared_norm(v), std::numeric_limits<Real>::epsilon());
-    //EXPECT_EQ(x1, 1);
-    //EXPECT_EQ(x2, 1);
+    bounds<Real,3> b({0,2},{0,2},{0,2});
+    auto sol = newton<Real,3>(f, b, b.center());
+    EXPECT_FLOAT_EQ(sol[0], expected[0]);
+    EXPECT_FLOAT_EQ(sol[1], expected[1]);
+    EXPECT_FLOAT_EQ(sol[2], expected[2]);
 }
 
 #endif

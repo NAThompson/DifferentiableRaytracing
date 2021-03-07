@@ -276,12 +276,15 @@ private:
         }
 
         auto [vmin, vmax] = this->vbounds(o, d, t_min, t_max);
-       /* #ifdef DEBUG
+        drt::bounds<Real, 2> b({t_min, t_max}, {vmin, vmax});
+        #ifdef DEBUG
         std::cerr << "Origin " << o << ", direction " << d << " speed " << speed_ << ", radius = " << radius_ << "\n";
         std::cerr << "[tmin, tmax] = [" << t_min << ", " << t_max << "]\n";
         std::cerr << "[vmin, vmax] = [" << vmin << ", " << vmax << "]\n";
         #endif
-        auto f = [&o, &d, this](Real t, Real v) {
+        auto f = [&o, &d, this](vec<Real,2> w) {
+            Real t = w[0];
+            Real v = w[1];
             vec<Real, 2> g;
             Real k = 2*M_PI/speed_;
             Real x = o[0] + t*d[0];
@@ -301,10 +304,11 @@ private:
             return std::make_pair(g, J);
         };
 
-        std::tie(t, v) = newton<Real>(f, t_min, t_max, vmin, vmax);
-        assert(t <= t_max && t >= t_min);
-        assert(v <= vmax && v >= vmin);*/
+        vec<Real, 2> sol = newton<Real,2>(f, b, vec<Real,2>(t_min, (vmin + vmax)/2));
+        t = sol[0];
+        v = sol[1];
 
+        /*
         drt::bounds<Real, 2> b({t_min, t_max}, {vmin, vmax});
         auto f = [&o, &d, this](vec<Real,2> w) {
             Real t = w[0];
@@ -338,6 +342,7 @@ private:
             return std::make_tuple(g, J, H);
         };
         vec<Real, 2> sol = halley<Real,2>(f, b, vec<Real,2>(t_min, (vmin + vmax)/2));
+        */
         t = sol[0];
         v = sol[1];
         u = (o[2] + t*d[2])/speed_ + 0.5;
@@ -412,7 +417,7 @@ bool helicoid<Real>::hit(const ray<Real>& r, Real t_min, Real t_max, hit_record<
     rec.set_face_normal(r, outward_normal);
     Real residual = norm(rec.p - this->operator()(rec.u, rec.v));
     //Real expected_residual = this->expected_residual(rec.p);
-    if (std::abs(residual) > 0.00001) {
+    if (std::abs(residual) > 0.01) {
         ++helicoid_error_count;
 #ifdef DEBUG
         std::cerr << "Residual for a helicoid with r = " << radius_ << " and λ = " << speed_ << " is " << residual << ".\n";

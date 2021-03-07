@@ -90,6 +90,19 @@ Real norm(vec<Real, dimension> const & v) {
 }
 
 template<typename Real, int64_t dimension>
+Real max_norm(vec<Real, dimension> const & v) {
+    using std::max;
+    using std::abs;
+    Real m = abs(v[0]);
+    for (int64_t i = 1; i < dimension; ++i) {
+        if (abs(v[i]) > m) {
+            m = abs(v[i]);
+        }
+    }
+    return m;
+}
+
+template<typename Real, int64_t dimension>
 void normalize(vec<Real, dimension> & v) {
     Real t = norm(v);
     for (int64_t i = 0; i < dimension; ++i) {
