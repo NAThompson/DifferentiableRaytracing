@@ -54,14 +54,14 @@ public:
         return w;
     }
 
-    template<int64_t derivatives = 0>
+    template<int64_t p = 0>
     auto derivatives(Real u, Real v) const {
-        static_assert(derivatives >= 0 && derivatives <= 2, "Not implemented past two derivatives.");
+        static_assert(p >= 0 && p <= 2, "Not implemented past two derivatives.");
         vec<Real> w;
         w[0] = radius_*v*std::cos(2*M_PI*u);
         w[1] = radius_*v*std::sin(2*M_PI*u);
         w[2] = speed_*(u-0.5);
-        if constexpr (derivatives >= 1) {
+        if constexpr (p >= 1) {
             // Note that a function σ:ℝ² -> ℝ³, the Jacobian is a 3x2 matrix.
             // However, that's pretty much useless for the purpose people actually use Jacobians for.
             // Hence, this returns a 3x3 matrix. The final column is filled with nans,
@@ -81,7 +81,7 @@ public:
             J(2,1) = 0;
 
             // H(i,j,k) := ∂ⱼ∂ₖσᵢ = H(i,k,j).
-            if constexpr (derivatives == 2) {
+            if constexpr (p == 2) {
                 tensor<Real, 3, 2, 2> H;
                 H(0,0,0) = -4*M_PI*M_PI*w[0];
                 H(0,0,1) = -2*M_PI*sin(2*M_PI*u);

@@ -1,6 +1,7 @@
 #ifndef DRT_BOUNDS_HPP
 #define DRT_BOUNDS_HPP
 #include <utility>
+#include <cassert>
 #include <drt/vec.hpp>
 
 namespace drt {

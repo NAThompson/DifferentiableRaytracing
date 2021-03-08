@@ -3,7 +3,7 @@
 #include <cmath>
 #include <utility>
 #include <vector>
-#include <optional>
+#include <algorithm>
 
 namespace drt {
 

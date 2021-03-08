@@ -11,9 +11,10 @@ namespace drt {
 template<typename Real>
 vec<Real> refract(const vec<Real>& uv, const vec<Real>& n, Real etai_over_etat) {
     using std::sqrt;
+    using std::abs;
     Real cos_theta = std::min(dot(-uv, n), Real(1));
     vec<Real> r_out_perp =  etai_over_etat * (uv + cos_theta*n);
-    vec<Real> r_out_parallel = -sqrt(fabs(Real(1) - squared_norm(r_out_perp))) * n;
+    vec<Real> r_out_parallel = -sqrt(abs(Real(1) - squared_norm(r_out_perp))) * n;
     return r_out_perp + r_out_parallel;
 }
 

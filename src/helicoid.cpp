@@ -27,7 +27,6 @@ hittable_list<Real> helicoid_scene() {
     auto bounds = heli->gaussian_curvature_bounds();
     Real ln_nkmin = log(-bounds.second);
     Real ln_nkmax = log(-bounds.first);
-    assert(ln_nkmin <= ln_nkmax);
     auto gaussian_curvature = [=](hit_record<Real> const & hr) {
         Real kappa = hr.gaussian_curvature();
         Real ln_nk = log(-kappa);
