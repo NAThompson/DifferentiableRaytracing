@@ -417,7 +417,7 @@ bool helicoid<Real>::hit(const ray<Real>& r, Real t_min, Real t_max, hit_record<
     Real r2 = abs(rec.t*dir[2]) + abs(J(2,0)*rec.u) + abs(J(2,1)*rec.v);
     Real expected_residual = std::max({r0,r1,r2});
     expected_residual *= std::numeric_limits<Real>::epsilon();
-    if (residual > 100*expected_residual) {
+    if (residual > 10*expected_residual) {
         ++helicoid_error_count;
 #ifdef DEBUG
         std::cerr << "Residual for a helicoid with r = " << radius_ << " and λ = " << speed_ << " is " << residual;

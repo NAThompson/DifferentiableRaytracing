@@ -158,7 +158,7 @@ vec<Real, dimension> newton(std::function<std::pair<vec<Real, dimension>, matrix
                 #endif
                 newguess = bound.random();
                 assert(bound.contains(newguess));
-                std::tie(v, J) = f(newguess);
+                std::tie(vnew, Jnew) = f(newguess);
                 gnew = squared_norm(v)/2;
             }
         }

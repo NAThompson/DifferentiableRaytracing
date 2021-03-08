@@ -12,6 +12,10 @@
 
 namespace drt {
 
+#ifndef DRT_HALLEY_DEBUG
+//#define DRT_HALLEY_DEBUG
+#endif
+
 template<typename Real>
 Real bisect_backup(std::function<std::tuple<Real,Real,Real>(Real)> f, Real tmin, Real tmax) {
     auto g = [&](Real x)->Real {
@@ -31,9 +35,9 @@ Real halley(std::function<std::tuple<Real,Real,Real>(Real)> f, Real tmin, Real t
     Real t = tmin;
     Real eps = std::numeric_limits<Real>::epsilon();
     auto [y, dydt, d2ydt2] = f(t);
-#ifdef DEBUG
-//std::cerr << std::setprecision(std::numeric_limits<Real>::digits10 + 1);
-//std::cerr << "Halley iterate:\n";
+#ifdef DRT_HALLEYDEBUG
+std::cerr << std::setprecision(std::numeric_limits<Real>::digits10 + 1);
+std::cerr << "Halley iterate:\n";
 #endif
     int iterations = 0;
     do {
@@ -64,8 +68,8 @@ Real halley(std::function<std::tuple<Real,Real,Real>(Real)> f, Real tmin, Real t
                 t = bisect_backup(f, tmin, tmax);
             }
         }
-#ifdef DEBUG
-        //std::cerr << "\t(t, f(t), f'(t), f''(t), i) = ("  << t << ", " << y << ", "  << dydt << ", " << d2ydt2 << ", " << iterations << ")\n";
+#ifdef DRT_HALLEY_DEBUG
+        std::cerr << "\t(t, f(t), f'(t), f''(t), i) = ("  << t << ", " << y << ", "  << dydt << ", " << d2ydt2 << ", " << iterations << ")\n";
 #endif
         std::tie(y, dydt, d2ydt2) = f(t);
     } while (abs(y) > eps*abs(t*dydt) && iterations++ < 32);
@@ -78,27 +82,34 @@ Real halley(std::function<std::tuple<Real,Real,Real>(Real)> f, Real tmin, Real t
 }
 
 // See Cuyt, "Computational Implementation of the Multivariate Halley Method for Solving Nonlinear Systems of Equations."
+// TODO: Also implement backtracking.
 template<typename Real, int64_t dimension>
-vec<Real, dimension> halley(std::function<std::tuple<vec<Real, dimension>, matrix<Real,dimension,dimension>, tensor<Real,dimension,dimension,dimension>>(vec<Real, dimension>)> f, bounds<Real, dimension> bound, vec<Real, dimension> guess) {
+vec<Real, dimension> halley(std::function<std::tuple<vec<Real, dimension>, matrix<Real,dimension,dimension>, tensor<Real,dimension,dimension,dimension>>(vec<Real, dimension>)> f,
+                            bounds<Real, dimension> bound,
+                            vec<Real, dimension> guess,
+                            int max_iterations=17) {
     using std::abs;
     using std::sqrt;
     Real eps = std::numeric_limits<Real>::epsilon();
     auto [v, J, H] = f(guess);
     Real g = squared_norm(v)/2;
-#ifdef DEBUG
+#ifdef DRT_HALLEY_DEBUG
     std::cerr << std::fixed;
     std::cerr << dimension << " dimensional Halley: guess,        f(guess),           ‖f‖²/2,          δw,        iteration\n";
 #endif
 
     int i = 1;
+    int randomizations = 0;
+    Real expected_residual = 0;
     do {
         auto a = J.solve(-v);
-#ifdef DEBUG
+#ifdef DRT_HALLEY_DEBUG
         std::cerr << "\t" << guess << ", " << v << ", " << g << ", " << a << ", " << i << "\n";
 #endif
         auto Haa = H(a,a);
         auto b = J.solve(Haa);
         vec<Real,dimension> newguess;
+        bool randomized = false;
         for (size_t i = 0; i < dimension; ++i) {
             Real denom = a[i] + b[i]/2;
             if (denom == 0) {
@@ -107,26 +118,60 @@ vec<Real, dimension> halley(std::function<std::tuple<vec<Real, dimension>, matri
                 newguess[i] = guess[i] + a[i]*a[i]/(a[i] + b[i]/2);
             }
         }
-        if (bound.contains(newguess))
+        if (!bound.contains(newguess))
         {
+            randomized = true;
+            if (randomizations++ < 8) {
+                guess = bound.random();
+            }
+            else {
+                vec<Real, dimension> nans;
+                for (int64_t i = 0; i < dimension; ++i) {
+                    nans[i] = std::numeric_limits<Real>::quiet_NaN();
+                }
+                return nans;
+            }
+        } else {
             guess = newguess;
-        }
-        else
-        {
-            //std::cerr << __FILE__ << ":" << __LINE__ << " Out of bounds!\n";
-            guess = bound.random();
         }
 
         std::tie(v, J, H) = f(guess);
-        g = squared_norm(v)/2;
+        Real gnew = squared_norm(v)/2;
+        if (gnew > g && !randomized) {
+            #ifdef DRT_HALLEY_DEBUG
+            std::cerr << "\tQuadratic form increased even though we did not randomize. Need to implement backtracking.\n";
+            #endif
+        }
+        g = gnew;
+        expected_residual = 0;
+        for (int64_t i = 0; i < dimension; ++i) {
+            Real row_residual = 0;
+            for (int64_t j = 0; j < dimension; ++j) {
+                row_residual += std::abs(J(i,j)*guess[j]);
+            }
+            // eps/2 is a little harsh, right?
+            row_residual *= eps;
+            if (row_residual > expected_residual) {
+                expected_residual = row_residual;
+            }
+        }
 
-    // TODO: Some actual analysis on this termination condition:
-    } while (g > 100*eps*(abs(v[0]) + abs(v[1])) && i++ < 30);
+    } while (max_norm(v) > expected_residual && i++ < max_iterations);
 
-#ifdef DEBUG
+#ifdef DRT_HALLEY_DEBUG
         std::cerr << "\t" << guess << ", " << v << ", " << g << "\n";
 #endif
-    return guess;
+
+    if (max_norm(v) <= expected_residual) {
+        return guess;
+    }
+    else {
+        vec<Real, dimension> nans;
+        for (int64_t i = 0; i < dimension; ++i) {
+            nans[i] = std::numeric_limits<Real>::quiet_NaN();
+        }
+        return nans;
+    }
 }
 
 
