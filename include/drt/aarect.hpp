@@ -5,7 +5,6 @@
 #include <drt/aabb.hpp>
 #include <drt/ray.hpp>
 #include <drt/hittable.hpp>
-#include <drt/material.hpp>
 
 namespace drt {
 template<typename Real>

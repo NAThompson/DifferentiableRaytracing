@@ -3,15 +3,11 @@
 
 #include <drt/hittable.hpp>
 #include <drt/vec.hpp>
-#include <drt/material.hpp>
 #include <drt/roots.hpp>
 
 
 namespace drt {
 
-namespace {
-    static int64_t cylinder_error_count = 0;
-}
 
 template<typename Real>
 class cylinder : public hittable<Real> {
@@ -98,7 +94,6 @@ bool cylinder<Real>::hit(const ray<Real>& r, Real t_min, Real t_max, hit_record<
         std::cerr << "Residual is " << residual << ", but expected residual is " << expected_residual << "\n";
         std::cerr << "Ray: " << r << ", [t_min, t_max] = ["  << t_min << ", " << t_max << "]\n";
         std::cerr << rec << "\n";
-        std::cerr << "Error count: " << ++cylinder_error_count << "\n";
         std::cerr << "\n";
 #endif
         return false;

@@ -3,7 +3,6 @@
 
 #include <drt/hittable.hpp>
 #include <drt/vec.hpp>
-#include <drt/material.hpp>
 #include <drt/roots.hpp>
 
 namespace drt {

@@ -5,12 +5,8 @@
 #include <cmath>
 #include <drt/hittable.hpp>
 #include <drt/vec.hpp>
-#include <drt/material.hpp>
 #include <drt/roots.hpp>
 
-namespace {
-    static int64_t torus_error_count = 0;
-}
 
 namespace drt {
 template<typename Real>
@@ -71,7 +67,6 @@ public:
             std::cerr << "cos(v) = " << cosv << ", p = " << p << "\n";
             std::cerr << "zr = " << zr << ", 1 - (z/r)^2 = " << 1 - zr*zr << "\n";
             std::cerr << "arg = " << arg << "\n";
-            torus_error_count++;
         }
 #endif
         return cosv/denom;
@@ -245,13 +240,11 @@ bool torus<Real>::hit(const ray<Real>& r, Real t_min, Real t_max, hit_record<Rea
     Real expected_res = this->expected_residual(rec.p);
     if (abs(res) > expected_res) {
 #ifdef DEBUG
-        torus_error_count++;
         std::cerr << __FILE__ << ":" << __LINE__ << " Residual for torus intersection unexpectedly high. ";
         std::cerr << "Residual is " << res << ", but expected residual is " << expected_res << ".\n";
         std::cerr << rec << "\n";
         std::cerr << "[t_min, t_max] = [" << t_min << ", " << t_max << "]\n";
         std::cerr << "Ray: " << r << "\n";
-        std::cerr << "Error count = " << torus_error_count << "\n";
         std::cerr << "Roots are {";
         for (auto r : roots) {
             std::cerr << r << ", ";

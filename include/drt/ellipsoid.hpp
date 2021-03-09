@@ -5,7 +5,6 @@
 #include <drt/hittable.hpp>
 #include <drt/roots.hpp>
 #include <drt/vec.hpp>
-#include <drt/material.hpp>
 
 namespace drt {
 template<typename Real>

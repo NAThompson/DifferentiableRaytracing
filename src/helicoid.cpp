@@ -40,9 +40,9 @@ hittable_list<Real> helicoid_scene() {
 
     // Adding this bounding cylinder is a really nice effect with a lot of samples per pixel.
     // Not so much without.
-    auto cyl = make_shared<cylinder<Real>>(radius, -speed/2, speed/2);
+    /*auto cyl = make_shared<cylinder<Real>>(radius, -speed/2, speed/2);
     auto emat =  make_shared<dielectric<Real>>(1.0);
-    objects.add(cyl, emat);
+    objects.add(cyl, emat);*/
     return objects;
 }
 
