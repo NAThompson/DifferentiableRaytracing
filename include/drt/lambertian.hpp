@@ -5,6 +5,7 @@
 #include <drt/material.hpp>
 #include <drt/ray.hpp>
 #include <drt/texture.hpp>
+#include <drt/pcg.hpp>
 
 namespace drt {
 
@@ -13,7 +14,8 @@ class lambertian : public material<Real> {
 public:
 
     lambertian(std::shared_ptr<texture<Real>> a) : albedo_(a) {
-        dis_ = std::uniform_real_distribution<Real>(-1,1);
+        pcg_.state = 1235123;
+        pcg_.inc = 234121;
     }
 
     lambertian(vec<Real, 3> const & color) : lambertian(std::make_shared<solid_color<Real>>(color)) {}
@@ -34,9 +36,9 @@ public:
     vec<Real, 3> random_unit_vector() {
         vec<Real, 3> v;
         do {
-            v[0] = dis_(gen_);
-            v[1] = dis_(gen_);
-            v[2] = dis_(gen_);
+            v[0] = 2*pcg_real_01<Real>(&pcg_) - 1;
+            v[1] = 2*pcg_real_01<Real>(&pcg_) - 1;
+            v[2] = 2*pcg_real_01<Real>(&pcg_) - 1;
         } while (squared_norm(v) > 1);
         return v;
     }
@@ -53,8 +55,7 @@ public:
 
 private:
     std::shared_ptr<texture<Real>> albedo_;
-    std::uniform_real_distribution<Real> dis_;
-    std::mt19937_64 gen_;
+    mutable pcg32_random_t pcg_;
 };
 
 }
