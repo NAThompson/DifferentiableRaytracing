@@ -6,6 +6,7 @@
 #include <drt/camera.hpp>
 #include <drt/ray_color.hpp>
 #include <drt/png.hpp>
+#include <drt/pcg.hpp>
 
 namespace drt {
 
@@ -33,8 +34,9 @@ void render_scene(std::string filename, int64_t image_width, int64_t image_heigh
                   vec<Real> const & background, camera<Real> const & cam, hittable_list<Real> const & world,
                   int64_t samples_per_pixel)
 {
-    std::uniform_real_distribution<Real> dis(0,1);
-    std::mt19937_64 gen(12345);
+    pcg32_random_t pcg;
+    pcg.state = 1235123;
+    pcg.inc = 234121;
     int max_depth = 8;
     std::vector<uint8_t> img(4*image_width*image_height, 0);
     for (int64_t j = 0; j < image_height; ++j) {
@@ -43,8 +45,8 @@ void render_scene(std::string filename, int64_t image_width, int64_t image_heigh
         for (int64_t i = 0; i < image_width; ++i) {
             drt::vec<Real, 3> color(0,0,0);
             for (int64_t s = 0; s < samples_per_pixel; ++s) {
-                Real u = (Real(i) + dis(gen)) / (image_width -1);
-                Real v = (Real(j) + dis(gen)) / (image_height -1);
+                Real u = (Real(i) + pcg_real_01<Real>(&pcg)) / (image_width -1);
+                Real v = (Real(j) + pcg_real_01<Real>(&pcg)) / (image_height -1);
                 auto r = cam.get_ray(u, v);
                 color += ray_color(r, background, world, max_depth);
             }
