@@ -2,7 +2,7 @@
 #define DRT_BOUNDS_HPP
 #include <utility>
 #include <cassert>
-#include <immintrin.h>
+#include <drt/pcg.hpp>
 #include <drt/vec.hpp>
 
 namespace drt {
@@ -42,10 +42,8 @@ public:
 
     void init_dists()
     {
-        for (int64_t i = 0; i < dimension; ++i) {
-            auto [a, b] = bounds_[i];
-            unifs_[i] = std::uniform_real_distribution<Real>(a,b);
-        }
+        pcg_.state = 1235123;
+        pcg_.inc = 234121;
     }
 
     inline bool contains(vec<Real, dimension> const & v) const
@@ -109,10 +107,10 @@ public:
         return (this->volume() <= 0);
     }
 
-    vec<Real, dimension> random() {
+    vec<Real, dimension> random() const {
         vec<Real, dimension> v;
         for (int64_t i = 0; i < dimension; ++i) {
-            v[i] = unifs_[i](gen_);
+            v[i] = pcg_real_01<Real>(&pcg_)*(bounds_[i].second - bounds_[i].first) + bounds_[i].first;
         }
         return v;
     }
@@ -130,8 +128,7 @@ public:
 
 private:
     std::array<std::pair<Real, Real>, dimension> bounds_;
-    std::array<std::uniform_real_distribution<Real>, dimension> unifs_;
-    std::mt19937_64 gen_;
+    mutable pcg32_random_t pcg_;
 };
 
 }
