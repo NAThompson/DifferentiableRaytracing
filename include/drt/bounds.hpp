@@ -2,6 +2,7 @@
 #define DRT_BOUNDS_HPP
 #include <utility>
 #include <cassert>
+#include <immintrin.h>
 #include <drt/vec.hpp>
 
 namespace drt {
@@ -14,6 +15,7 @@ public:
         static_assert(dimension == 1);
         bounds_[0] = b;
         assert(b.first <= b.second);
+        init_dists();
     }
 
     bounds(std::pair<Real, Real> const & b0, std::pair<Real, Real> const & b1)
@@ -23,6 +25,7 @@ public:
         assert(b0.first <= b0.second);
         bounds_[1] = b1;
         assert(b1.first <= b1.second);
+        init_dists();
     }
 
     bounds(std::pair<Real, Real> const & b0, std::pair<Real, Real> const & b1, std::pair<Real, Real> const & b2)
@@ -34,6 +37,15 @@ public:
         assert(b1.first <= b1.second);
         bounds_[2] = b2;
         assert(b2.first <= b2.second);
+        init_dists();
+    }
+
+    void init_dists()
+    {
+        for (int64_t i = 0; i < dimension; ++i) {
+            auto [a, b] = bounds_[i];
+            unifs_[i] = std::uniform_real_distribution<Real>(a,b);
+        }
     }
 
     inline bool contains(vec<Real, dimension> const & v) const
@@ -97,13 +109,10 @@ public:
         return (this->volume() <= 0);
     }
 
-    // This isn't fast and sucks you entropy pool dry!!!!
-    vec<Real, dimension> random() const {
-        std::random_device rd;
+    vec<Real, dimension> random() {
         vec<Real, dimension> v;
         for (int64_t i = 0; i < dimension; ++i) {
-            std::uniform_real_distribution<Real> dis(bounds_[i].first, bounds_[i].second);
-            v[i] = dis(rd);
+            v[i] = unifs_[i](gen_);
         }
         return v;
     }
@@ -121,6 +130,8 @@ public:
 
 private:
     std::array<std::pair<Real, Real>, dimension> bounds_;
+    std::array<std::uniform_real_distribution<Real>, dimension> unifs_;
+    std::mt19937_64 gen_;
 };
 
 }
