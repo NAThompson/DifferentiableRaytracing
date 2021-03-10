@@ -4,6 +4,7 @@
 #include <array>
 #include <iostream>
 #include <initializer_list>
+#include <drt/vec.hpp>
 
 namespace drt {
 
@@ -122,16 +123,14 @@ vec<Real, cols> matrix<Real, rows, cols>::solve(vec<Real, rows> const & b) const
             v[0] = (b[0] - M_[1]*v[1])/M_[0];
             return v;
         }
-        else if (M_[0] == 0)
-        {
-            v[1] = b[0]/M_[1];
-            v[0] = (b[1] - M_[3]*v[1])/M_[2];
-        }
         else {
-            Real b1 = b[0] - M_[0]*b[1]/M_[2];
-            v[1] = b1/(M_[1] - M_[0]*M_[3]/M_[2]);
-            v[0] = b[0] - M_[1]*v[1];
-            v[0] /= M_[0];
+            Real rM10 = 1/M_[2];
+            Real m00dm10 = M_[0]*rM10;
+            Real b1 = b[0] - b[1]*m00dm10;
+            v[1] = b1/(M_[1] - M_[3]*m00dm10);
+            v[0] = b[1] - M_[3]*v[1];
+            v[0] *= rM10;
+            return v;
         }
     }
     else if constexpr (rows == 3) {
