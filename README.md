@@ -495,6 +495,14 @@ auto image = vtkm::render(actor1, actor2, ...);
 
 ---
 
+## Is there a path from meshes to smooth surfaces?
+
+Yes, [subdivision surfaces](http://www.pbr-book.org/3ed-2018/Shapes/Subdivision_Surfaces.html).
+
+These form smooth surfaces out of mesh points.
+
+---
+
 References:
 
 - [_Ray Tracing in One Weekend_](https://raytracing.github.io/books/RayTracingInOneWeekend.html)

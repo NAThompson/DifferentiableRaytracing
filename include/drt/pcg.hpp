@@ -19,6 +19,9 @@ uint32_t pcg32_random_r(pcg32_random_t* rng)
     return (xorshifted >> rot) | (xorshifted << ((-rot) & 31));
 }
 
+// TODO: Make sure this works with floats!!!
+// Also, I suspect that this is not an optimal implementation.
+// Something is wrong here.
 template<typename Real>
 Real pcg_real_01(pcg32_random_t* rng) {
     return ldexp(pcg32_random_r(rng), -32);

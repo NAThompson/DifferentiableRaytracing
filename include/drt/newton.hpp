@@ -187,8 +187,10 @@ vec<Real, dimension> newton(std::function<std::pair<vec<Real, dimension>, matrix
 #ifdef DRT_NEWTON_DEBUG
         std::cerr << "\t" << guess << ", " << v << ", " << g << "\n";
 #endif
-    if (i == max_iterations) {
-        std::cerr << "Rejecting at max_iterations. Residual = " << max_norm(v) << ", but expected residual is " << expected_residual << "\n";
+    if (max_norm(v) <= expected_residual) {
+        return guess;
+    }
+    else {
         vec<Real, dimension> nans;
         for (int64_t i = 0; i < dimension; ++i) {
             nans[i] = std::numeric_limits<Real>::quiet_NaN();
