@@ -87,7 +87,7 @@ template<typename Real, int64_t dimension>
 vec<Real, dimension> halley(std::function<std::tuple<vec<Real, dimension>, matrix<Real,dimension,dimension>, tensor<Real,dimension,dimension,dimension>>(vec<Real, dimension>)> f,
                             bounds<Real, dimension> bound,
                             vec<Real, dimension> guess,
-                            int max_iterations=17) {
+                            int max_iterations=16) {
     using std::abs;
     using std::sqrt;
     Real eps = std::numeric_limits<Real>::epsilon();
@@ -121,7 +121,7 @@ vec<Real, dimension> halley(std::function<std::tuple<vec<Real, dimension>, matri
         if (!bound.contains(newguess))
         {
             randomized = true;
-            if (randomizations++ < 8) {
+            if (randomizations++ < 5) {
                 guess = bound.random();
             }
             else {
