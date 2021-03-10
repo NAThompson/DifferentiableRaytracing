@@ -71,7 +71,7 @@ Real newton(std::function<std::pair<Real,Real>(Real)> f, Real tmin, Real tmax) {
 // See Numerical Recipes, section 9.7: Globally Convergent Methods for Nonlinear Systems of Equations.
 template<typename Real, int64_t dimension>
 vec<Real, dimension> newton(std::function<std::pair<vec<Real, dimension>, matrix<Real,dimension,dimension>>(vec<Real, dimension>)> f,
-                            bounds<Real,dimension> const & bound, vec<Real,dimension> guess, int64_t max_iterations = 32) {
+                            bounds<Real,dimension> const & bound, vec<Real,dimension> guess, int64_t max_iterations = 16) {
     using std::abs;
     using std::sqrt;
     Real eps = std::numeric_limits<Real>::epsilon();
@@ -117,8 +117,7 @@ vec<Real, dimension> newton(std::function<std::pair<vec<Real, dimension>, matrix
                 std::cerr << "\tRandomizing as update is out of domain; random choice: x = " << guess << ".\n";
                 #endif
                 ++left_domain;
-                if (left_domain > 8) {
-                    //std::cerr << "8 randomizations didn't yield convergence; quitting.\n";
+                if (left_domain > 6) {
                     vec<Real, dimension> nans;
                     for (int64_t i = 0; i < dimension; ++i) {
                         nans[i] = std::numeric_limits<Real>::quiet_NaN();
