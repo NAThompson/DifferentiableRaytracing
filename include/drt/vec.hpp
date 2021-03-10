@@ -6,9 +6,37 @@
 
 namespace drt {
 
+enum class special_vec {
+    NaNs,
+    Ones,
+    Zeros
+};
+
 template<typename Real, int64_t dimension = 3>
 class vec {
 public:
+
+    vec(special_vec const & sv) {
+        switch(sv) {
+            case special_vec::NaNs:
+                for(int64_t i = 0; i < dimension; ++i) {
+                    v_[i] = std::numeric_limits<Real>::quiet_NaN();
+                }
+                break;
+            case special_vec::Ones:
+                for(int64_t i = 0; i < dimension; ++i) {
+                    v_[i] = 1;
+                }
+                break;
+            case special_vec::Zeros:
+                for(int64_t i = 0; i < dimension; ++i) {
+                    v_[i] = 0;
+                }
+                break;
+            default: throw std::domain_error("Unrecognized special vector.");
+        }
+    }
+
     vec() {};
 
     vec(Real x, Real y, Real z)

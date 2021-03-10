@@ -347,7 +347,7 @@ $$\mathbf{q}^{\nu + 1} = \mathbf{q}^{\nu} + (\mathbf{a}^{\nu} \otimes \mathbf{a}
 
 The $$\otimes$$ and $$\oslash$$ are bizarre componentwise multiplications and divisions; see [Cuyt](https://dl.acm.org/doi/pdf/10.1145/3147.3162) for details.
 
-^ The render using the Halley iterate is 1.2x as fast as the Newton iterate on the helicoid.
+^ The render using the Halley iterate is 1.5x as fast as the Newton iterate on the helicoid.
 
 ---
 

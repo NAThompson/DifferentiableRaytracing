@@ -118,11 +118,7 @@ vec<Real, dimension> newton(std::function<std::pair<vec<Real, dimension>, matrix
                 #endif
                 ++left_domain;
                 if (left_domain > 6) {
-                    vec<Real, dimension> nans;
-                    for (int64_t i = 0; i < dimension; ++i) {
-                        nans[i] = std::numeric_limits<Real>::quiet_NaN();
-                    }
-                    return nans;
+                    return vec<Real,dimension>(special_vec::NaNs);
                 }
                 std::tie(v, J) = f(guess);
                 g = squared_norm(v)/2;
@@ -190,11 +186,7 @@ vec<Real, dimension> newton(std::function<std::pair<vec<Real, dimension>, matrix
         return guess;
     }
     else {
-        vec<Real, dimension> nans;
-        for (int64_t i = 0; i < dimension; ++i) {
-            nans[i] = std::numeric_limits<Real>::quiet_NaN();
-        }
-        return nans;
+        return vec<Real,dimension>(special_vec::NaNs);
     }
     return guess;
 }

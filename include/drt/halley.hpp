@@ -125,11 +125,7 @@ vec<Real, dimension> halley(std::function<std::tuple<vec<Real, dimension>, matri
                 guess = bound.random();
             }
             else {
-                vec<Real, dimension> nans;
-                for (int64_t i = 0; i < dimension; ++i) {
-                    nans[i] = std::numeric_limits<Real>::quiet_NaN();
-                }
-                return nans;
+                return vec<Real,dimension>(special_vec::NaNs);
             }
         } else {
             guess = newguess;
@@ -166,11 +162,7 @@ vec<Real, dimension> halley(std::function<std::tuple<vec<Real, dimension>, matri
         return guess;
     }
     else {
-        vec<Real, dimension> nans;
-        for (int64_t i = 0; i < dimension; ++i) {
-            nans[i] = std::numeric_limits<Real>::quiet_NaN();
-        }
-        return nans;
+        return vec<Real,dimension>(special_vec::NaNs);
     }
 }
 
