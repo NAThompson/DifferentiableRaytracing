@@ -264,11 +264,12 @@ This generates a visual artefact known as [shadow acne](https://digitalrune.gith
 ## Newton's method is bad
 
 - Need to compute derivatives/Jacobians
-- Sensitive to rounding errors
-- Difficulty with multiple roots
-- There can exist full-measure regions of initial conditions where it diverges.
-- The Newton iterate can converge, but to a value which is not a root.
-- Converges to the "wrong root"
+- Slow with multiple roots
+- Full-measure regions of initial conditions where it diverges.
+- Can converge to values which are not roots.
+- For ray intersections, it *ignores* your initial guess for $$t$$.
+
+^ Since Newton's method computes the intersection of line with tangent plane, $$t$$ is uniquely determined by the guesses for the parametric coorindates $$(u_0, v_0)$$.
 
 But let's examine a hack that makes it a bit better.
 
@@ -299,6 +300,10 @@ Choose $$\lambda$$ that minimizes $$g$$.
 Helicoid rendered with Newton's method patched with backtracking. Initial guess for $$t$$ provided by bounding cylinder intersection, no bounced rays.
 
 Note: Non-existence + Newton's method = Performance bug!
+
+^ Interval arithmetic can be used to determine existence and convergence of Newton's method. See Toth.
+^ This is based on ideas from Krawczyk's operator, which bounds volumes of convergent Newton iterates.
+^ If subsequent volumes do not intersect, there is no solution!
 
 ---
 
@@ -351,6 +356,14 @@ The $$\otimes$$ and $$\oslash$$ are bizarre componentwise multiplications and di
 
 ---
 
+![left](figures/halley_helicoid.png)
+
+Helicoid rendered via the multivariate Halley iterate. The solution along the rulings is ill-conditioned-the Halley iterate cannot change this.
+
+Speed is 1.5x of the Newton iterate.
+
+---
+
 ## Implicitization
 
 Ray intersection with a parametric surface is a multivariate rootfinding problem.
@@ -363,10 +376,10 @@ Consider [converting](https://www.cs.cmu.edu/~hulya/Publications/IJCV03Paper.pdf
 
 ## So many more techniques
 
-- Use hit points from adjacent pixels as starting values for Newton/Halley iterates.
+- Use hit points from adjacent pixels as starting values for Newton/Halley iterates (ray coherence)
 - Using fundamental forms, change into a coordinate system where rays are bent and surfaces are flat; see [Barr](https://dl.acm.org/doi/pdf/10.1145/15886.15918).
 - Do a coarse triangulation of the surface, then use a Halley or Newton iterate to refine the hit points off the triangulation.
-- Bounding volume hierarchies.
+- On-the-fly subdivision of volumes; bounding volume hierarchies.
 
 ---
 
@@ -539,3 +552,5 @@ References:
 - Park, Taezoon, Joonghyun Ji, and Kwang Hee Ko. "A second order geometric method for ray/parametric surface intersection." Computer Aided Geometric Design 30.8 (2013): 795-804.
 
 - Axel Huebl, David Pugmire, Felix Schmitt, Richard Pausch, and Michael Bussmann. “Visualizing the Radiation of the Kelvin–Helmholtz Instability.” IEEE Transactions on Plasma Science 42 (10), October 2014.
+
+- Toth, Daniel L. "On ray tracing parametric surfaces." ACM SIGGRAPH Computer Graphics 19.3 (1985): 171-179.

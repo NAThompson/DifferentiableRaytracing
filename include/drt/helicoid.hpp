@@ -303,7 +303,7 @@ private:
             return std::make_pair(g, J);
         };
 
-        vec<Real, 2> sol = newton<Real,2>(f, b, vec<Real,2>(t_min, (vmin + vmax)/2));
+        vec<Real, 2> sol = newton<Real,2>(f, b, vec<Real,2>(t_min, vmax*(1- 1000*std::numeric_limits<Real>::epsilon())));
         t = sol[0];
         v = sol[1];*/
         auto f = [&o, &d, this](vec<Real,2> w) {
@@ -337,7 +337,7 @@ private:
             H(1,1,1) = 0;
             return std::make_tuple(g, J, H);
         };
-        vec<Real, 2> sol = halley<Real,2>(f, b, vec<Real,2>(t_min, (vmin + vmax)/2));
+        vec<Real, 2> sol = halley<Real,2>(f, b, vec<Real,2>(t_min, vmax*(1- 1000*std::numeric_limits<Real>::epsilon())));
         t = sol[0];
         v = sol[1];
         u = (o[2] + t*d[2])/speed_ + 0.5;
