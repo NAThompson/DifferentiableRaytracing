@@ -307,6 +307,14 @@ Note: Non-existence + Newton's method = Performance bug!
 
 ---
 
+![left](figures/helicoid_newton_wbacktracking.png)
+![right](figures/helicoid_newton_cost_inferno.png)
+
+^ Cost per pixel is displayed on the right. Lighter colors are more expensive. Darker pixels less.
+^ When we do not intersect the cylinder, we get very cheap pixels. When we hit the helicoid, but no solution exists, we get very expensive pixels.
+
+---
+
 ## Performance
 
 Since we are restricted to $$n \le 4$$ in computer graphics, we can soberly consider rootfinding methods that are asymptotically ill-advised.
@@ -361,6 +369,14 @@ The $$\otimes$$ and $$\oslash$$ are bizarre componentwise multiplications and di
 Helicoid rendered via the multivariate Halley iterate. The solution along the rulings is ill-conditioned-the Halley iterate cannot change this.
 
 Speed is 1.5x of the Newton iterate.
+
+---
+
+![left](figures/halley_helicoid.png)
+![right](figures/helicoid_halley_cost_inferno.png)
+
+^ Cost per pixel for Halley iterate.
+^ I cannot make heads nor tails of this data.
 
 ---
 

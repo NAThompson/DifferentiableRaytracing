@@ -281,7 +281,7 @@ private:
 
         auto [vmin, vmax] = this->vbounds(o, d, t_min, t_max);
         drt::bounds<Real, 2> b({t_min, t_max}, {vmin, vmax});
-        /*auto f = [&o, &d, this](vec<Real,2> w) {
+        auto f = [&o, &d, this](vec<Real,2> w) {
             Real t = w[0];
             Real v = w[1];
             vec<Real, 2> g;
@@ -304,9 +304,7 @@ private:
         };
 
         vec<Real, 2> sol = newton<Real,2>(f, b, vec<Real,2>(t_min, vmax*(1- 1000*std::numeric_limits<Real>::epsilon())));
-        t = sol[0];
-        v = sol[1];*/
-        auto f = [&o, &d, this](vec<Real,2> w) {
+        /*auto f = [&o, &d, this](vec<Real,2> w) {
             Real t = w[0];
             Real v = w[1];
             vec<Real, 2> g;
@@ -337,7 +335,7 @@ private:
             H(1,1,1) = 0;
             return std::make_tuple(g, J, H);
         };
-        vec<Real, 2> sol = halley<Real,2>(f, b, vec<Real,2>(t_min, vmax*(1- 1000*std::numeric_limits<Real>::epsilon())));
+        vec<Real, 2> sol = halley<Real,2>(f, b, vec<Real,2>(t_min, vmax*(1- 1000*std::numeric_limits<Real>::epsilon())));*/
         t = sol[0];
         v = sol[1];
         u = (o[2] + t*d[2])/speed_ + 0.5;

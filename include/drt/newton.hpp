@@ -125,7 +125,7 @@ vec<Real, dimension> newton(std::function<std::pair<vec<Real, dimension>, matrix
                 continue;
             }
 
-            assert(lambda_max < 1);
+            assert(lambda_max <= 1);
             #ifdef DRT_NEWTON_DEBUG
             std::cerr << "\tNewton step leaves domain; taking step λ = " << lambda_max << "\n";
             #endif
