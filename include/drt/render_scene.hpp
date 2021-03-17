@@ -2,6 +2,7 @@
 #define DRT_RENDER_SCENE_HPP
 #include <iostream>
 #include <chrono>
+#include <drt/color_maps.hpp>
 #include <drt/vec.hpp>
 #include <drt/camera.hpp>
 #include <drt/ray_color.hpp>
@@ -10,8 +11,8 @@
 
 namespace drt {
 
-#ifndef COST_MAP
-#define COST_MAP 1
+#ifndef DRT_COST_MAP
+#define DRT_COST_MAP 1
 #endif
 
 void display_progress(double progress)
@@ -48,7 +49,7 @@ void render_scene(std::string filename, int64_t image_width, int64_t image_heigh
         Real progress = Real(j)/Real(image_height);
         display_progress(progress);
         for (int64_t i = 0; i < image_width; ++i) {
-            #ifdef COST_MAP
+            #ifdef DRT_COST_MAP
             auto start = std::chrono::high_resolution_clock::now();
             #endif
             drt::vec<Real, 3> color(0,0,0);
@@ -64,7 +65,7 @@ void render_scene(std::string filename, int64_t image_width, int64_t image_heigh
             img[idx + 1] = c[1];
             img[idx + 2] = c[2];
             img[idx + 3] = c[3];
-            #ifdef COST_MAP
+            #ifdef DRT_COST_MAP
             auto end = std::chrono::high_resolution_clock::now();
             auto time_span = std::chrono::duration_cast<std::chrono::duration<double>>(end - start);
             cost[image_width * (image_height - 1 - j) + i] = time_span.count();
@@ -73,7 +74,7 @@ void render_scene(std::string filename, int64_t image_width, int64_t image_heigh
     }
 
     drt::write_png(filename, img, image_width, image_height);
-    #ifdef COST_MAP
+    #ifdef DRT_COST_MAP
     double min_time = std::numeric_limits<double>::max();
     double max_time = 0;
     for (auto & t : cost) {
@@ -94,7 +95,7 @@ void render_scene(std::string filename, int64_t image_width, int64_t image_heigh
             //Real s = (log(cost[idx]) - log(min_time))/(log(max_time) - log(min_time));
             Real s = (cost[idx] - min_time)/(max_time - min_time);
             assert(s >= 0 && s <= 1);
-            auto color = inferno(s);
+            auto color = drt::inferno(s);
             auto c = drt::to_8bit_rgba(color);
             idx *= 4;
             img[idx + 0] = c[0];

@@ -9,6 +9,7 @@
 
 
 namespace drt {
+
 template<typename Real>
 class torus : public hittable<Real> {
 public:
@@ -206,6 +207,20 @@ bool torus<Real>::hit(const ray<Real>& r, Real t_min, Real t_max, hit_record<Rea
     c[2] = 2*dsq*tmp + 4*ocd*ocd + 4*R_*R_*d[2]*d[2];
     c[3] = 4*dsq*ocd;
     c[4] = dsq*dsq;
+
+    // Descartes rule of signs. This improves performance, but not by as much as one would hope.
+    // Only about 7% of queries can achieve early exit.
+    bool sign_changes = false;
+    for (int64_t j = 3; j >= 0; --j) {
+        if (c[j] < 0) {
+            sign_changes = true;
+            // The break introduces another branch which makes this slower:
+            //break;
+        }
+    }
+    if (!sign_changes) {
+        return false;
+    }
 
     auto roots = quartic_roots(c[4], c[3], c[2], c[1], c[0]);
     rec.t = std::numeric_limits<Real>::quiet_NaN();

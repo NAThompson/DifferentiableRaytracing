@@ -8,13 +8,6 @@ Nick Thompson
 
 ---
 
-## What is raytracing
-
-- Cast lights from eyes to objects, and see if they reflect into a light source
-- Exactly the opposite of real world, but no problem due to electromagnetic reciprocity
-
----
-
 ![](figures/albrecht_durer.jpg)
 
 ---
@@ -162,16 +155,18 @@ Ray $$\mathbf{O} + t\mathbf{D}$$ intersects torus when $$x = o_x + td_x, y = o_y
 
 ---
 
-## Gaussian Curvature of Torus
+![left](figures/torus_curvature.png)
 
-![inline](figures/torus_curvature.png)
-
+Gaussian curvature of torus computed from numerically evaluated first and second fundamental forms. Rendered via solution of quartic equation.
 
 ---
 
-## Gaussian Curvature of Torus in Paraview
 
-![inline](figures/pv_torus_curvature.png)
+
+![left](figures/pv_torus_curvature.png)
+
+Gaussian curvature of torus computed using the curvature filter in Paraview.
+Artifacts from the triangle mesh are clearly visible and the curvature is incorrect everywhere.
 
 ---
 
@@ -377,6 +372,13 @@ Speed is 1.5x of the Newton iterate.
 
 ^ Cost per pixel for Halley iterate.
 ^ I cannot make heads nor tails of this data.
+
+---
+
+![left](figures/helicoid_newton_cost_inferno.png)
+![right](figures/helicoid_halley_cost_inferno.png)
+
+^ Newton vs Halley expense per pixel.
 
 ---
 
