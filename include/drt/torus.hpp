@@ -138,6 +138,16 @@ public:
         return std::pair<Real, Real>(u,v);
     }
 
+    // x = x₀ + (R + r cos(2πv)) cos(2πu)
+    // y = y₀ + (R + r cos(2πv)) sin(2πu)
+    // z = z₀ + r sin(2πv)
+    vec<Real,3> operator()(Real u, Real v) const override {
+        vec<Real,3> w = center_;
+        w[0] += (R_ + r_*cos(2*M_PI*v))*cos(2*M_PI*u);
+        w[1] += (R_ + r_*cos(2*M_PI*v))*sin(2*M_PI*u);
+        w[2] += r_*sin(2*M_PI*v);
+        return w;
+    }
     // PBRT uses invariants; e.g. for a circle the refinement is
     // pHit *= radius / Distance(pHit, Point3f(0, 0, 0));
     // This requires a direction in which to refine, so that we can update with Newton's method:

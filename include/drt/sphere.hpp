@@ -46,6 +46,15 @@ public:
         return 4*M_PI*radius_*radius_*radius_/3;
     }
 
+    // σ(u,v) = (x₀ + rcos(2πu)sin(πv), y₀ + rsin(2πu)sin(πv), z₀ + rcos(πv)), u,v ∈ [0,1].
+    vec<Real,3> operator()(Real u, Real v) const override {
+        vec<Real,3> w = center_;
+        w[0] += radius_*cos(2*M_PI*u)*sin(M_PI*v);
+        w[1] += radius_*sin(2*M_PI*u)*sin(M_PI*v);
+        w[2] += radius_*cos(M_PI*v);
+        return w;
+    }
+
 private:
     // Private since rec.u, rec.v must be set before this can be called:
     void set_fundamental_forms(hit_record<Real>& rec) const {

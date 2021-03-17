@@ -27,6 +27,10 @@ public:
         return true;
     }
 
+    virtual vec<Real,3> operator()(Real, Real) const override {
+        return vec<Real,3>(special_vec::NaNs);
+    }
+
     virtual ~xy_rect() = default;
 
 public:
@@ -52,6 +56,10 @@ public:
         return true;
     }
 
+    virtual vec<Real,3> operator()(Real, Real) const override {
+        return vec<Real,3>(special_vec::NaNs);
+    }
+
     virtual ~xz_rect() = default;
 
 public:
@@ -74,6 +82,10 @@ public:
                           vec<Real>(k_ + rt_eps, y1_, z1_));
 
         return true;
+    }
+
+    virtual vec<Real,3> operator()(Real, Real) const override {
+        return vec<Real,3>(special_vec::NaNs);
     }
 
     virtual ~yz_rect() = default;

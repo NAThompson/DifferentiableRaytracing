@@ -26,6 +26,10 @@ public:
 
     virtual ~constant_medium() = default;
 
+    vec<Real,3> operator()(Real, Real) const override {
+        return vec<Real,3>(special_vec::NaNs);
+    }
+
 public:
     std::shared_ptr<hittable<Real>> boundary_;
     Real neg_inv_density_;

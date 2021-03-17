@@ -43,6 +43,15 @@ public:
         return std::make_pair(u,v);
     }
 
+    // σ(u,v) = (rcos(2πu), rsin(2πu), z_min + v(z_max - z_min))
+    vec<Real,3> operator()(Real u, Real v) const override {
+        vec<Real> w;
+        w[0] = radius_*std::cos(2*M_PI*u);
+        w[1] = radius_*std::sin(2*M_PI*u);
+        w[2] = z_min_ + v*(z_max_ - z_min_);
+        return w;
+    }
+
 private:
 
     void set_fundamental_forms(hit_record<Real> & rec) const {

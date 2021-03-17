@@ -84,6 +84,14 @@ public:
     virtual bool hit(const ray<Real>& r, Real t_min, Real t_max, hit_record<Real>& rec) const = 0;
 
     virtual bool bounding_box(aabb<Real>& output_box) const = 0;
+
+    virtual vec<Real,3> operator()(Real u, Real v) const = 0;
+
+    // What to do!!!
+    // fatal error: function with deduced return type cannot be virtual
+    //template<int64_t p = 0>
+    //virtual auto derivatives(Real u, Real v) const = 0;
+
 };
 
 }

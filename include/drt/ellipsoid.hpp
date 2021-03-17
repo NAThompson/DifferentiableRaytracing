@@ -46,6 +46,15 @@ public:
         return std::make_pair(u, v);
     }
 
+    // σ(u,v) = (x₀ + a·cos(2πu)sin(πv), y₀ + b·sin(2πu)sin(πv), z₀ + c·cos(πv)), u,v ∈ [0,1].
+    vec<Real, 3> operator()(Real u, Real v) const override {
+        vec<Real,3> w = center_;
+        w[0] += scales_[0]*cos(2*M_PI*u)*sin(M_PI*v);
+        w[1] += scales_[1]*sin(2*M_PI*u)*sin(M_PI*v);
+        w[2] += scales_[2]*cos(M_PI*v);
+        return w;
+    }
+
     Real gaussian_curvature(const vec<Real>& p) {
         Real asq = scales_[0]*scales_[0];
         Real bsq = scales_[1]*scales_[1];

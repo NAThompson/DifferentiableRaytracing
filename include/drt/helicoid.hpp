@@ -46,7 +46,7 @@ public:
         #endif
     };
 
-    auto operator()(Real u, Real v) const {
+    vec<Real,3> operator()(Real u, Real v) const override {
         vec<Real> w;
         w[0] = radius_*v*std::cos(2*M_PI*u);
         w[1] = radius_*v*std::sin(2*M_PI*u);
