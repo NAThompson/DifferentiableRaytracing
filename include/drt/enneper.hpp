@@ -101,6 +101,11 @@ public:
         return p;
     }
 
+    std::pair<Real,Real> gaussian_curvature_bounds() const {
+        // K = -4/(1+u^2 + v^2)^4. u \in (-2,2), v \in (-2,2).
+        return std::make_pair<Real, Real>(-4, -Real(4)/std::pow(Real(9),4));
+    }
+
 
 private:
     // Only used for the spherical bounding volume:
@@ -119,7 +124,7 @@ private:
             return std::make_pair(p - o - w[2]*d, J);
         };
 
-        std::array<vec<Real,3>, 10> sols;
+        std::array<vec<Real,3>, 20> sols;
         bounds<Real,3> bound({-2,0}, {-2,0}, {t_min, t_max});
         sols[0] = newton(f, bound, bound.center());
         bound[0] = std::make_pair<Real,Real>(0,2);

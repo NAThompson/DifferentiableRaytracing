@@ -1,5 +1,6 @@
 #include <iostream>
 #include <random>
+#include <cmath>
 #include <drt/vec.hpp>
 #include <drt/hittable_list.hpp>
 #include <drt/camera.hpp>
@@ -23,7 +24,18 @@ hittable_list<Real> enneper_scene() {
     hittable_list<Real> objects;
     Real radius = 4;
     auto enne = make_shared<enneper<Real>>(radius);
-    auto mat = make_shared<diffuse_light<Real>>(vec<Real,3>(0.02, 0.4, 0.9));
+    auto bounds = enne->gaussian_curvature_bounds();
+    Real ln_nkmin = log(-bounds.second);
+    Real ln_nkmax = log(-bounds.first);
+    auto gaussian_curvature = [=](hit_record<Real> const & hr) {
+        Real kappa = hr.gaussian_curvature();
+        Real ln_nk = log(-kappa);
+        Real scalar = (ln_nk - ln_nkmin)/(ln_nkmax - ln_nkmin);
+        return viridis(scalar);
+    };
+
+    auto texture = make_shared<lambda_texture<Real>>(gaussian_curvature);
+    auto mat = make_shared<diffuse_light<Real>>(texture);
     objects.add(enne, mat);
     return objects;
 }
@@ -39,7 +51,7 @@ int main() {
 
     auto world = enneper_scene<Real>();
     drt::vec<Real> lookat(0,0,0);
-    drt::vec<Real> lookfrom(0, -10, 0);
+    drt::vec<Real> lookfrom(0, -10, 5);
     drt::vec<Real> vup(0,0,1);
     drt::camera<Real> cam(lookfrom, lookat, vup, Real(40), aspect_ratio);
     drt::vec<Real> background(0.0, 0.0, 0.0);
