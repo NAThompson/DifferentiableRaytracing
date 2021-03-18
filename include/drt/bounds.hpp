@@ -87,6 +87,10 @@ public:
         return bounds_[i];
     }
 
+    inline std::pair<Real, Real>& operator[](int64_t i)  {
+        return bounds_[i];
+    }
+
     vec<Real, dimension> center() const {
         vec<Real,dimension> v;
         for (int64_t i = 0; i < dimension; ++i) {

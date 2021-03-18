@@ -420,7 +420,7 @@ bool helicoid<Real>::hit(const ray<Real>& r, Real t_min, Real t_max, hit_record<
 #ifdef DEBUG
         std::cerr << "Residual for a helicoid with r = " << radius_ << " and λ = " << speed_ << " is " << residual;
         std::cerr << ", but expected residual is " << expected_residual << ".\n";
-        std::cerr << "r(" << rec.t << ") = " << r(rec.t) << ", but σ(" << rec.u << ", " << rec.v << ") = " << this->operator()(rec.u, rec.v) << "\n";
+        std::cerr << "r(" << rec.t << ") = " << r(rec.t) << ", but σ(" << rec.u << ", " << rec.v << ") = " << (*this)(rec.u, rec.v) << "\n";
         std::cerr << "Ray: " << r << ", [t_min, t_max] = ["  << t_min << ", " << t_max << "]\n";
         std::cerr << rec << "\n";
         std::cerr << "Hits = " << helicoid_hits << ", misses = " << helicoid_misses << "\n";
