@@ -35,7 +35,7 @@ hittable_list<Real> torus_scene() {
     auto gaussian_curvature = [=](hit_record<Real> const & hr) {
         Real kappa = hr.gaussian_curvature();
         Real scalar = (kappa - kappa_min)/(kappa_max - kappa_min);
-        return viridis(scalar);
+        return smooth_cool_warm(scalar);
     };
 
     auto texture = make_shared<drt::lambda_texture<Real>>(gaussian_curvature);
@@ -48,10 +48,10 @@ hittable_list<Real> torus_scene() {
 int main() {
     using Real = double;
 
-    const Real aspect_ratio = 1.6;
+    const Real aspect_ratio = 1.0;
     const int64_t image_width = 1200;
     const int64_t image_height = static_cast<int64_t>(image_width/aspect_ratio);
-    const int64_t samples_per_pixel = 16;
+    const int64_t samples_per_pixel = 128;
 
     auto world = torus_scene<Real>();
     Real scale = 0.7;

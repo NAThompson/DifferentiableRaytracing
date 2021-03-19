@@ -124,7 +124,7 @@ private:
             return std::make_pair(p - o - w[2]*d, J);
         };
 
-        std::array<vec<Real,3>, 20> sols;
+        std::array<vec<Real,3>, 12> sols;
         bounds<Real,3> bound({-2,0}, {-2,0}, {t_min, t_max});
         sols[0] = newton(f, bound, bound.center());
         bound[0] = std::make_pair<Real,Real>(0,2);
