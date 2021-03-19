@@ -12,7 +12,7 @@ public:
            vec<Real> lookat,
            vec<Real> view_up,
            Real vfov, // vertical field-of-view in degrees
-           Real aspect_ratio = 16.0/9.0) : origin_(lookfrom) {
+           Real aspect_ratio = 16.0/9.0) : origin_(lookfrom), lookat_(lookat) {
         Real theta = vfov*M_PI/180.0;
         Real h = std::tan(theta/2);
         Real viewport_height = 2.0 * h;
@@ -33,11 +33,19 @@ public:
         return ray<Real>(origin_, lower_left_corner_ + u*horizontal_ + v*vertical_ - origin_);
     }
 
+    std::pair<vec<Real>,vec<Real>> backlight() const {
+        vec<Real,3> o = Real(2)*origin_ - lookat_;
+        vec<Real,3> d = lookat_ - origin_;
+        normalize(d);
+        return std::make_pair(o,d);
+    }
+
 private:
     vec<Real, 3> origin_;
     vec<Real, 3> lower_left_corner_;
     vec<Real, 3> horizontal_;
     vec<Real, 3> vertical_;
+    vec<Real,3> lookat_;
 };
 }
 #endif

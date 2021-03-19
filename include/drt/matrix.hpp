@@ -111,6 +111,21 @@ inline vec<Real, rows> operator*(const matrix<Real, rows, cols> & M, const vec<R
     return w;
 }
 
+template<typename Real, int64_t rows, int64_t cols, int64_t cols2>
+inline matrix<Real, rows, cols2> operator*(const matrix<Real, rows, cols> & A, const matrix<Real, cols, cols2> &B) {
+    matrix<Real, rows, cols2> M;
+    for (int64_t i = 0; i < rows; ++i) {
+        for (int64_t j = 0; j < cols2; ++j)
+        {
+            M(i,j) = 0;
+            for (int64_t k = 0; k < cols; ++k) {
+                M(i,j) += A(i,k)*B(k,j);
+            }
+        }
+    }
+    return M;
+}
+
 template<typename Real, int64_t rows, int64_t cols>
 vec<Real, cols> matrix<Real, rows, cols>::solve(vec<Real, rows> const & b) const
 {
