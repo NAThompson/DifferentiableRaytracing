@@ -108,9 +108,9 @@ Again, just a quadratic.
 
 ---
 
-## Ellipsoid colored by Gaussian Curvature
+![original](figures/ellipsoid_curvature.png)
 
-![inline](figures/gaussian_curvature.png)
+An ellipsoid pseudocolored by Gaussian curvature
 
 ---
 
