@@ -110,15 +110,16 @@ Again, just a quadratic.
 
 ![original](figures/ellipsoid_curvature.png)
 
-An ellipsoid pseudocolored by Gaussian curvature
+
+[.footer: *An ellipsoid pseudocolored by Gaussian curvature*]
 
 ---
 
-## Parametric Equation of a Torus
+## Implicit Equation of a Torus
 
 $$(x^2 + y^2 + z^2 + R^2 - r^2)^2 - 4R^2(x^2+y^2) = 0$$
 
-Ray $$\mathbf{O} + t\mathbf{D}$$ intersects torus when $$x = o_x + td_x, y = o_y + td_y, z = o_z + td_z$$, which gives a quartic equation for $$t$$.
+Ray $$\mathbf{o} + t\mathbf{d}$$ intersects torus when $$x = o_x + td_x, y = o_y + td_y, z = o_z + td_z$$, which gives a quartic equation for $$t$$.
 
 - No real roots implies no intersection of ray with torus
 - Multiple real roots implies multiple intersections; take the smallest real root (point of surface closest to camera)
@@ -131,8 +132,6 @@ Gaussian curvature of torus computed from numerically evaluated first and second
 
 ---
 
-
-
 ![left](figures/pv_torus_curvature.png)
 
 Gaussian curvature of torus computed using the curvature filter in Paraview.
@@ -140,17 +139,20 @@ Artifacts from the triangle mesh are clearly visible and the curvature is incorr
 
 ---
 
-## Parametric equation of helicoid
+Parametric equation of helicoid
 
-$$\sigma(u, v) = (rv\cos(2\pi u), rv\sin(2\pi u), \lambda (u-1/2))$$.
+$$\sigma(u, v) =
+\begin{pmatrix}
+rv\cos(2\pi u)\\
+rv\sin(2\pi u)\\
+\lambda (u-1/2)
+\end{pmatrix}$$
 
 Intersects ray when
 
-$$
-o_x + td_x = rv\cos(2\pi u),
-o_y + td_y = rv\sin(2\pi u),
-o_z + td_z = \lambda(u-1/2)
-$$
+$$\mathbf{o} + t\mathbf{d} = \sigma(u,v)$$
+
+![left](figures/helicoid_smooth_cool_warm_lambertian.png)
 
 ---
 
