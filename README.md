@@ -117,9 +117,9 @@ Again, just a quadratic.
 
 ## Implicit Equation of a Torus
 
-$$(x^2 + y^2 + z^2 + R^2 - r^2)^2 - 4R^2(x^2+y^2) = 0$$
+$$(x^2 + y^2 + z^2 + R^2 - r^2)^2 = 4R^2(x^2+y^2)$$
 
-Ray $$\mathbf{o} + t\mathbf{d}$$ intersects torus when $$x = o_x + td_x, y = o_y + td_y, z = o_z + td_z$$, which gives a quartic equation for $$t$$.
+Plug in $$x = o_x + td_x, y = o_y + td_y, z = o_z + td_z$$ and expand to get a quartic equation for $$t$$.
 
 - No real roots implies no intersection of ray with torus
 - Multiple real roots implies multiple intersections; take the smallest real root (point of surface closest to camera)
@@ -515,21 +515,23 @@ References:
 
 - Moreland, Kenneth. "Why we use bad color maps and what you can do about it." Electronic Imaging 2016.16 (2016): 1-6.
 
-- Pharr, Matt, Wenzel Jakob, and Greg Humphreys. "Physically based rendering: From theory to implementation." Morgan Kaufmann, 2016.
-
 ---
+
+- Pharr, Matt, Wenzel Jakob, and Greg Humphreys. "Physically based rendering: From theory to implementation." Morgan Kaufmann, 2016.
 
 - Barr, Alan H. "Ray tracing deformed surfaces." ACM SIGGRAPH Computer Graphics 20.4 (1986): 287-296.
 
 - Palais, Richard S. "The visualization of mathematics: towards a mathematical exploratorium." Notices of the AMS 46.6 (1999): 647-658.
 
+---
+
 - Pressley, Andrew N. "Elementary differential geometry." Springer Science & Business Media, 2010.
 
 - Press, William H., et al. "Numerical recipes in C++." The art of scientific computing 2 (1992): 1002.
 
----
-
 - Scott, Melvin, Beny Neta, and Changbum Chun. "Basin attractors for various methods." Applied Mathematics and Computation 218.6 (2011): 2584-2599.
+
+---
 
 - Yalcin, Hulya, Mustafa Unel, and William Wolovich. "Implicitization of parametric curves by matrix annihilation." International Journal of Computer Vision 54.1 (2003): 105-115.
 
