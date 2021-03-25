@@ -14,14 +14,15 @@ Nick Thompson
 
 ## How to render a sphere
 
-Compute the intersection of a line and a sphere. Easy.
+First: Compute the intersection of a ray and a sphere.
 
-Line: $$\mathbf{P}(t) = \mathbf{O} + t\mathbf{D}$$
-Sphere: $$(\mathbf{P} - \mathbf{C})^2 = R^2$$.
+Ray is $$\mathbf{r}(t) = \mathbf{o} + t\mathbf{d}$$, sphere: $$(\mathbf{P} - \mathbf{c})^2 = R^2$$.
 
-Plug in to get quadratic equation for intersection points.
+$$
+\mathbf{d}^2t^2 + 2(\mathbf{o} - \mathbf{c})\cdot \mathbf{d}t + (\mathbf{o}-\mathbf{c})^2 = R^2
+$$
 
-But isn't a sphere differentiable?
+A quadratic for $$t$$. No real roots $$\implies$$ ray doesn't hit sphere.
 
 ---
 
@@ -37,7 +38,7 @@ All that matters to raytracing is that you can compute the intersection of your 
 
 Raytracing triangle meshes has become dominant in game programming. The assumption is that *creation* of the mesh is not that expensive-a good assumption for game asset generation; a bad one for visualizing ODE/PDE solutions.
 
-CAD programs *used* to render diagrams using smoother surfaces; e.g., Bezier and Catmull-Clark.
+CAD programs render diagrams using smoother surfaces; e.g., Bezier and Catmull-Clark.
 
 ---
 
@@ -47,28 +48,11 @@ CAD programs *used* to render diagrams using smoother surfaces; e.g., Bezier and
 
 ---
 
-## Interpolation in the scalar case
+## Benefits of exploiting smoothness
 
-Tri-meshes are a form of linear interpolation on $$\mathbb{R}^3$$.
-
-If we restrict to 1D, what benefit is there to smoother representation?
-
----
-
-The error of linear interpolation is $$\mathcal{O}(h^2)$$.
-
-The error of a cubic B-spline is $$\mathcal{O}(h^4)$$.
-
-So for the same level of error, a cubic B-spline requires a square root of the amount of memory that linear interpolation requires!
-
-This requires differentiability of the data; if it's not differentiable, just use linear interpolation.
-
----
-
-
-Again, rendering massive data is *not* a problem. It's *creating* that data in a simulation.
-
-Try solving your ODEs with Euler's method, or PDEs with first-order accurate finite differences.
+- Memory requirements are drastically reduced relative to triangle meshes.
+- No error prone conversion into triangle meshes.
+- Pseudocoloring by derived quantities results in fewer visual artifacts.
 
 ---
 
