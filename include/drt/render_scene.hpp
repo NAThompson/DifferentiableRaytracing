@@ -8,31 +8,13 @@
 #include <drt/ray_color.hpp>
 #include <drt/png.hpp>
 #include <drt/pcg.hpp>
+#include <drt/progress_bar.hpp>
 
 namespace drt {
 
 #ifndef DRT_COST_MAP
 #define DRT_COST_MAP 1
 #endif
-
-void display_progress(double progress)
-{
-    int barWidth = 100;
-
-    std::cout << "\033[0;32m[";
-    int pos = static_cast<int>(barWidth * progress);
-    for (int i = 0; i < barWidth; ++i)
-    {
-        if (i < pos)
-            std::cout << "=";
-        else if (i == pos)
-            std::cout << ">";
-        else
-            std::cout << " ";
-    }
-    std::cout << "] " << int(progress * 100.0) << "%\033[0m\r";
-    std::cout.flush();
-}
 
 template<typename Real>
 void render_scene(std::string filename, int64_t image_width, int64_t image_height,

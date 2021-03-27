@@ -162,7 +162,7 @@ The Newton fractal teaches us that it's difficult to predict *which* root Newton
 
 In ray tracing, we need the *minimal* root to determine the closest intersection point to the ray.
 
-![left](figures/newton_fractal.jpg)
+![left](figures/newton_fractal_z8_15z4_m16_viridis.png)
 
 ^ A Newton fractal colored by root reached.
 
@@ -180,13 +180,6 @@ A helicoid pseudocolored by Gaussian curvature. The pseudocoloring changes disco
 
 ![inline](figures/the_worst.gif)
 
-
----
-
-## Multivariate root-finding is the worst!
-
-> We make an extreme, but wholly defensible, statement: There are *no* good, general methods for solving systems of more than one nonlinear equation.
--- Numerical Recipes
 
 ---
 

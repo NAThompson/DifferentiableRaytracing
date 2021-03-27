@@ -4,6 +4,7 @@
 #include <chrono>
 #include <drt/png.hpp>
 #include <drt/color_maps.hpp>
+#include <drt/progress_bar.hpp>
 
 
 template<typename Real>
@@ -11,6 +12,16 @@ auto fifth_roots(std::complex<Real> z) {
     std::complex<Real> v = std::pow(z,4);
     std::complex<Real> dw = Real(5)*v;
     std::complex<Real> w = v*z - Real(1);
+    return std::make_pair(w, dw);
+}
+
+template<typename Real>
+auto g(std::complex<Real> z) {
+    std::complex<Real> z2 = z*z;
+    std::complex<Real> z3 = z*z2;
+    std::complex<Real> z4 = z2*z2;
+    std::complex<Real> w = z4*(z4 + Real(15)) - Real(16);
+    std::complex<Real> dw = Real(4)*z3*(Real(2)*z4 + Real(15));
     return std::make_pair(w, dw);
 }
 
@@ -30,7 +41,7 @@ std::complex<Real> complex_newton(std::function<std::pair<std::complex<Real>,std
     do {
         auto [y, dy] = f(z);
         z -= y/dy;
-        close = (abs(y) <= std::numeric_limits<Real>::epsilon()*abs(z*dy)/2);
+        close = (abs(y) <= 1.4*std::numeric_limits<Real>::epsilon()*abs(z*dy));
     } while(!close);
     return z;
 }
@@ -83,15 +94,16 @@ private:
 
 int main() {
     using Real = long double;
-    int64_t image_width = 2048;
-    int64_t image_height = 2048;
+    int64_t image_width = 4096;
+    int64_t image_height = 4096;
     std::vector<uint8_t> img(4*image_width*image_height, 0);
     plane_pixel_map<Real> map(image_width, image_height, Real(-2), Real(-2));
     for (int64_t j = 0; j < image_height; ++j) {
+        drt::display_progress(Real(j)/Real(image_height));
         for (int64_t i = 0; i < image_width; ++i) {
             std::complex<Real> z0 = map.to_complex(i,j);
-            auto rt = complex_halley<Real>(fifth_roots_halley<Real>, z0);
-            //auto rt = complex_newton<Real>(fifth_roots<Real>, z0);
+            //auto rt = complex_halley<Real>(fifth_roots_halley<Real>, z0);
+            auto rt = complex_newton<Real>(g<Real>, z0);
             // The root is one of exp(2πij/5). Therefore is can be classified by angle.
             Real theta = atan2(rt.imag(), rt.real());
             // Now theta in [-π,π]. Get it into [0,2π]:
@@ -102,7 +114,7 @@ int main() {
             if (std::isnan(theta)) {
                 std::cerr << "Theta is a nan!\n";
             }
-            auto c = drt::to_8bit_rgba(drt::viridis(theta));
+            auto c = drt::to_8bit_rgba(drt::smooth_cool_warm(theta));
             int64_t idx = 4 * image_width * (image_height - 1 - j) + 4 * i;
             img[idx + 0] = c[0];
             img[idx + 1] = c[1];
@@ -111,10 +123,17 @@ int main() {
         }
     }
 
-    for (int64_t k = 0; k < 5; ++k) {
-        std::complex<Real> angle{0, 2*M_PI*k/5};
-        std::complex<Real> rt = std::exp(angle);
-        auto [ic, jc] = map.to_pixel(rt);
+    std::array<std::complex<Real>, 8> roots;
+    roots[0] = -Real(1);
+    roots[1] = Real(1);
+    roots[2] = {Real(0), Real(1)};
+    roots[3] = {Real(0), -Real(1)};
+    roots[4] = {sqrt(Real(2)), sqrt(Real(2))};
+    roots[5] = {sqrt(Real(2)), -sqrt(Real(2))};
+    roots[6] = {-sqrt(Real(2)), -sqrt(Real(2))};
+    roots[7] = {-sqrt(Real(2)), sqrt(Real(2))};
+    for (int64_t k = 0; k < 8; ++k) {
+        auto [ic, jc] = map.to_pixel(roots[k]);
 
         int64_t r = 7;
         for (int64_t i = ic - r; i < ic + r; ++i) {
