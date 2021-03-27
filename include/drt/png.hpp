@@ -3,6 +3,7 @@
 #include <cmath>
 #include <array>
 #include <algorithm>
+#include <drt/vec.hpp>
 #include "lodepng.h"
 
 namespace drt {
