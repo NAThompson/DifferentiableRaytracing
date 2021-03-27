@@ -282,8 +282,8 @@ Convergence is cubic, much more importantly, *which* root Halley's method conver
 
 ---
 
-![left](figures/z5m1_newton.jpg)
-![right](figures/z5m1_halley.jpg)
+![left](figures/newton_fractal_viridis_z5m1.png)
+![right](figures/halley_fractal_viridis_z5m1.png)
 
 ^ [Newton vs Halley fractals](http://www.hpdz.net/StillImages/Newton-Halley.htm)
 
@@ -335,6 +335,71 @@ Speed is 1.5x of the Newton iterate.
 ![right](figures/helicoid_halley_cost_inferno.png)
 
 ^ Newton vs Halley expense per pixel.
+
+---
+
+## Time for New Ideas
+
+Both the Halley and Newton method struggle when the ray approaches the surface tangentially from the initial guess.
+
+Is this a fundamental aspect of surface intersection, or incidental?
+
+---
+
+## Time for New Ideas
+
+Both the Newton and Halley iterate are *generic* multivariate rootfinding algorithms.
+
+Can we find a new method that explicitly exploits the geometry of the ray intersection problem?
+
+---
+
+![inline](figures/buckle_up.gif)
+
+## It's time for your daily dose of differential geometry
+
+---
+
+## A geometric method from [Ko et. al.](https://doi.org/10.1016/j.cagd.2013.07.001)
+
+Given a parametric surface $$\sigma \colon \Omega \subset \mathbb{R}^2 \to \mathbb{R}^3$$ and an initial guess $$(u_0, v_0)$$ for an intersection with a ray $$\mathbf{o} + t\mathbf{d}$$, consider a unit speed curve
+
+$$\gamma\colon (-\delta, \delta) \to \sigma(\Omega) \cap \mathcal{P}, \gamma(0) = \sigma(u_0, v_0)$$
+
+where $$\mathcal{P}$$ is the plane containing the ray and $$\sigma(u_0,v_0)$$.
+
+---
+
+## Taylor expand
+
+$$\gamma(s) = \gamma(0) + s\dot{\gamma}(0) + \frac{s^2}{2}\ddot{\gamma}(0) + \mathcal{O}(s^3)$$
+
+How does the surface and the plane influence $$\dot{\gamma}(0)$$ and $$\ddot{\gamma}(0)$$?
+
+---
+
+Let $$\mathbf{n}_{\mathcal{P}}$$ be the normal to the plane containing the ray and $$\sigma(u_0, v_0)$$, and let $$\mathbf{n}_{\sigma}$$ be the normal to $$\sigma$$ at $$(u_0,v_0)$$.
+
+$$\mathbf{n}_{\mathcal{P}} \propto (\mathbf{o} - \sigma(u_0,v_0)) \times \mathbf{d}$$.
+
+$$\mathbf{n}_{\sigma} \propto \partial_u \sigma \times \partial_v \sigma$$.
+
+$$\dot{\gamma}(0)$$ must be orthogonal to both of them, so take $$\dot{\gamma}(0) \propto \mathbf{n}_{\mathcal{P}}\times \mathbf{n}_{\sigma}$$.
+
+---
+
+## What do we know about $$\ddot{\gamma}(0)$$?
+
+Since $$\dot{\gamma}$$ is unit speed, $$\frac{d}{dt}\dot{\gamma}(t)^2 = 2\dot{\gamma}(t)\cdot \ddot{\gamma}(t) = 0$$, so it is orthogonal to the tangent.
+
+Moreover, $$\gamma$$ lies in a plane, so its torsion $$\tau$$ must vanish. Its binormal satisfies $$\dot{\mathbf{b}} = -\tau\mathbf{b}$$ and is therefore constant.
+
+So $$\ddot{\gamma}(0) \perp \dot{\gamma}(0)$$ and $$\ddot{\gamma}(0) \perp \mathbf{n}_{\mathcal{P}}$$.
+
+---
+
+So $$\ddot{\gamma}(0) \propto \mathbf{n}_{\mathcal{P}} \times \dot{\gamma}(0)$$. But what is the constant of proportionality?
+
 
 ---
 

@@ -22,6 +22,14 @@ public:
         return M_[i*cols + j];
     }
 
+    vec<Real, rows> column(int64_t j) const {
+        vec<Real, rows> c;
+        for (int64_t i = 0; i < rows; ++i) {
+            c[i] = M_[i*cols + j];
+        }
+        return c;
+    }
+
     // Return an x that satisfies Ax = b.
     vec<Real, cols> solve(vec<Real, rows> const & b) const;
 
@@ -192,10 +200,10 @@ vec<Real, cols> matrix<Real, rows, cols>::solve(vec<Real, rows> const & b) const
             }
             else {
                 if (A(1,2) == 0) {
-                    std::cerr << __FILE__ << ":" << __LINE__ << " 3x3 matrix is singular.\n";
+                    //std::cerr << __FILE__ << ":" << __LINE__ << " 3x3 matrix is singular.\n";
                 }
                 if (A(2,1) == 0) {
-                    std::cerr << __FILE__ << ":" << __LINE__ << " 3x3 matrix is singular.\n";
+                    //std::cerr << __FILE__ << ":" << __LINE__ << " 3x3 matrix is singular.\n";
                 }
 
                 v[2] = y[1]/A(1,2);

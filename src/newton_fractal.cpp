@@ -4,7 +4,6 @@
 #include <chrono>
 #include <drt/png.hpp>
 #include <drt/color_maps.hpp>
-#include <boost/math/tools/roots.hpp>
 
 
 template<typename Real>
@@ -15,61 +14,87 @@ auto fifth_roots(std::complex<Real> z) {
     return std::make_pair(w, dw);
 }
 
+template<typename Real>
+auto fifth_roots_halley(std::complex<Real> z) {
+    std::complex<Real> zcb = std::pow(z,3);
+    std::complex<Real> dw = Real(5)*zcb*z;
+    std::complex<Real> w = zcb*z*z - Real(1);
+    std::complex<Real> ddw = Real(20)*zcb;
+    return std::make_tuple(w, dw, ddw);
+}
 
 template<typename Real>
-std::complex<Real> complex_newton(std::function<std::complex<Real>(std::complex<Real>)> f, std::complex<Real> z) {
+std::complex<Real> complex_newton(std::function<std::pair<std::complex<Real>,std::complex<Real>>(std::complex<Real>)> f, std::complex<Real> z) {
     // f(x(1+e)) = f(x) + exf'(x)
-    auto [y, dy] = f(z0);
-    // .. . .
+    bool close = false;
+    do {
+        auto [y, dy] = f(z);
+        z -= y/dy;
+        close = (abs(y) <= std::numeric_limits<Real>::epsilon()*abs(z*dy)/2);
+    } while(!close);
     return z;
 }
 
 template<typename Real>
-auto fifth_roots_halley(std::complex<Real> z) {
-    std::complex<Real> v = std::pow(z,3);
-    std::complex<Real> dw = Real(5)*v;
-    std::complex<Real> w = v*z - Real(1);
-    return std::make_pair(w, dw);
+std::complex<Real> complex_halley(std::function<std::tuple<std::complex<Real>,std::complex<Real>,std::complex<Real>>(std::complex<Real>)> f, std::complex<Real> z) {
+    // f(x(1+e)) = f(x) + exf'(x)
+    bool close = false;
+    do {
+        auto [y, dy, ddy] = f(z);
+        z -= (Real(2)*y*dy/(Real(2)*dy*dy - y*ddy));
+        close = (abs(y) <= std::numeric_limits<Real>::epsilon()*abs(z*dy)/2);
+    } while(!close);
+    return z;
 }
 
 template<typename Real>
-std::array<uint8_t, 4> angle_to_color(Real angle) {
+class plane_pixel_map
+{
+public:
+    plane_pixel_map(int64_t image_width, int64_t image_height, Real xmin, Real ymin)
+    {
+        image_width_ = image_width;
+        image_height_ = image_height;
+        xmin_ = xmin;
+        ymin_ = ymin;
+    }
 
-    // angle should = 1.25663704*i
-    if (angle < 0.1 && angle > -0.1) {
-        return {0x51, 0x3b, 0x56, 0xff};
+    std::complex<Real> to_complex(int64_t i, int64_t j) const {
+        Real x = xmin_ + 2*abs(xmin_)*Real(i)/Real(image_width_ - 1);
+        Real y = ymin_ + 2*abs(ymin_)*Real(j)/Real(image_height_ - 1);
+        return std::complex<Real>(x,y);
     }
-    else if (angle < 1.257 && angle > 1.256) {
-        return {0x52, 0x51, 0x74, 0xff};
+
+    std::pair<int64_t, int64_t> to_pixel(std::complex<Real> z) const {
+        Real x = z.real();
+        Real y = z.imag();
+        Real ii = (image_width_ - 1)*(x - xmin_)/(2*abs(xmin_));
+        Real jj = (image_height_ - 1)*(y - ymin_)/(2*abs(ymin_));
+
+        return std::make_pair(std::round(ii), std::round(jj));
     }
-    else if (angle < 2.52 && angle > 2.51) {
-        return {0x34, 0x8a, 0xa7, 0xff};
-    }
-    else if (angle < 3.77 - 2*M_PI && angle > 3.76 - 2*M_PI) {
-        return {0x35, 0x8a, 0xa7, 0xff};
-    }
-    else if (angle < 5.03 - 2*M_PI && angle > 5.02 - 2*M_PI) {
-        return {0x5d, 0xd3, 0x9e, 0xff};
-    }
-    std::cerr << "Unrecognized angle! angle = " << angle << "\n";
-    return {0x00, 0x00, 0x00, 0xff};
-}
+
+private:
+    int64_t image_width_;
+    int64_t image_height_;
+    Real xmin_;
+    Real ymin_;
+};
 
 int main() {
     using Real = long double;
-    int64_t image_width = 1024;
-    int64_t image_height = 1024;
+    int64_t image_width = 2048;
+    int64_t image_height = 2048;
     std::vector<uint8_t> img(4*image_width*image_height, 0);
+    plane_pixel_map<Real> map(image_width, image_height, Real(-2), Real(-2));
     for (int64_t j = 0; j < image_height; ++j) {
         for (int64_t i = 0; i < image_width; ++i) {
-            Real x = -3 + 6*Real(i)/Real(image_width -1);
-            Real y = -3 + 6*Real(j)/Real(image_height -1);
-            std::complex<Real> z0(x,y);
-            auto rt = boost::math::tools::complex_newton(fifth_roots<Real>, z0, 32);
+            std::complex<Real> z0 = map.to_complex(i,j);
+            auto rt = complex_halley<Real>(fifth_roots_halley<Real>, z0);
+            //auto rt = complex_newton<Real>(fifth_roots<Real>, z0);
             // The root is one of exp(2πij/5). Therefore is can be classified by angle.
             Real theta = atan2(rt.imag(), rt.real());
-            // Now theta in [-π,π].
-            // auto c = angle_to_color(theta);
+            // Now theta in [-π,π]. Get it into [0,2π]:
             if (theta < 0) {
                 theta += 2*M_PI;
             }
@@ -86,6 +111,25 @@ int main() {
         }
     }
 
-    drt::write_png("newton_fractal.png", img, image_width, image_height);
+    for (int64_t k = 0; k < 5; ++k) {
+        std::complex<Real> angle{0, 2*M_PI*k/5};
+        std::complex<Real> rt = std::exp(angle);
+        auto [ic, jc] = map.to_pixel(rt);
 
+        int64_t r = 7;
+        for (int64_t i = ic - r; i < ic + r; ++i) {
+            for (int64_t j = jc - r; j < jc + r; ++j) {
+                if ((i-ic)*(i-ic) + (j-jc)*(j-jc) > r*r) {
+                    continue;
+                }
+                int64_t idx = 4 * image_width * (image_height - 1 - j) + 4 * i;
+                img[idx + 0] = 0;
+                img[idx + 1] = 0;
+                img[idx + 2] = 0;
+                img[idx + 3] = 0xff;
+            }
+        }
+    }
+
+    drt::write_png("newton_fractal.png", img, image_width, image_height);
 }

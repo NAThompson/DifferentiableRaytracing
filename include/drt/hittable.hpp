@@ -4,6 +4,8 @@
 #include <drt/roots.hpp>
 #include <drt/ray.hpp>
 #include <drt/vec.hpp>
+#include <drt/matrix.hpp>
+#include <drt/tensor.hpp>
 #include <drt/aabb.hpp>
 
 
@@ -87,10 +89,31 @@ public:
 
     virtual vec<Real,3> operator()(Real u, Real v) const = 0;
 
-    // What to do!!!
-    // fatal error: function with deduced return type cannot be virtual
-    //template<int64_t p = 0>
-    //virtual auto derivatives(Real u, Real v) const = 0;
+    virtual vec<Real,3> operator()(Real, Real, matrix<Real,3,3> & J) {
+        for (int64_t i = 0; i < 3; ++i) {
+            for (int64_t j = 0; j < 3; ++j) {
+                J(i,j) = std::numeric_limits<Real>::quiet_NaN();
+            }
+        }
+        return vec<Real>(special_vec::NaNs);
+    };
+
+    virtual vec<Real,3> operator()(Real, Real, matrix<Real,3,3> & J, tensor<Real,3,2,2> & H) {
+        for (int64_t i = 0; i < 3; ++i) {
+            for (int64_t j = 0; j < 3; ++j) {
+                J(i,j) = std::numeric_limits<Real>::quiet_NaN();
+            }
+        }
+        for (int64_t i = 0; i < 3; ++i) {
+            for (int64_t j = 0; j < 2; ++j) {
+                for (int64_t k = 0; k < 2; ++k) {
+                    H(i,j,k) = std::numeric_limits<Real>::quiet_NaN();
+                }
+            }
+        }
+
+        return vec<Real>(special_vec::NaNs);
+    };
 
 };
 

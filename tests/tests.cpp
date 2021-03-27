@@ -9,6 +9,7 @@
 #include "newton_test.hpp"
 #include "halley_test.hpp"
 #include "tensor_test.hpp"
+#include "ko_method_test.hpp"
 
 int main(int argc, char **argv) {
   ::testing::InitGoogleTest(&argc, argv);
