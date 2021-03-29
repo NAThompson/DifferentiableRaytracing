@@ -6,7 +6,6 @@
 #include <drt/matrix.hpp>
 #include <drt/roots.hpp>
 
-
 namespace drt {
 
 template<typename Real>
@@ -26,7 +25,23 @@ public:
 
         // See: https://math.stackexchange.com/questions/61547/rotation-of-a-vector-distribution-to-align-with-a-normal-vector
         Real nz = normal[2];
-        assert(nz != -1);
+        if (nz == -1) {
+            for (int64_t i = 0; i < 3; ++i) {
+                for (int64_t j = 0; j < 3; ++j) {
+                    to_world_(i,j) = 0;
+                    to_local_(i,j) = 0;
+                }
+            }
+            to_world_(0,0) = -1;
+            to_world_(1,1) = 1;
+            to_world_(2,2) = -1;
+
+            to_local_(0,0) = -1;
+            to_local_(1,1) = 1;
+            to_local_(2,2) = -1;
+            //std::cerr << "Rotating into nz = -1!\n";
+            return;
+        }
         Real nx = normal[0];
         Real ny = normal[1];
         Real t = 1/(1+nz);
@@ -41,13 +56,17 @@ public:
         to_world_(1,2) = ny;
         to_world_(2,1) = -ny;
 
-        if (abs(determinant(to_world_) - 1) > 10*std::numeric_limits<Real>::epsilon()) {
-            std::cerr << "Determinant of rotation matrix is " << determinant(to_world_) << "\n";
+        Real det = determinant(to_world_);
+        if (abs(det - 1) > 250*std::numeric_limits<Real>::epsilon()) {
+            std::cerr << __FILE__ << ":" << __LINE__ << " Determinant of rotation matrix is "
+                      << det << " = " << std::hexfloat << det << std::defaultfloat << "\n";
             std::cerr << to_world_ << "\n";
         }
         to_local_ = inverse(to_world_);
-        if (abs(determinant(to_local_) - 1) > 10*std::numeric_limits<Real>::epsilon()) {
-            std::cerr << "Determinant of rotation matrix is " << determinant(to_local_) << "\n";
+        det = determinant(to_local_);
+        if (abs(det - 1) > 250*std::numeric_limits<Real>::epsilon()) {
+            std::cerr << __FILE__ << ":" << __LINE__ << " Determinant of rotation matrix is "
+                      << det << " = " << std::hexfloat << det << std::defaultfloat << "\n";
         }
     };
 

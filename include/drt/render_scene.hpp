@@ -12,9 +12,8 @@
 
 namespace drt {
 
-#ifndef DRT_COST_MAP
-#define DRT_COST_MAP 1
-#endif
+#define DRT_COST_MAP 0
+
 
 template<typename Real>
 void render_scene(std::string filename, int64_t image_width, int64_t image_height,
@@ -31,7 +30,7 @@ void render_scene(std::string filename, int64_t image_width, int64_t image_heigh
         Real progress = Real(j)/Real(image_height);
         display_progress(progress);
         for (int64_t i = 0; i < image_width; ++i) {
-            #ifdef DRT_COST_MAP
+            #if DRT_COST_MAP
             auto start = std::chrono::high_resolution_clock::now();
             #endif
             drt::vec<Real, 3> color(0,0,0);
@@ -47,16 +46,17 @@ void render_scene(std::string filename, int64_t image_width, int64_t image_heigh
             img[idx + 1] = c[1];
             img[idx + 2] = c[2];
             img[idx + 3] = c[3];
-            #ifdef DRT_COST_MAP
+            #if DRT_COST_MAP
             auto end = std::chrono::high_resolution_clock::now();
             auto time_span = std::chrono::duration_cast<std::chrono::duration<double>>(end - start);
             cost[image_width * (image_height - 1 - j) + i] = time_span.count();
             #endif
         }
     }
+    display_progress(1.0);
 
     drt::write_png(filename, img, image_width, image_height);
-    #ifdef DRT_COST_MAP
+    #if DRT_COST_MAP
     double min_time = std::numeric_limits<double>::max();
     double max_time = 0;
     for (auto & t : cost) {

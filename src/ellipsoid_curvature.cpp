@@ -18,15 +18,13 @@
 #include <drt/dielectric.hpp>
 #include <drt/metal.hpp>
 
+#include <omp.h>
 using std::make_shared;
 using namespace drt;
 
 template<typename Real>
 hittable_list<Real> ellipsoid_scene() {
     hittable_list<Real> objects;
-    auto light_mat = make_shared<diffuse_light<Real>>(vec<Real>(1, 1, 1));
-    auto light_geom = make_shared<xy_rect<Real>>(-30, 30, -30, 30, -15);
-    objects.add(light_geom, light_mat);
 
     vec<Real> scales(1.95, 1.5, 2.5);
     vec<Real> center = vec<Real>(0, 0, 0);
@@ -43,6 +41,8 @@ hittable_list<Real> ellipsoid_scene() {
 
     auto texture = make_shared<lambda_texture<Real>>(gaussian_curvature);
     auto mat = make_shared<lambertian<Real>>(texture);
+    //auto mat = make_shared<dielectric<Real>>(1.0, texture);
+    //auto mat = make_shared<metal<Real>>(texture);
     objects.add(ell, mat);
     return objects;
 }
@@ -50,22 +50,35 @@ hittable_list<Real> ellipsoid_scene() {
 int main() {
     using Real = double;
 
-    const Real aspect_ratio = 1.0;
+    const Real aspect_ratio = 1.6;
     const int64_t image_width = 1200;
     const int64_t image_height = static_cast<int>(image_width / aspect_ratio);
-    const int64_t samples_per_pixel = 512;
+    const int64_t samples_per_pixel = 1024;
 
-    hittable_list<Real> world = ellipsoid_scene<Real>();
-
-    vec<Real> lookfrom(6, 0, -6);
     vec<Real> lookat(0, 0, 0);
     vec<Real> vup(0,1,0);
-
-    camera cam(lookfrom, lookat, vup, Real(40), aspect_ratio);
-    auto [o, d] = cam.backlight();
-    auto disk_ptr = make_shared<disk<Real>>(10.0, o, d);
-    auto mat = make_shared<diffuse_light<Real>>(vec<Real>(1,1,1));
-    world.add(disk_ptr, mat);
     vec<Real> background(0.0, 0.0, 0.0);
-    render_scene<Real>("ellipsoid_curvature.png", image_width, image_height, background, cam, world, samples_per_pixel);
+    auto mat = make_shared<diffuse_light<Real>>(vec<Real>(1,1,1));
+    #pragma omp parallel for
+    for (int64_t i = 0; i < 360; i += 1)
+    {
+        hittable_list<Real> world = ellipsoid_scene<Real>();
+        Real theta = 2*M_PI*Real(i)/Real(360);
+        Real r = 7;
+        vec<Real> lookfrom(r*cos(theta), 0, r*sin(theta));
+        camera cam(lookfrom, lookat, vup, Real(40), aspect_ratio);
+        auto [o, d] = cam.backlight();
+        auto disk_ptr = make_shared<disk<Real>>(10.0, o, d);
+        world.add(disk_ptr, mat);
+        std::string filename = "ellipsoid_curvature_";
+        if (i < 10) {
+            filename += "00";
+        }
+        else if (i < 100) {
+            filename += "0";
+        }
+        filename += std::to_string(i);
+        filename += ".png";
+        render_scene<Real>(filename, image_width, image_height, background, cam, world, samples_per_pixel);
+    }
 }

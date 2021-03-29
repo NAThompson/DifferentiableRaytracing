@@ -26,6 +26,12 @@ A quadratic for $$t$$. No real roots $$\implies$$ ray doesn't hit sphere.
 
 ---
 
+![original](figures/shirley_book1.jpg)
+
+[.footer: Final scene from Peter Shirley's *Raytracing in a Weekend* series. You can do a lot with a good random number generator, Snell's law, and the ability to solve quadratics.]
+
+---
+
 ## Raytracing *differentiable* objects
 
 Naive raytracing is *agnostic* to the differentiability of the objects in your scene.
@@ -56,32 +62,14 @@ CAD programs render diagrams using smoother surfaces; e.g., Bezier and Catmull-C
 
 ---
 
-## Goal (dream?) for rendering simulations
+## Rendering Ellipsoids
 
-Render the data in the same way it's represented in the solver.
+$$\frac{x^2}{a^2} + \frac{y^2}{b^2} + \frac{z^2}{c^2} = 1$$
 
-If you do your simulation using Chebyshev spectral elements, VTK-m should be rendering your data using your Clenshaw recurrence.
+A ray $$\mathbf{r}(t) = \mathbf{o} + t\mathrm{d}$$ intersects this at
 
-
----
-
-## How to build a raytracer
-
-- Read [Raytracing in a Weekend](https://raytracing.github.io/) by Peter Shirley.
-
-- Compute intersection of ray $$\mathbf{P}(t) = \mathbf{O} + t\mathrm{D}$$ with parametric surface $$\sigma(u,v)$$, or implicit surface $$f(x,y,z) = 0$$.
-
-- Determine axis aligned bounding box of objects to place it in the bounding volume hierarchy.
-
----
-
-## Sphere -> Ellipsoid
-
-Ellipsoids are just affine transformations of spheres. For an ellipsoid
-$$\sum_{i = 0}^{2} \left( \frac{x_i - c_i}{s_i} \right)^2 = 1$$
-and a ray $$P(t) = \mathbf{O} + t\mathrm{D}$$, the ray intersects at
 $$
-\sum_{i=0}^{2} \left( \frac{o_{i} + td_{i} - c_i}{s_i}  \right)^2 = 1
+\frac{(o_x+td_x)^2}{a^2} + \frac{(o_y+td_y)^2}{b^2} + \frac{(o_z+td_z)^2}{c^2} = 1
 $$
 
 Again, just a quadratic.
@@ -92,7 +80,7 @@ Again, just a quadratic.
 
 ---
 
-![original](figures/ellipsoid_curvature.png)
+![original](figures/ellipsoid_curvature.gif)
 
 
 [.footer: *An ellipsoid pseudocolored by Gaussian curvature*]
@@ -106,7 +94,7 @@ $$(x^2 + y^2 + z^2 + R^2 - r^2)^2 = 4R^2(x^2+y^2)$$
 Plug in $$x = o_x + td_x, y = o_y + td_y, z = o_z + td_z$$ and expand to get a quartic equation for $$t$$.
 
 - No real roots implies no intersection of ray with torus
-- Multiple real roots implies multiple intersections; take the smallest real root (point of surface closest to camera)
+- Multiple real roots implies multiple intersections; take the smallest positive real root.
 
 ---
 
@@ -120,6 +108,15 @@ Gaussian curvature of torus computed from numerically evaluated first and second
 
 Gaussian curvature of torus computed using the curvature filter in Paraview.
 Artifacts from the triangle mesh are clearly visible and the curvature is incorrect everywhere.
+
+---
+
+## Implicit equations are "easy" to render
+
+Well, relatively easy. But many interesting objects, such as Beziers and B-splines are parametric surfaces.
+
+Let's focus on those.
+
 
 ---
 
@@ -158,13 +155,13 @@ The ability to say "this ray *does not* intersect our object" in as few flops as
 
 ---
 
-The Newton fractal teaches us that it's difficult to predict *which* root Newton's method with a given starting point will converge to.
+The Newton fractal teaches us that predicting *which* root Newton's method will converge to is difficult.
 
 In ray tracing, we need the *minimal* root to determine the closest intersection point to the ray.
 
 ![left](figures/newton_fractal_z8_15z4_m16_viridis.png)
 
-^ A Newton fractal colored by root reached.
+[.footer: *Newton fractal for $$z^8 - 15z^4 - 16$$*]
 
 ---
 
@@ -198,6 +195,9 @@ And numerical imprecision might mean your $$t = t_{\min} + \epsilon$$ solution i
 This generates a visual artefact known as [shadow acne](https://digitalrune.github.io/DigitalRune-Documentation/html/3f4d959e-9c98-4a97-8d85-7a73c26145d7.htm).
 
 ![left](figures/shadow_acne.jpg)
+
+
+[.footer: *Image courtesy of Digital Rune.*]
 
 ---
 
@@ -243,7 +243,7 @@ Choose $$\lambda$$ that minimizes $$g$$.
 
 Helicoid rendered with Newton's method patched with backtracking. Initial guess for $$t$$ provided by bounding cylinder intersection, no bounced rays.
 
-Note: Non-existence + Newton's method = Performance bug!
+Note: Non-existence + Newton's method = Performance bug! (See Toth for an interval arithmetic Newton's method that can help.)
 
 ^ Interval arithmetic can be used to determine existence and convergence of Newton's method. See Toth.
 ^ This is based on ideas from Krawczyk's operator, which bounds volumes of convergent Newton iterates.
@@ -253,6 +253,8 @@ Note: Non-existence + Newton's method = Performance bug!
 
 ![left](figures/helicoid_newton_wbacktracking.png)
 ![right](figures/helicoid_newton_cost_inferno.png)
+
+
 
 ^ Cost per pixel is displayed on the right. Lighter colors are more expensive. Darker pixels less.
 ^ When we do not intersect the cylinder, we get very cheap pixels. When we hit the helicoid, but no solution exists, we get very expensive pixels.
@@ -278,7 +280,8 @@ Convergence is cubic, much more importantly, *which* root Halley's method conver
 ![left](figures/newton_fractal_viridis_z5m1.png)
 ![right](figures/halley_fractal_viridis_z5m1.png)
 
-^ [Newton vs Halley fractals](http://www.hpdz.net/StillImages/Newton-Halley.htm)
+
+[.footer: *Newton (left) vs Halley fractal for $$z^5 -1$$.*]
 
 ---
 
@@ -302,15 +305,13 @@ Then the multivariate Halley iterate is
 
 $$\mathbf{q}^{\nu + 1} = \mathbf{q}^{\nu} + (\mathbf{a}^{\nu} \otimes \mathbf{a}^{\nu})\oslash(\mathbf{a}^{\nu} + \mathbf{b}^{\nu}/2)$$.
 
-The $$\otimes$$ and $$\oslash$$ are bizarre componentwise multiplications and divisions; see [Cuyt](https://dl.acm.org/doi/pdf/10.1145/3147.3162) for details.
-
-^ The render using the Halley iterate is 1.5x as fast as the Newton iterate on the helicoid.
+The $$\otimes$$ and $$\oslash$$ are defined componentwise; see [Cuyt](https://dl.acm.org/doi/pdf/10.1145/3147.3162).
 
 ---
 
 ![left](figures/halley_helicoid.png)
 
-Helicoid rendered via the multivariate Halley iterate. The solution along the rulings is ill-conditioned-the Halley iterate cannot change this.
+Helicoid rendered via the multivariate Halley iterate.
 
 Speed is 1.5x of the Newton iterate.
 
@@ -319,25 +320,34 @@ Speed is 1.5x of the Newton iterate.
 ![left](figures/halley_helicoid.png)
 ![right](figures/helicoid_halley_cost_inferno.png)
 
-^ Cost per pixel for Halley iterate.
-^ I cannot make heads nor tails of this data.
 
 ---
 
 ![left](figures/helicoid_newton_cost_inferno.png)
 ![right](figures/helicoid_halley_cost_inferno.png)
 
-^ Newton vs Halley expense per pixel.
+[.footer: *Pixel cost map for Newton's method (left) vs Halley's method.*]
 
 ---
 
 ## Time for New Ideas
 
-Both the Halley and Newton method struggle when the ray approaches the surface tangentially from the initial guess.
+Both the Halley and Newton method struggle when the ray approaches the surface tangentially.
 
 Is this a fundamental aspect of surface intersection, or incidental?
 
 ---
+
+## Mixed Absolute-Relative Condition Number of Rootfinding
+
+Let $$w^{*}$$ be a root of $$\mathbf{f}$$. The condition number of the rootfinding problem is $$\left\| J_{\mathbf{f}}(w^{*})^{-1} \right\|/ \left\| w^{*} \right\|$$.
+
+The inverse of the Jacobian at the root constrains our accuracy *whether we use it explicitly or not*.
+
+A *better criticism* of the Newton or Halley iterate is that they can fail because a singular Jacobian is encountered at any point *away* from the root.
+
+---
+
 
 ## Time for New Ideas
 
