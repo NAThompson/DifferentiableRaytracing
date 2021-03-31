@@ -59,6 +59,9 @@ CAD programs render diagrams using smoother surfaces; e.g., Bezier and Catmull-C
 - Memory requirements are drastically reduced relative to triangle meshes.
 - No error prone conversion into triangle meshes.
 - Pseudocoloring by derived quantities results in fewer visual artifacts.
+- No need to subsample high-accuracy numerical solutions
+
+^ High accuracy numerical methods might produce sparse pointsets in space. Without smooth interpolation, we have to subsample to extreme density to avoid artifacts.
 
 ---
 
@@ -113,7 +116,7 @@ Artifacts from the triangle mesh are clearly visible and the curvature is incorr
 
 ## Implicit equations are "easy" to render
 
-Well, relatively easy. But many interesting objects, such as Beziers and B-splines are parametric surfaces.
+Well, relatively easy, since 1D rootfinding problems are easy. But many interesting objects, such as Beziers and B-splines are parametric surfaces. Rendering them is a multivariate rootfinding problem-much harder.
 
 Let's focus on those.
 
@@ -155,6 +158,8 @@ The ability to say "this ray *does not* intersect our object" in as few flops as
 
 ---
 
+What if we *can't* constrain our initial guess very tightly?
+
 The Newton fractal teaches us that predicting *which* root Newton's method will converge to is difficult.
 
 In ray tracing, we need the *minimal* root to determine the closest intersection point to the ray.
@@ -192,7 +197,7 @@ So you need to find the $$t$$ *closest* to $$t_{\min}$$ that hits the object, bu
 
 And numerical imprecision might mean your $$t = t_{\min} + \epsilon$$ solution is essentially the *same* as your $$t = t_{\min}$$ solution.
 
-This generates a visual artefact known as [shadow acne](https://digitalrune.github.io/DigitalRune-Documentation/html/3f4d959e-9c98-4a97-8d85-7a73c26145d7.htm).
+This generates a visual artifact known as [shadow acne](https://digitalrune.github.io/DigitalRune-Documentation/html/3f4d959e-9c98-4a97-8d85-7a73c26145d7.htm).
 
 ![left](figures/shadow_acne.jpg)
 
@@ -332,22 +337,36 @@ Speed is 1.5x of the Newton iterate.
 
 ## Time for New Ideas
 
-Both the Halley and Newton method struggle when the ray approaches the surface tangentially.
+Both the Halley and Newton method struggle when the Jacobian is nearly singular.
 
 Is this a fundamental aspect of surface intersection, or incidental?
 
 ---
 
-## Mixed Absolute-Relative Condition Number of Rootfinding
+## Conditioning of multivariate rootfinding
 
-Let $$w^{*}$$ be a root of $$\mathbf{f}$$. The condition number of the rootfinding problem is $$\left\| J_{\mathbf{f}}(w^{*})^{-1} \right\|/ \left\| w^{*} \right\|$$.
+Let $$w^{*}$$ be a root of $$\mathbf{f}$$, and let $$w$$ be a root of a function $$\tilde{\mathbf{f}}  = \mathbf{f} + \Delta \mathbf{f}$$. Then
+
+$$\frac{\left\| w - w^{*} \right\|}{ \left\| w^{*} \right\| } \le \frac{\left\| J_{\mathbf{f}}(w^{*})^{-1} \right\| }{ \left\| w^{*} \right\| }\left\|\mathbf{f}(w) \right\| =: \mathrm{cond}(\mathbf{f},w^{*}) \left\|\mathbf{f}(w) \right\|$$
+
+See [Corless](https://link.springer.com/book/10.1007/978-1-4614-8453-0). (Aside: this also solves the problem of shadow acne.)
+
+
+---
+
+## In English
+
+If you're surveying the Bonneville salt flats, you don't blame Newton's method when your laser hits the Wasatch front.
+
+![](figures/bonneville_salt.jpg)
+
+---
 
 The inverse of the Jacobian at the root constrains our accuracy *whether we use it explicitly or not*.
 
 A *better criticism* of the Newton or Halley iterate is that they can fail because a singular Jacobian is encountered at any point *away* from the root.
 
 ---
-
 
 ## Time for New Ideas
 
@@ -395,7 +414,7 @@ $$\dot{\gamma}(0)$$ must be orthogonal to both of them, so take $$\dot{\gamma}(0
 
 Since $$\dot{\gamma}$$ is unit speed, $$\frac{d}{dt}\dot{\gamma}(t)^2 = 2\dot{\gamma}(t)\cdot \ddot{\gamma}(t) = 0$$, so it is orthogonal to the tangent.
 
-Moreover, $$\gamma$$ lies in a plane, so its torsion $$\tau$$ must vanish. Its binormal satisfies $$\dot{\mathbf{b}} = -\tau\mathbf{b}$$ and is therefore constant.
+Moreover, $$\gamma$$ lies in a plane, so its torsion $$\tau$$ must vanish. Its binormal therefore must be $$\pm \mathbf{n}_{\mathcal{P}}$$.
 
 So $$\ddot{\gamma}(0) \perp \dot{\gamma}(0)$$ and $$\ddot{\gamma}(0) \perp \mathbf{n}_{\mathcal{P}}$$.
 
@@ -548,14 +567,6 @@ auto image = vtkm::render(actor1, actor2, ...);
 ```
 
 ![left](figures/FrenetFrame.png)
-
----
-
-## Is there a path from meshes to smooth surfaces?
-
-Yes, [subdivision surfaces](http://www.pbr-book.org/3ed-2018/Shapes/Subdivision_Surfaces.html).
-
-These form smooth surfaces out of mesh points.
 
 ---
 
