@@ -40,9 +40,11 @@ std::shared_ptr<material<Real>> hittable_list<Real>::hit(const ray<Real>& r, Rea
     for (size_t i = 0; i < objects.size(); ++i) {
         auto object = objects[i];
         if (object->hit(r, t_min, closest_so_far, temp_rec)) {
-            closest_so_far = temp_rec.t;
-            rec = temp_rec;
-            hit_idx = i;
+            if (temp_rec.t < closest_so_far) {
+                closest_so_far = temp_rec.t;
+                rec = temp_rec;
+                hit_idx = i;
+            }
         }
     }
     if (hit_idx >= 0)

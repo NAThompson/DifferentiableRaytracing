@@ -1,5 +1,5 @@
 CXX = g++
-CXXFLAGS = -g -Wall -Wextra --std=c++17 -fno-finite-math-only -ffast-math -march=native -Wfatal-errors -MMD -fno-omit-frame-pointer
+CXXFLAGS = -g -Wall -Wextra --std=c++17 -fno-finite-math-only -ffast-math -march=native -Wfatal-errors -MMD -fno-omit-frame-pointer -fopenmp
 INCFLAGS = -I./include -I./lodepng
 
 ifdef DEBUG

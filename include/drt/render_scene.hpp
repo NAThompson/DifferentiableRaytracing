@@ -9,10 +9,11 @@
 #include <drt/png.hpp>
 #include <drt/pcg.hpp>
 #include <drt/progress_bar.hpp>
+#include <omp.h>
 
 namespace drt {
 
-#define DRT_COST_MAP 0
+#define DRT_COST_MAP 1
 
 
 template<typename Real>
@@ -26,9 +27,11 @@ void render_scene(std::string filename, int64_t image_width, int64_t image_heigh
     int max_depth = 8;
     std::vector<uint8_t> img(4*image_width*image_height, 0);
     std::vector<double> cost(image_width*image_height, 0);
+    #pragma omp parallel for
     for (int64_t j = 0; j < image_height; ++j) {
-        Real progress = Real(j)/Real(image_height);
-        display_progress(progress);
+        //Real progress = Real(j)/Real(image_height);
+        //display_progress(progress);
+        std::cout << j << ", " << std::flush;
         for (int64_t i = 0; i < image_width; ++i) {
             #if DRT_COST_MAP
             auto start = std::chrono::high_resolution_clock::now();
@@ -76,7 +79,6 @@ void render_scene(std::string filename, int64_t image_width, int64_t image_heigh
             int64_t idx = image_width * (image_height - 1 - j) + i;
             //Real s = (log(cost[idx]) - log(min_time))/(log(max_time) - log(min_time));
             Real s = (cost[idx] - min_time)/(max_time - min_time);
-            assert(s >= 0 && s <= 1);
             auto color = drt::inferno(s);
             auto c = drt::to_8bit_rgba(color);
             idx *= 4;

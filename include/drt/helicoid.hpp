@@ -409,10 +409,17 @@ bool helicoid<Real>::hit(const ray<Real>& r, Real t_min, Real t_max, hit_record<
     rec.G = 4*M_PI*M_PI*radius_*radius_;
     rec.set_face_normal(r, outward_normal);
     auto [p, J] = this->derivatives<1>(rec.u, rec.v);
+    J(0,2) = -dir[0];
+    J(1,2) = -dir[1];
+    J(2,2) = -dir[2];
     Real residual = max_norm(rec.p - p);
-    Real r0 = abs(rec.t*dir[0]) + abs(J(0,0)*rec.u) + abs(J(0,1)*rec.v);
-    Real r1 = abs(rec.t*dir[1]) + abs(J(1,0)*rec.u) + abs(J(1,1)*rec.v);
-    Real r2 = abs(rec.t*dir[2]) + abs(J(2,0)*rec.u) + abs(J(2,1)*rec.v);
+    Real r0 = abs(rec.t*J(0,2)) + abs(J(0,0)*rec.u) + abs(J(0,1)*rec.v);
+    Real r1 = abs(rec.t*J(1,2)) + abs(J(1,0)*rec.u) + abs(J(1,1)*rec.v);
+    Real r2 = abs(rec.t*J(2,2)) + abs(J(2,0)*rec.u) + abs(J(2,1)*rec.v);
+
+    auto M = inverse(J);
+    rec.condition_number = M.max_norm()/std::max({rec.u, rec.v,rec.t});
+
     Real expected_residual = std::max({r0,r1,r2});
     expected_residual *= std::numeric_limits<Real>::epsilon();
     if (residual > 10*expected_residual) {

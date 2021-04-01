@@ -362,6 +362,18 @@ If you're surveying the Bonneville salt flats, you don't blame Newton's method w
 
 ---
 
+![left](figures/helicoid_condition_number.png)
+
+A helicoid pseudocolored by the logarithm of the condition number of the multivariate rootfinding problem.
+
+---
+
+![left](figures/helicoid_condition_number.png)
+![right](figures/helicoid_halley_cost_inferno.png)
+
+[.footer: Helicoid pseudocolored by logarithm of condition number juxtapositioned against the pixel cost map for the Halley iterate.]
+---
+
 The inverse of the Jacobian at the root constrains our accuracy *whether we use it explicitly or not*.
 
 A *better criticism* of the Newton or Halley iterate is that they can fail because a singular Jacobian is encountered at any point *away* from the root.

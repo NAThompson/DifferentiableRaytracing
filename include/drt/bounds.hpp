@@ -22,9 +22,14 @@ public:
     {
         static_assert(dimension == 2);
         bounds_[0] = b0;
-        assert(b0.first <= b0.second);
+        if (b0.first > b0.second) {
+            std::cerr << __FILE__ << ":" << __LINE__ << " Error: b0 = [" << b0.first << ", " << b0.second << "]\n";
+        }
+
         bounds_[1] = b1;
-        assert(b1.first <= b1.second);
+        if (b1.first > b1.second) {
+            std::cerr << __FILE__ << ":" << __LINE__ << " Error: b1 = [" << b1.first << ", " << b1.second << "]\n";
+        }
         init_dists();
     }
 

@@ -42,6 +42,7 @@ struct hit_record {
     Real f = std::numeric_limits<Real>::quiet_NaN();
     Real g = std::numeric_limits<Real>::quiet_NaN();
 
+    Real condition_number = std::numeric_limits<Real>::quiet_NaN();
     // Pressley, Elementary Differential Geometry, Corollary 8.1.3
     Real gaussian_curvature() const {
         return (e*g - f*f)/(E*G - F*F);
