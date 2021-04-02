@@ -57,6 +57,10 @@ vec<Real,3> ko_method(hittable<Real>& h, ray<Real> const & r, Real u0, Real v0)
 
     Real kappa_b = e*uprime*uprime + 2*f*uprime*vprime + g*vprime*vprime;
     Real costheta = dot(surface_normal, plane_normal);
+    if (costheta >= 1) {
+        std::cerr << __FILE__ << ":" << __LINE__ << " The plane normal and the surface normal are parallel.\n";
+        std::cerr << "You need to implement this degenerate case.\n";
+    }
     Real s = kappa_b/(1-costheta*costheta);
     vec<Real> kappaN = s*(-costheta*plane_normal + surface_normal);
     Real kappa = norm(kappaN);
@@ -65,10 +69,18 @@ vec<Real,3> ko_method(hittable<Real>& h, ray<Real> const & r, Real u0, Real v0)
 
     Real a = kappa/2;
     Real tmp = dot(D,n);
-    Real b_ = tmp/dot(d,tangent);
-    Real c = -tmp*dot(O-P, tangent) - dot(O-P,n);
+    Real dt = dot(D,tangent);
+    Real b_ = -tmp/dt;
+    Real c = tmp*dot(O-P, tangent)/dt - dot(O-P,n);
 
     auto roots = quadratic_roots(a,b_,c);
+
+    if (roots.size() == 0) {
+        std::cerr << "No real roots found.\n";
+    }
+    else {
+        std::cout << "Roots are " << roots[0] << ", " << roots[1] << "\n";
+    }
 
     // Now choose among the roots to find minimal t solution:
 

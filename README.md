@@ -136,7 +136,10 @@ Intersects ray when
 
 $$\mathbf{o} + t\mathbf{d} = \sigma(u,v)$$
 
+We must recover $$u,v,t$$ to render.
+
 ![left](figures/helicoid_smooth_cool_warm_lambertian.png)
+
 
 ---
 
@@ -228,7 +231,7 @@ But let's examine a hack that makes it a bit better.
 
 Given $$\mathbf{f}\colon \Omega \subset \mathbb{R}^3 \to \mathbb{R}^3$$ defined as $$\mathbf{f}(u,v,t) = \sigma(u,v) - (\mathbf{o} + t\mathbf{d})$$, we wish to find $$(u,v, t)$$ s.t. $$\mathbf{f}(u,v,t) = \mathbf{0}$$.
 
-Newton update: $$(u_{k+1}, v_{k+1}, t_{k+1}) = (u_{k}, v_{k}, t_{k}) -\mathbf{J}_{\mathbf{f}}^{-1}\mathbf{f}(u,v,t)$$.
+Newton update: $$(u_{k+1}, v_{k+1}, t_{k+1}) = (u_{k}, v_{k}, t_{k}) -\mathbf{J}_{\mathbf{f}}^{-1}\mathbf{f}(u_k,v_k,t_k)$$.
 
 Patch: Define $$f(u,v,t) := \frac{1}{2}\left<\mathbf{f}(u,v,t), \mathbf{f}(u,v,t) \right>$$.
 
@@ -261,7 +264,8 @@ Note: Non-existence + Newton's method = Performance bug! (See Toth for an interv
 
 
 
-^ Cost per pixel is displayed on the right. Lighter colors are more expensive. Darker pixels less.
+[.footer: Helicoid rendered via Newton's method juxtapositioned against pixel cost map. Lighter colors are more expensive.]
+
 ^ When we do not intersect the cylinder, we get very cheap pixels. When we hit the helicoid, but no solution exists, we get very expensive pixels.
 
 ---
@@ -335,7 +339,7 @@ Speed is 1.5x of the Newton iterate.
 
 ---
 
-## Time for New Ideas
+## Is it the *method*, or the *problem*?
 
 Both the Halley and Newton method struggle when the Jacobian is nearly singular.
 
@@ -406,7 +410,9 @@ where $$\mathcal{P}$$ is the plane containing the ray and $$\sigma(u_0,v_0)$$.
 
 ## Taylor expand
 
-$$\gamma(s) = \gamma(0) + s\dot{\gamma}(0) + \frac{s^2}{2}\ddot{\gamma}(0) + \mathcal{O}(s^3)$$
+$$
+\gamma(s) = \gamma(0) + s\dot{\gamma}(0) + \frac{s^2}{2}\ddot{\gamma}(0) + \mathcal{O}(s^3) = \sigma(u_0, v_0) + s\hat{\mathbf{t}} + \frac{\kappa}{2}s^2 \hat{\mathbf{n}} + \mathcal{O}(s^3)
+$$
 
 How does the surface and the plane influence $$\dot{\gamma}(0)$$ and $$\ddot{\gamma}(0)$$?
 
@@ -418,7 +424,26 @@ $$\mathbf{n}_{\mathcal{P}} \propto (\mathbf{o} - \sigma(u_0,v_0)) \times \mathbf
 
 $$\mathbf{n}_{\sigma} \propto \partial_u \sigma \times \partial_v \sigma$$.
 
-$$\dot{\gamma}(0)$$ must be orthogonal to both of them, so take $$\dot{\gamma}(0) \propto \mathbf{n}_{\mathcal{P}}\times \mathbf{n}_{\sigma}$$.
+$$\dot{\gamma}(0)$$ must be orthogonal to both of them, so take $$\dot{\gamma}(0) \propto \mathbf{n}_{\mathcal{P}}\times \mathbf{n}_{\sigma}$$, and normalize.
+
+---
+
+$$\hat{\mathbf{t}} := \dot{\gamma}(0) \in \mathcal{T}_{\gamma(0)}\sigma$$, so there exist constants $$\dot{u}, \dot{v} \in \mathbb{R}$$ such that $$\hat{\mathbf{t}} = \dot{u}\sigma_{u} + \dot{v}\sigma_v$$. Dot with $$\sigma_u$$, then with $$\sigma_v$$ to obtain
+
+$$\begin{pmatrix}
+\hat{\mathbf{t}}\cdot \sigma_{u} \\
+\hat{\mathbf{t}}\cdot \sigma_{v}
+\end{pmatrix}=\begin{pmatrix}
+E & F \\
+F & G
+\end{pmatrix}\begin{pmatrix}
+\dot{u} \\
+\dot{v}
+\end{pmatrix}$$
+
+where $$E := \left\|\sigma_u\right\|^2, F := \left<\sigma_u, \sigma_v \right>, G:= \left\|\sigma_v\right\|^2$$ are the first fundamental forms.
+
+*This matrix only fails to be invertible when the surface is irregular*.
 
 ---
 
@@ -434,6 +459,37 @@ So $$\ddot{\gamma}(0) \perp \dot{\gamma}(0)$$ and $$\ddot{\gamma}(0) \perp \math
 
 So $$\ddot{\gamma}(0) \propto \mathbf{n}_{\mathcal{P}} \times \dot{\gamma}(0)$$. But what is the constant of proportionality?
 
+Let's just pull this one out of a differential geometry book:
+
+$$\kappa\hat{\mathbf{n}} = \frac{\kappa_{\sigma}}{1- (\mathbf{n}_{\mathcal{P}}\cdot \mathbf{n}_{\sigma})^2}(-\mathbf{n}_{\mathcal{P}}\cdot \mathbf{n}_{\sigma} \mathbf{n}_{\mathcal{P}}  + \mathbf{n}_{\sigma})$$
+
+and
+
+$$\kappa_{\sigma} = e\dot{u}^2 + 2f\dot{u}\dot{v} + g\dot{v}^2$$,
+
+where $$e,f$$, and $$g$$ are the [second fundamental forms](https://en.wikipedia.org/wiki/Second_fundamental_form).
+
+---
+
+### Iteration: Intersect curve with line
+
+$$\gamma(0) + s\hat{\mathbf{t}} + \frac{\kappa}{2}s^2 \hat{\mathbf{n}} = \mathbf{o} + t\mathbf{d}$$
+
+Dot with $$\hat{\mathbf{t}}$$ and $$\hat{\mathbf{d}}$$ and eliminate $$t$$ so obtain
+
+$$
+\frac{\kappa}{2}s^2 - \frac{\mathbf{d}\cdot\hat{\mathbf{n}}}{\mathbf{d}\cdot\hat{\mathbf{t}}} s = (\mathbf{o} - \gamma(0))\cdot \hat{\mathbf{n}} -  \frac{\mathbf{d}\cdot\hat{\mathbf{n}}}{\mathbf{d}\cdot\hat{\mathbf{t}}}(\mathbf{o} -\gamma(0))\hat{\mathbf{t}}
+$$
+
+Choose root than mimizes $$t$$.
+
+---
+
+### Iteration: Intersection curve with line
+
+The update is
+
+$$u_{k+1} := u_{k} + s\dot{u}, v_{k+1} := v_{k} + s\dot{v}$$.
 
 ---
 

@@ -182,7 +182,10 @@ bool enneper<Real>::hit(const ray<Real>& r, Real t_min, Real t_max, hit_record<R
     Real u = w[0];
     Real v = w[1];
     Real t = w[2];
-    assert(t <= t_max && t >= t_min);
+    if(t < t_min || t > t_max) {
+        ++enneper_misses;
+        return false;
+    }
     rec.t = t;
     rec.p = r(t);
     rec.u = u;

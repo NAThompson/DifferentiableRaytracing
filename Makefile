@@ -1,6 +1,16 @@
-CXX = g++
-CXXFLAGS = -g -Wall -Wextra --std=c++17 -fno-finite-math-only -ffast-math -march=native -Wfatal-errors -MMD -fno-omit-frame-pointer -fopenmp
-INCFLAGS = -I./include -I./lodepng
+CXX = g++-10
+CXXFLAGS = -g -Wall -Wextra --std=c++17 -fno-finite-math-only -ffast-math -march=native -Wfatal-errors -MMD -fno-omit-frame-pointer
+INCFLAGS = -I./include -I./lodepng -I/usr/local/include
+LINKFLAGS = -L/usr/local/lib
+
+GCCVERSION = $(shell $(CXX) -dumpversion)
+
+# clang on Mac is aliased to g++.
+# It also doesn't support OpenMP.
+# This ugly hack enables OpenMP with my version of gcc:
+ifeq "$(GCCVERSION)" "10.2.0"
+	CXXFLAGS += -fopenmp
+endif
 
 ifdef DEBUG
 	CXXFLAGS += -O2 -fsanitize=address -fsanitize=undefined -DDEBUG
