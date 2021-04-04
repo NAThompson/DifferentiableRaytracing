@@ -57,4 +57,42 @@ TEST(SphereTest, Intersection) {
     EXPECT_FLOAT_EQ(k2, 0.5);
 }
 
+TEST(SphereTest, Evaluation) {
+    using Real = double;
+    vec<Real> center(0,0,0);
+    sphere<Real> s(center, 1);
+
+    // σ(u,v) = (cos(2πu)sin(πv), sin(2πu)sin(πv), cos(πv)), u,v ∈ [0,1].
+    matrix<Real, 3,3> J;
+    tensor<Real, 3,2,2> H;
+    vec<Real,3> p = s(0.0, 0.0, J, H);
+    EXPECT_FLOAT_EQ(p[0], 0);
+    EXPECT_FLOAT_EQ(p[1], 0);
+    EXPECT_FLOAT_EQ(p[2], 1);
+
+    // J(i,j) = ∂ⱼσᵢ.
+    EXPECT_FLOAT_EQ(J(0,0), 0);
+    EXPECT_FLOAT_EQ(J(1,0), 0);
+    EXPECT_FLOAT_EQ(J(2,0), 0);
+
+    EXPECT_FLOAT_EQ(J(0,1), M_PI);
+    EXPECT_FLOAT_EQ(J(1,1), 0);
+    EXPECT_FLOAT_EQ(J(2,1), 0);
+
+    EXPECT_FLOAT_EQ(H(0,0,0), 0);
+    EXPECT_FLOAT_EQ(H(1,0,0), 0);
+    EXPECT_FLOAT_EQ(H(2,0,0), 0);
+
+    EXPECT_FLOAT_EQ(H(0,0,1), 0);
+    EXPECT_FLOAT_EQ(H(0,1,0), 0);
+    EXPECT_FLOAT_EQ(H(1,0,1), 2*M_PI*M_PI);
+    EXPECT_FLOAT_EQ(H(1,1,0), 2*M_PI*M_PI);
+    EXPECT_FLOAT_EQ(H(2,0,1), 0);
+    EXPECT_FLOAT_EQ(H(2,1,0), 0);
+
+    EXPECT_FLOAT_EQ(H(0,1,1), 0);
+    EXPECT_FLOAT_EQ(H(1,1,1), 0);
+    EXPECT_FLOAT_EQ(H(2,1,1), -M_PI*M_PI);
+}
+
 #endif

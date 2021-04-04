@@ -60,10 +60,13 @@ public:
         w[0] += radius_*cos(2*M_PI*u)*sin(M_PI*v);
         w[1] += radius_*sin(2*M_PI*u)*sin(M_PI*v);
         w[2] += radius_*cos(M_PI*v);
+        // J(i,j) = ∂ⱼσᵢ.
+        // J(i,0) = ∂ᵤσᵢ.
         J(0,0) = -2*M_PI*radius_*sin(2*M_PI*u)*sin(M_PI*v);
         J(1,0) = 2*M_PI*radius_*cos(2*M_PI*u)*sin(M_PI*v);
         J(2,0) = 0;
 
+        // J(i,1) = ∂ᵥσᵢ.
         J(0,1) = M_PI*radius_*cos(2*M_PI*u)*cos(M_PI*v);
         J(1,1) = M_PI*radius_*sin(2*M_PI*u)*cos(M_PI*v);
         J(2,1) = -M_PI*radius_*sin(M_PI*v);
@@ -92,8 +95,6 @@ public:
         H(0,1,1) = -M_PI*M_PI*radius_*cos(2*M_PI*u)*sin(M_PI*v);
         H(1,1,1) = -M_PI*M_PI*radius_*sin(2*M_PI*u)*sin(M_PI*v);
         H(2,1,1) = -M_PI*M_PI*radius_*cos(M_PI*v);
-
-
         return w;
     }
 
