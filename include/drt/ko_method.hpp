@@ -6,21 +6,33 @@
 
 namespace drt {
 
-#define DEBUG_KO_METHOD 1
+#define DRT_DEBUG_KO_METHOD 1
 
 template<typename Real>
-vec<Real,3> ko_method(hittable<Real>& h, ray<Real> const & r, Real u0, Real v0, bounds<Real,3> const & bound)
+vec<Real,3> ko_method(hittable<Real>& h, ray<Real> const & r, bounds<Real,3> const & bound, Real u0 = std::numeric_limits<Real>::quiet_NaN(), Real v0 = std::numeric_limits<Real>::quiet_NaN())
 {
     vec<Real> O = r.origin();
     vec<Real> D = r.direction();
+    #if DRT_DEBUG_KO_METHOD
+    std::cout << "The ray is " << r << "\n";
+    #endif
+    if (std::isnan(u0)) {
+        u0 = (bound[0].first + bound[0].second)/2;
+    }
+    if (std::isnan(v0)) {
+        v0 = (bound[1].first + bound[1].second)/2;
+    }
+
     matrix<Real,3,3> J;
     tensor<Real, 3, 2, 2> H;
+    bool converged = false;
+    do {
     vec<Real> P = h(u0,v0, J, H);
 
-    #if DEBUG_KO_METHOD
+    #if DRT_DEBUG_KO_METHOD
     std::cout << std::setprecision(std::numeric_limits<Real>::digits10);
-    std::cout << "Our initial guess is (u₀,v₀) = (" << u0 << ", " << v0 << ")\n";
-    std::cout << "σ(" << u0 << ", " << v0 << ") = " << P << "\n";
+    std::cout << "\n\tGuess (u₀,v₀) = (" << u0 << ", " << v0 << ") gives "
+              << "σ(u₀,v₀) = " << P << "\n";
     #endif
 
     vec<Real> PmO = P - O;
@@ -28,30 +40,41 @@ vec<Real,3> ko_method(hittable<Real>& h, ray<Real> const & r, Real u0, Real v0, 
 
     // TODO: What is the real condition that these two fall on a line using the rounding model of floating point arithmetic?
     if (squared_norm(plane_normal) < std::numeric_limits<Real>::epsilon()*std::numeric_limits<Real>::epsilon()) {
-        std::cout << P << " and " << O << " already fall on a line in the direction of " << D << "\n";
+        #if DRT_DEBUG_KO_METHOD
+        std::cout << "\t" << P << " and " << O << " fall on a line in the direction of " << D << "; the iteration has converged.\n";
+        #endif
         Real t = dot(PmO, D)/dot(D,D);
         if (t < bound[2].first || t > bound[2].second) {
             return vec<Real>(special_vec::NaNs);
         }
         return vec<Real>(u0, v0, t);
     }
-    std::cout << "Plane normal before normalization = " << plane_normal << "\n";
+    //std::cout << "Plane normal before normalization = " << plane_normal << "\n";
     normalize(plane_normal);
-
-    std::cout << "Our camera is at origin " << O << " and points in direction " << D << "\n";
-    std::cout << "The plane normal is " << plane_normal << "\n";
+    //std::cout << "The plane normal is " << plane_normal << "\n";
 
     vec<Real> sigma_u = J.column(0);
     vec<Real> sigma_v = J.column(1);
     vec<Real> surface_normal = cross(sigma_u, sigma_v);
+    if (squared_norm(surface_normal) < std::numeric_limits<Real>::epsilon()*std::numeric_limits<Real>::epsilon()) {
+        std::cerr << __FILE__ << ":" << __LINE__ << "\n\tAt (u₀,v₀) = (" << u0 << ", " << v0 << "), the surface patch σ is irregular; "
+                  << "∂ᵤσ⨯∂ᵥσ = " << surface_normal << " cannot be sensibly normalized and hence the surface has an ill-defined normal.\n";
+        return vec<Real>(special_vec::NaNs);
+    }
+    //std::cout << "\tThe surface normal is " << surface_normal << "\n";
     normalize(surface_normal);
-    std::cout << "The surface normal is " << surface_normal << "\n";
+    //std::cout << "\tThe surface normal is " << surface_normal << "\n";
     
 
     vec<Real> tangent = cross(plane_normal, surface_normal);
-    std::cout << "Tangent, prenormalization = " << tangent << "\n";
+   // std::cout << "\tTangent, prenormalization = " << tangent << "\n";
+    if (squared_norm(tangent) < std::numeric_limits<Real>::epsilon()*std::numeric_limits<Real>::epsilon()) {
+        std::cerr << __FILE__ << ":" << __LINE__ << " the tangent is " << tangent << ", which is too small!\n";
+        std::cerr << "You must reckon with this degenerate case.\n";
+        return vec<Real>(special_vec::NaNs);
+    }
     normalize(tangent);
-    std::cout << "Tangent, postnormalization = " << tangent << "\n";
+    //std::cout << "\tTangent, postnormalization = " << tangent << "\n";
 
     vec<Real,2> b;
     b[0] = dot(tangent, sigma_u);
@@ -65,21 +88,13 @@ vec<Real,3> ko_method(hittable<Real>& h, ray<Real> const & r, Real u0, Real v0, 
     Real uprime = w[0];
     Real vprime = w[1];
 
-    std::cout << "u' = " << uprime << ", v' = " << vprime << "\n";
-
     // Second fundamental forms:
     Real e = 0;
-    for (int64_t i = 0; i < 3; ++i) {
-        e += H(i,0,0)*surface_normal[i];
-    }
-
     Real f = 0;
-    for (int64_t i = 0; i < 3; ++i) {
-        f += H(i,0,1)*surface_normal[i];
-    }
-
     Real g = 0;
     for (int64_t i = 0; i < 3; ++i) {
+        e += H(i,0,0)*surface_normal[i];
+        f += H(i,0,1)*surface_normal[i];
         g += H(i,1,1)*surface_normal[i];
     }
 
@@ -88,6 +103,7 @@ vec<Real,3> ko_method(hittable<Real>& h, ray<Real> const & r, Real u0, Real v0, 
     if (costheta >= 1) {
         std::cerr << __FILE__ << ":" << __LINE__ << " The plane normal and the surface normal are parallel.\n";
         std::cerr << "You need to implement this degenerate case.\n";
+        return vec<Real>(special_vec::NaNs);
     }
     Real s_ = kappa_b/(1-costheta*costheta);
     vec<Real> kappaN = s_*(-costheta*plane_normal + surface_normal);
@@ -104,42 +120,60 @@ vec<Real,3> ko_method(hittable<Real>& h, ray<Real> const & r, Real u0, Real v0, 
     auto roots = quadratic_roots(a,b_,c);
 
     if (roots.size() == 0) {
-        std::cerr << "No real roots found.\n";
+        #if DRT_DEBUG_KO_METHOD
+        std::cout << "\tNo real roots found; giving up.\n";
+        #endif
+        return vec<Real>(special_vec::NaNs);
+    }
+
+    vec<Real> sol0(u0 + roots[0]*uprime, v0 + roots[0]*vprime, (roots[0] + dot(PmO, tangent))/dt);
+    vec<Real> sol1(u0 + roots[1]*uprime, v0 + roots[1]*vprime, (roots[1] + dot(PmO, tangent))/dt);
+    Real s = roots[0];
+    bool contains0 = bound.contains(sol0);
+    bool contains1 = bound.contains(sol1);
+    if (!contains0 && !contains1) {
+        #if DRT_DEBUG_KO_METHOD
+        std::cout << "\tNeither root generates an in-bounds update.\n";
+        #endif
+        return vec<Real>(special_vec::NaNs);
+    }
+    else if (!contains0) 
+    {
+        s = roots[1];
+    }
+    else if (!contains1) 
+    {
+        s = roots[0];
     }
     else {
-        std::cout << "Roots are " << roots[0] << ", " << roots[1] << "\n";
-    }
-
-    Real s = roots[0];
-    bool unacceptable = false;
-    if (u0 + s*uprime < bound[0].first || u0 + s*uprime > bound[0].second) {
-        unacceptable = true;
-        s = roots[1];
-        if (u0 + s*uprime < bound[0].first || u0 + s*uprime > bound[0].second) {
-            // Thrown out of bounds:
-            return vec<Real>(special_vec::NaNs);
+        //
+        if (sol1[2] < sol0[2]) {
+            s = roots[1];
         }
     }
 
-    if (v0 + s*vprime < bound[1].first || v0 + s*vprime > bound[1].second) {
-        if (unacceptable) {
-            return vec<Real>(special_vec::NaNs);
-        }
-        s = roots[1];
-        if (v0 + s*vprime < bound[1].first || v0 + s*vprime > bound[1].second) {
-            // Thrown out of bounds:
-            return vec<Real>(special_vec::NaNs);
-        }
-    }
+    converged = ((s*uprime)*(s*uprime) + (s*vprime)*(s*vprime)) < std::numeric_limits<Real>::epsilon()*std::numeric_limits<Real>::epsilon();
     u0 += s*uprime;
     v0 += s*vprime;
 
-    std::cout << "New guess is (u0,v0) = (" << u0 << ", " << v0 << ")\n";
+    #if DRT_DEBUG_KO_METHOD
+    std::cout << "\tThe roots are s = " << roots[0] << " and " << roots[1] << ".\n";
+    if (contains0 && contains1) {
+        std::cout << "\tBoth roots generate in-bounds updates.\n";
+    }
+    else if (contains0)
+    {
+        std::cout << "\tOnly root " << roots[0] << " generates an in-bounds update.\n";
+    }
+    else if (contains1) {
+        std::cout << "\tOnly root " << roots[1] << " generates an in-bounds update.\n";
+    }
+    std::cout << "\t(u̇,v̇) = (" << uprime << ", " << vprime << ") and s = " << s << ".\n";
+    std::cout << "\tThis gives the correction (δu, δv) = (" << s*uprime << ", " << s*vprime << ").\n";
+    #endif
 
 
-    P = h(u0,v0, J, H);
-    std::cout << "New intersection point is " << P << "\n";
-    // Now choose among the roots to find minimal t solution:
+    } while (!converged);
 
     return vec<Real>(special_vec::NaNs);
 }

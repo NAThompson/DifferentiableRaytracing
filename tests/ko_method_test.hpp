@@ -15,15 +15,29 @@ TEST(KoMethodTest, Sphere) {
 
     drt::bounds<Real,3> bound({0,1}, {0,1}, {0,10});
 
-    auto uvt = drt::ko_method(s, r, 0.0, 0.5, bound);
+    auto uvt = drt::ko_method(s, r, bound, 0.0, 0.5);
     EXPECT_FLOAT_EQ(uvt[0], 0.0);
     EXPECT_FLOAT_EQ(uvt[1], 0.5);
     EXPECT_FLOAT_EQ(uvt[2], 1.0);
 
-    //uvt = drt::ko_method(s, r, 0.0, 0.25, bound);
-    //uvt = drt::ko_method(s, r, 0.0, 0.483019009238001, bound);
-    //uvt = drt::ko_method(s, r, 0.0, 0.499991963816114, bound);
-    uvt = drt::ko_method(s, r, 0.0, 0.499999999999999, bound);
+    uvt = drt::ko_method(s, r, bound, 0.0, 0.25);
+    EXPECT_FLOAT_EQ(uvt[0], 0.0);
+    EXPECT_FLOAT_EQ(uvt[1], 0.5);
+    EXPECT_FLOAT_EQ(uvt[2], 1.0);
+
+    // Surface patch is irregular at (u0, v0) = (0,0):
+    // Uncomment this to see the error message:
+    //uvt = drt::ko_method(s, r, bound, 0.0, 0.0);
+    // Challenge the method by starting the iteration close to the irregular point:
+    uvt = drt::ko_method(s, r, bound, 0.0, std::numeric_limits<Real>::epsilon());
+    EXPECT_FLOAT_EQ(uvt[0], 0.0);
+    EXPECT_FLOAT_EQ(uvt[1], 0.5);
+    EXPECT_FLOAT_EQ(uvt[2], 1.0);
+
+    uvt = drt::ko_method(s, r, bound, 0.01, 0.5);
+    EXPECT_FLOAT_EQ(uvt[0], 0.0);
+    EXPECT_FLOAT_EQ(uvt[1], 0.5);
+    EXPECT_FLOAT_EQ(uvt[2], 1.0);
 
 }
 
