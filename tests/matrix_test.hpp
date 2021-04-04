@@ -35,6 +35,19 @@ TEST(MatrixTest, TwoByTwo) {
     EXPECT_FLOAT_EQ(v[0], 3);
     EXPECT_FLOAT_EQ(v[1], 8);
 
+    // A depressing example found in the Ko method test:
+    M(0,0) = 39.4784176043574;
+    M(0,1) = 8.39603594799628e-33;
+    M(1,0) = M(0,1);
+    M(1,1) = 9.8696044010893;
+    w[0] = -6.28318530717959;
+    w[1] = 3.91572165271905e-15;
+
+    v = M.solve(w);
+    auto v2 = inverse(M)*w;
+    EXPECT_FLOAT_EQ(v[0], v2[0]);
+    EXPECT_FLOAT_EQ(v[1], v2[1]);
+
     std::mt19937_64 gen(12345);
     std::uniform_real_distribution<Real> dis;
 

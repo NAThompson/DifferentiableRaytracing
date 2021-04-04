@@ -154,6 +154,8 @@ vec<Real, cols> matrix<Real, rows, cols>::solve(vec<Real, rows> const & b) const
     static_assert(rows == 2 || rows == 3, "Only 2x2 or 3x3 matrices have been implemented.");
     vec<Real, cols> v;
     if constexpr (rows == 2) {
+        // M(0,0) = M_[0] M(0,1) = M_[1]
+        // M(1,0) = M_[2] M(1,1) = M_[3]
         if (M_[2] == 0) {
             v[1] = b[1]/M_[3];
             v[0] = (b[0] - M_[1]*v[1])/M_[0];
