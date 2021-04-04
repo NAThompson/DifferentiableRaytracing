@@ -45,6 +45,19 @@ public:
         return os;
     }
 
+    
+    Real max_norm() const {
+        using std::abs;
+        Real m = abs(M_[0]);
+        for (int64_t i = 1; i < rows*cols; ++i) {
+            if (abs(M_[i]) > m) {
+                m = abs(M_[i]);
+            }
+        }
+        return m;
+    }
+
+
 private:
     Real M_[rows*cols];
 };
@@ -190,7 +203,7 @@ vec<Real, cols> matrix<Real, rows, cols>::solve(vec<Real, rows> const & b) const
                 A(2,1) = 0;
 
                 if (A(2,2) == 0) {
-                    std::cerr << __FILE__ << ":" << __LINE__ << "3x3 matrix is singular.\n";
+                    //std::cerr << __FILE__ << ":" << __LINE__ << " 3x3 matrix is singular.\n";
                 }
                 y[2] /= A(2,2);
                 v[2] = y[2];

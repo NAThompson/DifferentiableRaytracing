@@ -99,7 +99,7 @@ public:
         return vec<Real>(special_vec::NaNs);
     };
 
-    virtual vec<Real,3> operator()(Real, Real, matrix<Real,3,3> & J, tensor<Real,3,2,2> & H) {
+    virtual vec<Real,3> operator()(Real, Real, matrix<Real,3,3> & J, tensor<Real,3,2,2> & H) const {
         for (int64_t i = 0; i < 3; ++i) {
             for (int64_t j = 0; j < 3; ++j) {
                 J(i,j) = std::numeric_limits<Real>::quiet_NaN();

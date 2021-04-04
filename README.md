@@ -32,39 +32,6 @@ A quadratic for $$t$$. No real roots $$\implies$$ ray doesn't hit sphere.
 
 ---
 
-## Raytracing *differentiable* objects
-
-Naive raytracing is *agnostic* to the differentiability of the objects in your scene.
-
-All that matters to raytracing is that you can compute the intersection of your objects with a line.
-
----
-
-## Ok, why do we need to focus on raytracing *differentiable* structures?
-
-Raytracing triangle meshes has become dominant in game programming. The assumption is that *creation* of the mesh is not that expensive-a good assumption for game asset generation; a bad one for visualizing ODE/PDE solutions.
-
-CAD programs render diagrams using smoother surfaces; e.g., Bezier and Catmull-Clark.
-
----
-
-## A billion triangles a frame!
-
-![inline](https://youtu.be/qC5KtatMcUw?t=106)
-
----
-
-## Benefits of exploiting smoothness
-
-- Memory requirements are drastically reduced relative to triangle meshes.
-- No error prone conversion into triangle meshes.
-- Pseudocoloring by derived quantities results in fewer visual artifacts.
-- No need to subsample high-accuracy numerical solutions
-
-^ High accuracy numerical methods might produce sparse pointsets in space. Without smooth interpolation, we have to subsample to extreme density to avoid artifacts.
-
----
-
 ## Rendering Ellipsoids
 
 $$\frac{x^2}{a^2} + \frac{y^2}{b^2} + \frac{z^2}{c^2} = 1$$
@@ -113,6 +80,40 @@ Gaussian curvature of torus computed using the curvature filter in Paraview.
 Artifacts from the triangle mesh are clearly visible and the curvature is incorrect everywhere.
 
 ---
+
+## Raytracing *differentiable* objects
+
+Naive raytracing is *agnostic* to the differentiability of the objects in your scene.
+
+All that matters to raytracing is that you can compute the intersection of your objects with a line.
+
+---
+
+## Ok, why do we need to focus on raytracing *differentiable* structures?
+
+Raytracing triangle meshes has become dominant in game programming. The assumption is that *creation* of the mesh is not that expensive-a good assumption for game asset generation; a bad one for visualizing ODE/PDE solutions.
+
+CAD programs render diagrams using smoother surfaces; e.g., Bezier and Catmull-Clark.
+
+---
+
+## A billion triangles a frame!
+
+![inline](https://youtu.be/qC5KtatMcUw?t=106)
+
+---
+
+## Benefits of exploiting smoothness
+
+- Memory requirements are drastically reduced relative to triangle meshes.
+- No error prone conversion into triangle meshes.
+- Pseudocoloring by derived quantities results in fewer visual artifacts.
+- No need to subsample high-accuracy numerical solutions
+
+^ High accuracy numerical methods might produce sparse pointsets in space. Without smooth interpolation, we have to subsample to extreme density to avoid artifacts.
+
+---
+
 
 ## Implicit equations are "easy" to render
 
@@ -251,8 +252,6 @@ Choose $$\lambda$$ that minimizes $$g$$.
 
 Helicoid rendered with Newton's method patched with backtracking. Initial guess for $$t$$ provided by bounding cylinder intersection, no bounced rays.
 
-Note: Non-existence + Newton's method = Performance bug! (See Toth for an interval arithmetic Newton's method that can help.)
-
 ^ Interval arithmetic can be used to determine existence and convergence of Newton's method. See Toth.
 ^ This is based on ideas from Krawczyk's operator, which bounds volumes of convergent Newton iterates.
 ^ If subsequent volumes do not intersect, there is no solution!
@@ -368,7 +367,9 @@ If you're surveying the Bonneville salt flats, you don't blame Newton's method w
 
 ![left](figures/helicoid_condition_number.png)
 
-A helicoid pseudocolored by the logarithm of the condition number of the multivariate rootfinding problem.
+A helicoid pseudocolored by the logarithm of the condition number of the multivariate rootfinding problem
+
+$$\mathbf{f}(u,v,t) := \sigma(u,v) - \mathbf{o} - t\mathbf{d} = 0$$
 
 ---
 
@@ -459,15 +460,21 @@ So $$\ddot{\gamma}(0) \perp \dot{\gamma}(0)$$ and $$\ddot{\gamma}(0) \perp \math
 
 So $$\ddot{\gamma}(0) \propto \mathbf{n}_{\mathcal{P}} \times \dot{\gamma}(0)$$. But what is the constant of proportionality?
 
-Let's just pull this one out of a differential geometry book:
+Let's just pull this one out of a differential geometry book . . .
 
-$$\kappa\hat{\mathbf{n}} = \frac{\kappa_{\sigma}}{1- (\mathbf{n}_{\mathcal{P}}\cdot \mathbf{n}_{\sigma})^2}(-\mathbf{n}_{\mathcal{P}}\cdot \mathbf{n}_{\sigma} \mathbf{n}_{\mathcal{P}}  + \mathbf{n}_{\sigma})$$
 
-and
+---
 
-$$\kappa_{\sigma} = e\dot{u}^2 + 2f\dot{u}\dot{v} + g\dot{v}^2$$,
+$$\kappa\hat{\mathbf{n}} = \frac{\kappa_{\sigma}}{1- (\mathbf{n}_{\mathcal{P}}\cdot \mathbf{n}_{\sigma})^2}(\mathbf{n}_{\sigma} -(\mathbf{n}_{\mathcal{P}}\cdot \mathbf{n}_{\sigma}) \mathbf{n}_{\mathcal{P}})$$
 
-where $$e,f$$, and $$g$$ are the [second fundamental forms](https://en.wikipedia.org/wiki/Second_fundamental_form).
+
+$$\kappa_{\sigma} := e\dot{u}^2 + 2f\dot{u}\dot{v} + g\dot{v}^2$$,
+
+where
+
+$$e:= \hat{\mathbf{n}}_{\sigma} \cdot\partial_{u}^2\sigma, f := \hat{\mathbf{n}}_{\sigma} \cdot\partial_{u}\partial_{v}\sigma, g:= \hat{\mathbf{n}}_{\sigma} \cdot\partial_{v}^2\sigma$$
+
+are the [second fundamental forms](https://en.wikipedia.org/wiki/Second_fundamental_form).
 
 ---
 
@@ -475,13 +482,13 @@ where $$e,f$$, and $$g$$ are the [second fundamental forms](https://en.wikipedia
 
 $$\gamma(0) + s\hat{\mathbf{t}} + \frac{\kappa}{2}s^2 \hat{\mathbf{n}} = \mathbf{o} + t\mathbf{d}$$
 
-Dot with $$\hat{\mathbf{t}}$$ and $$\hat{\mathbf{d}}$$ and eliminate $$t$$ so obtain
+Dot with $$\hat{\mathbf{t}}$$ and $$\hat{\mathbf{d}}$$ and eliminate $$t$$ to obtain
 
 $$
-\frac{\kappa}{2}s^2 - \frac{\mathbf{d}\cdot\hat{\mathbf{n}}}{\mathbf{d}\cdot\hat{\mathbf{t}}} s = (\mathbf{o} - \gamma(0))\cdot \hat{\mathbf{n}} -  \frac{\mathbf{d}\cdot\hat{\mathbf{n}}}{\mathbf{d}\cdot\hat{\mathbf{t}}}(\mathbf{o} -\gamma(0))\hat{\mathbf{t}}
+\frac{\kappa}{2}s^2 - \frac{\mathbf{d}\cdot\hat{\mathbf{n}}}{\mathbf{d}\cdot\hat{\mathbf{t}}} s = (\mathbf{o} - \gamma(0))\cdot \hat{\mathbf{n}} -  \frac{\mathbf{d}\cdot\hat{\mathbf{n}}}{\mathbf{d}\cdot\hat{\mathbf{t}}}(\mathbf{o} -\gamma(0))\cdot\hat{\mathbf{t}}
 $$
 
-Choose root than mimizes $$t$$.
+Choose root than minimizes $$t$$.
 
 ---
 
@@ -490,66 +497,6 @@ Choose root than mimizes $$t$$.
 The update is
 
 $$u_{k+1} := u_{k} + s\dot{u}, v_{k+1} := v_{k} + s\dot{v}$$.
-
----
-
-## Implicitization
-
-Ray intersection with a parametric surface is a multivariate rootfinding problem.
-
-Ray intersection with an implicit surface is a scalar rootfinding problem-much easier! Non-existence characterization simpler, fallback to bisection possible.
-
-Consider [converting](https://www.cs.cmu.edu/~hulya/Publications/IJCV03Paper.pdf) your parametric surfaces into implicit surfaces!
-
----
-
-## So many more techniques
-
-- Use hit points from adjacent pixels as starting values for Newton/Halley iterates (ray coherence)
-- Using fundamental forms, change into a coordinate system where rays are bent and surfaces are flat; see [Barr](https://dl.acm.org/doi/pdf/10.1145/15886.15918).
-- Do a coarse triangulation of the surface, then use a Halley or Newton iterate to refine the hit points off the triangulation.
-- On-the-fly subdivision of volumes; bounding volume hierarchies.
-
----
-
-## So many more techniques
-
-- Is $$\mathbf{f}(u,v,t) = \sigma(u,v) - \mathbf{o} - t \mathbf{d}$$ contractive? Banach fixed point theorem.
-- Load balancing and parallelization: Discussed in [Physically Based Rendering](http://www.pbr-book.org/3ed-2018/Utilities/Parallelism.html).
-
-
----
-
-## Rendering space curves
-
-The probability that a space curve $$\gamma \colon [t_0, t_f] \to \mathbb{R}^{3}$$ intersects a ray $$\mathbf{o} + t\mathbf{d}$$ is zero!
-
-Space curves must be extended, either via glyphs, or as "tubes". Constructing a tube from a space curve $$\gamma$$:
-
-$$
-\sigma(\theta, t) = \gamma(t) + r(\mathbf{n}(t)\cos(\theta) + \mathbf{b}(t) \sin(\theta))
-$$
-
-where $$\mathbf{n}$$ is the principle normal, and $$\mathbf{b}$$ is the binormal.
-
----
-
-## Ray-tracers are 3D radiation transport codes!
-
-What information do physically based renderers like [PBRT](http://www.pbr-book.org/3ed-2018/Shapes/Spheres.html) require for the intersection of a surface $$\sigma(u,v)$$ with a ray?
-
-- The intersection point $$\mathbf{p}$$, as well as $$t$$ and $$(u,v)$$.
-- The normal to the surface $$\mathbf{n}$$.
-- Partial derivatives $$\partial_{u}\mathbf{p}$$, $$\partial_{v}\mathbf{p}$$, $$\partial_{u}^2\mathbf{p}$$, $$\partial_{v}^2\mathbf{p}$$, $$\partial_{uv}^2\mathbf{p}$$
-- The first and second [fundamental forms](https://en.wikipedia.org/wiki/First_fundamental_form).
-
----
-
-## Ray-tracers are 3D radiation transport codes!
-
-- The information required for radiation transport is a pretty good base for doing generic sciviz!
-
-- Differential geometry is a solid foundation to build your SciViz on.
 
 ---
 
@@ -626,7 +573,7 @@ auto image = vtkm::render(actor);
 
 ## Vision
 
-I have $$\gamma\colon [t_0, t_f] \subset \mathbb{R} \to \mathbb{R}^{3}$$. I can render a space curve via
+I have $$\gamma\colon [t_0, t_f] \to \mathbb{R}^{3}$$. I can render a space curve via
 
 ```cpp
 auto actor1 = vtkm::tube_curve(gamma, t0, tf);

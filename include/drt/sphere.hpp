@@ -55,6 +55,48 @@ public:
         return w;
     }
 
+    vec<Real,3> operator()(Real u, Real v, matrix<Real, 3,3>& J, tensor<Real, 3,2,2>& H) const override {
+        vec<Real,3> w = center_;
+        w[0] += radius_*cos(2*M_PI*u)*sin(M_PI*v);
+        w[1] += radius_*sin(2*M_PI*u)*sin(M_PI*v);
+        w[2] += radius_*cos(M_PI*v);
+        J(0,0) = -2*M_PI*radius_*sin(2*M_PI*u)*sin(M_PI*v);
+        J(1,0) = 2*M_PI*radius_*cos(2*M_PI*u)*sin(M_PI*v);
+        J(2,0) = 0;
+
+        J(0,1) = M_PI*radius_*cos(2*M_PI*u)*cos(M_PI*v);
+        J(1,1) = M_PI*radius_*sin(2*M_PI*u)*cos(M_PI*v);
+        J(2,1) = -M_PI*radius_*sin(M_PI*v);
+
+        J(0,2) = std::numeric_limits<Real>::quiet_NaN();
+        J(1,2) = std::numeric_limits<Real>::quiet_NaN();
+        J(2,2) = std::numeric_limits<Real>::quiet_NaN();
+
+        // H(i,j,k) = ∂ⱼ∂ₖσᵢ; in this case u is the 0 index, v is the 1 index.
+        // H(0,0,0) = ∂ᵤ∂ᵤσ₀
+        H(0,0,0) = -4*M_PI*M_PI*radius_*cos(2*M_PI*u)*sin(M_PI*v);
+        H(1,0,0) = -4*M_PI*M_PI*radius_*sin(2*M_PI*u)*sin(M_PI*v);
+        H(2,0,0) = 0;
+
+        // Mixed partials:
+        H(0,0,1) = -2*M_PI*M_PI*radius_*sin(2*M_PI*u)*cos(M_PI*v);
+        H(0,1,0) = H(0,0,1);
+
+        H(1,0,1) = 2*M_PI*M_PI*radius_*cos(2*M_PI*u)*cos(M_PI*v);
+        H(1,1,0) = H(1,0,1);
+
+        H(2,0,1) = 0;
+        H(2,1,0) = 0;
+
+        // ∂ᵥ∂ᵥσ₀
+        H(0,1,1) = -M_PI*M_PI*radius_*cos(2*M_PI*u)*sin(M_PI*v);
+        H(1,1,1) = -M_PI*M_PI*radius_*sin(2*M_PI*u)*sin(M_PI*v);
+        H(2,1,1) = -M_PI*M_PI*radius_*cos(M_PI*v);
+
+
+        return w;
+    }
+
 private:
     // Private since rec.u, rec.v must be set before this can be called:
     void set_fundamental_forms(hit_record<Real>& rec) const {
