@@ -5,6 +5,7 @@
 #include <iostream>
 #include <initializer_list>
 #include <drt/vec.hpp>
+#include <drt/math.hpp>
 
 namespace drt {
 
@@ -63,12 +64,12 @@ private:
 };
 
 template<typename Real, int64_t rows, int64_t cols>
-Real determinant(matrix<Real, rows, cols> const & m)
+inline Real determinant(matrix<Real, rows, cols> const & m)
 {
     static_assert(rows == cols, "Must have the same number of rows as columns to compute a determinant.");
     static_assert(rows < 4, "Determinant not implemented for n > 3.");
     if constexpr (rows == 2) {
-        return m(0,0)*m(1,1) - m(0,1)*m(1,0);
+        return difference_of_products(m(0,0), m(1,1), m(0,1), m(1,0));
     }
     if constexpr (rows == 3) {
         return m(0,0)*(m(1,1)*m(2,2) - m(1,2)*m(2,1)) - m(0,1)*(m(1,0)*m(2,2) - m(1,2)*m(2,0)) + m(0,2)*(m(1,0)*m(2,1) - m(1,1)*m(2,0));
@@ -156,7 +157,11 @@ vec<Real, cols> matrix<Real, rows, cols>::solve(vec<Real, rows> const & b) const
     if constexpr (rows == 2) {
         // M(0,0) = M_[0] M(0,1) = M_[1]
         // M(1,0) = M_[2] M(1,1) = M_[3]
-        if (M_[2] == 0) {
+        // Ugh this is the real condition but . . .
+        //if (M_[2]) == 0) {
+        // How is this scale determined? By the failing unit test, which in turn was determined
+        // by a bizarre problem found in the raytracer!!!
+        if (std::abs(M_[2]) <= std::numeric_limits<Real>::epsilon()*std::numeric_limits<Real>::epsilon()) {
             v[1] = b[1]/M_[3];
             v[0] = (b[0] - M_[1]*v[1])/M_[0];
             return v;

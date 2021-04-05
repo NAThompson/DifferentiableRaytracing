@@ -6,7 +6,7 @@
 
 namespace drt {
 
-#define DRT_DEBUG_KO_METHOD 1
+#define DRT_DEBUG_KO_METHOD 0
 
 template<typename Real>
 vec<Real,3> ko_method(hittable<Real>& h, ray<Real> const & r, bounds<Real,3> const & bound, Real u0 = std::numeric_limits<Real>::quiet_NaN(), Real v0 = std::numeric_limits<Real>::quiet_NaN())

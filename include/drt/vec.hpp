@@ -3,6 +3,7 @@
 #include <cmath>
 #include <iostream>
 #include <initializer_list>
+#include <drt/math.hpp>
 
 namespace drt {
 
@@ -198,9 +199,12 @@ vec<Real, dimension> reflect(const vec<Real, dimension>& v, const vec<Real, dime
 template<typename Real>
 vec<Real> cross(const vec<Real>& u, const vec<Real>& v) {
     vec<Real> w;
-    w[0] = u[1]*v[2] - u[2]*v[1];
-    w[1] = u[2]*v[0] - u[0]*v[2];
-    w[2] = u[0]*v[1] - u[1]*v[0];
+    //w[0] = u[1]*v[2] - u[2]*v[1];
+    w[0] = difference_of_products(u[1], v[2], u[2], v[1]);
+    //w[1] = u[2]*v[0] - u[0]*v[2];
+    w[1] = difference_of_products(u[2], v[0], u[0], v[2]);
+    //w[2] = u[0]*v[1] - u[1]*v[0];
+    w[2] = difference_of_products(u[0], v[1], u[1], v[0]);
     return w;
 }
 
