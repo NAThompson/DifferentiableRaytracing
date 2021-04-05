@@ -161,6 +161,7 @@ vec<Real, cols> matrix<Real, rows, cols>::solve(vec<Real, rows> const & b) const
         //if (M_[2]) == 0) {
         // How is this scale determined? By the failing unit test, which in turn was determined
         // by a bizarre problem found in the raytracer!!!
+        // This is an ugly hack.
         if (std::abs(M_[2]) <= std::numeric_limits<Real>::epsilon()*std::numeric_limits<Real>::epsilon()) {
             v[1] = b[1]/M_[3];
             v[0] = (b[0] - M_[1]*v[1])/M_[0];

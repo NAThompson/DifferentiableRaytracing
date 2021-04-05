@@ -137,7 +137,7 @@ Intersects ray when
 
 $$\mathbf{o} + t\mathbf{d} = \sigma(u,v)$$
 
-We must recover $$u,v,t$$ to render.
+^ We must recover $$(u,v,t)$$ to render, in other words we must solve a multivariate rootfinding problem.
 
 ![left](figures/helicoid_smooth_cool_warm_lambertian.png)
 
@@ -146,11 +146,13 @@ We must recover $$u,v,t$$ to render.
 
 ## Helicoid ray intersections
 
-Newton's method will work well enough here, but getting sensible starting values is key.
+![left](figures/helicoid_bounded.png)
 
-Bound the helicoid with a cylinder. A cylinder is a quadric surface so we can obtain $$[t_{\min}, t_{\max}]$$ by a quadratic equation.
+Any method we use to compute the parameters $$(u,v,t)$$ will require a good initial guess and bounds on the parameterss.
 
-Then $$r^2v^2 = (o_x + td_x)^2 + (o_y + td_y)^2$$ gives us bounds on $$[v_{\min}, v_{\max}]$$, and $$u = (o_z+td_z)/\lambda + 1/2$$ gives us bounds on $$[u_{\min}, u_{\max}]$$.
+Let's surround the helicoid with a cylinder $$x^2 + y^2 = r^2$$.
+
+Intersection points on the cylinder will give us bounds on $$u,v$$ and $$t$$.
 
 ---
 

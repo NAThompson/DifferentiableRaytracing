@@ -123,6 +123,11 @@ private:
     // For a ray that intersects a cylinder at {tmin, tmax}, what is the corresponding [umin, umax]?
     std::pair<Real, Real> ubounds(vec<Real> const & o, vec<Real> const & d, Real t_min, Real t_max) const
     {
+        // No constraints if we're already in the cylinder:
+        if (o[0]*o[0] + o[1]*o[1] < radius_*radius_ && o[2] < speed_/2 && o[2] > -speed_/2) {
+            return std::make_pair<Real,Real>(0, 1);
+        }
+
         Real umin = (o[2] + t_min*d[2])/speed_ + Real(1)/2;
         Real umax = (o[2] + t_max*d[2])/speed_ + Real(1)/2;
         if (umin > umax) {
@@ -140,6 +145,10 @@ private:
     std::pair<Real, Real> vbounds(vec<Real> const & o, vec<Real> const & d, Real tmin, Real tmax) const
     {
         using std::sqrt;
+        // If we are already in the cylinder, then we have essentially no constrains on v:
+        if (o[0]*o[0] + o[1]*o[1] < radius_*radius_ && o[2] < speed_/2 && o[2] > -speed_/2) {
+            return std::make_pair<Real,Real>(0, 1);
+        }
         // v²r² = (oₓ+tdₓ)² + (oy+tdy)² which is minimized at
         // t_c = -(oₓdₓ + oydz)/(dₓ² + dy²).
         Real tc = -(o[0]*d[0] + o[1]*d[1])/(d[0]*d[0] + d[1]*d[1]);

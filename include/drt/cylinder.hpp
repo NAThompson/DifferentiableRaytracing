@@ -76,17 +76,32 @@ bool cylinder<Real>::hit(const ray<Real>& r, Real t_min, Real t_max, hit_record<
     Real a = dir[0]*dir[0] + dir[1]*dir[1];
     Real b = 2*(o[0]*dir[0] + o[1]*dir[1]);
     Real c = o[0]*o[0] + o[1]*o[1] - radius_*radius_;
-    // This might be wrong if the first root is in the t-range, but gives a ray
-    // which is not in the z-range.
-    auto opt_root = first_quadratic_root_in_range(a, b, c, t_min, t_max);
-    if (!opt_root) {
+    auto roots = quadratic_roots(a,b,c);
+    if (roots.size() == 0) {
         return false;
     }
-    rec.t = *opt_root;
-    rec.p = r(rec.t);
-    Real z = rec.p[2];
-    if (z > z_max_ || z < z_min_) {
-        return false;
+    Real t = roots[0];
+    if (t < t_min || t > t_max) {
+        t = roots[1];
+        if (t < t_min || t > t_max) {
+            return false;
+        }
+    } else {
+        // The first root is acceptable over t, but what about z?
+        rec.t = roots[0];
+        rec.p = r(rec.t);
+        Real z = rec.p[2];
+        if (z > z_max_ || z < z_min_) {
+            rec.t = roots[1];
+            if (rec.t < t_min || rec.t > t_max) {
+                return false;
+            }
+            rec.p = r(rec.t);
+            Real z = rec.p[2];
+            if (z > z_max_ || z < z_min_) {
+                return false;
+            }
+        }
     }
 
     vec<Real> gradient(2*rec.p[0], 2*rec.p[1], 0);
