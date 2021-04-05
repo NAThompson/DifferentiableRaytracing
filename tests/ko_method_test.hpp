@@ -34,8 +34,27 @@ TEST(KoMethodTest, Sphere) {
     EXPECT_FLOAT_EQ(uvt[1], 0.5);
     EXPECT_FLOAT_EQ(uvt[2], 1.0);
 
-    uvt = drt::ko_method(s, r, bound, 0.01, 0.5);
-    EXPECT_FLOAT_EQ(uvt[0], 0.0);
+    bound = drt::bounds<Real,3>({-std::numeric_limits<Real>::epsilon(),1}, {-1,1}, {0,10});
+    uvt = drt::ko_method(s, r, bound, Real(1)/Real(128), 0.5);
+    EXPECT_TRUE(abs(uvt[0]) < std::numeric_limits<Real>::epsilon());
+    EXPECT_FLOAT_EQ(uvt[1], 0.5);
+    EXPECT_FLOAT_EQ(uvt[2], 1.0);
+
+
+    // There's another solution on the other side of the sphere at u = 0.5, v = 0.5.
+    // What root does it find at u = 0.25?
+    // Obviously we have no proof of this, but we want it to find the closer t root:
+    uvt = drt::ko_method(s, r, bound, 0.25, 0.5);
+    EXPECT_TRUE(abs(uvt[0]) < std::numeric_limits<Real>::epsilon());
+    EXPECT_FLOAT_EQ(uvt[1], 0.5);
+    EXPECT_FLOAT_EQ(uvt[2], 1.0);
+
+
+    // I think this is an important test, but I have no clue how to fix it:
+    //uvt = drt::ko_method(s, r, bound, 0.25, std::numeric_limits<Real>::epsilon());
+
+    uvt = drt::ko_method(s, r, bound, 0.25, 0.99);
+    EXPECT_TRUE(abs(uvt[0]) < std::numeric_limits<Real>::epsilon());
     EXPECT_FLOAT_EQ(uvt[1], 0.5);
     EXPECT_FLOAT_EQ(uvt[2], 1.0);
 

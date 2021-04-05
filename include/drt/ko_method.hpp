@@ -14,7 +14,7 @@ vec<Real,3> ko_method(hittable<Real>& h, ray<Real> const & r, bounds<Real,3> con
     vec<Real> O = r.origin();
     vec<Real> D = r.direction();
     #if DRT_DEBUG_KO_METHOD
-    std::cout << "The ray is " << r << "\n";
+    std::cout << "\n\n\n\nThe ray is " << r << "\n";
     #endif
     if (std::isnan(u0)) {
         u0 = (bound[0].first + bound[0].second)/2;
@@ -39,7 +39,10 @@ vec<Real,3> ko_method(hittable<Real>& h, ray<Real> const & r, bounds<Real,3> con
     vec<Real> plane_normal = cross(PmO, D);
 
     // TODO: What is the real condition that these two fall on a line using the rounding model of floating point arithmetic?
-    if (squared_norm(plane_normal) < std::numeric_limits<Real>::epsilon()*std::numeric_limits<Real>::epsilon()) {
+    #if DRT_DEBUG_KO_METHOD
+    std::cout << "\tThe plane normal before normalization is " << plane_normal << " which has squared norm " << squared_norm(plane_normal) << "\n";
+    #endif
+    if (squared_norm(plane_normal) < 4*std::numeric_limits<Real>::epsilon()*std::numeric_limits<Real>::epsilon()) {
         #if DRT_DEBUG_KO_METHOD
         std::cout << "\t" << P << " and " << O << " fall on a line in the direction of " << D << "; the iteration has converged.\n";
         #endif
@@ -49,9 +52,10 @@ vec<Real,3> ko_method(hittable<Real>& h, ray<Real> const & r, bounds<Real,3> con
         }
         return vec<Real>(u0, v0, t);
     }
-    //std::cout << "Plane normal before normalization = " << plane_normal << "\n";
     normalize(plane_normal);
-    //std::cout << "The plane normal is " << plane_normal << "\n";
+    #if DRT_DEBUG_KO_METHOD
+    std::cout << "\tThe plane normal after normalization is " << plane_normal << "\n";
+    #endif
 
     vec<Real> sigma_u = J.column(0);
     vec<Real> sigma_v = J.column(1);
@@ -61,20 +65,27 @@ vec<Real,3> ko_method(hittable<Real>& h, ray<Real> const & r, bounds<Real,3> con
                   << "∂ᵤσ⨯∂ᵥσ = " << surface_normal << " cannot be sensibly normalized and hence the surface has an ill-defined normal.\n";
         return vec<Real>(special_vec::NaNs);
     }
-    //std::cout << "\tThe surface normal is " << surface_normal << "\n";
+    #if DRT_DEBUG_KO_METHOD
+    std::cout << "\tThe surface normal, prenormalization is " << surface_normal << "\n";
+    #endif
     normalize(surface_normal);
-    //std::cout << "\tThe surface normal is " << surface_normal << "\n";
-    
+    #if DRT_DEBUG_KO_METHOD
+    std::cout << "\tThe surface normal, postnormalization is " << surface_normal << "\n";
+    #endif
 
     vec<Real> tangent = cross(plane_normal, surface_normal);
-   // std::cout << "\tTangent, prenormalization = " << tangent << "\n";
+    #if DRT_DEBUG_KO_METHOD
+    std::cout << "\tTangent, prenormalization = " << tangent << ", which has squared norm of " << squared_norm(tangent) << "\n";
+    #endif
     if (squared_norm(tangent) < std::numeric_limits<Real>::epsilon()*std::numeric_limits<Real>::epsilon()) {
         std::cerr << __FILE__ << ":" << __LINE__ << " the tangent is " << tangent << ", which is too small!\n";
         std::cerr << "You must reckon with this degenerate case.\n";
         return vec<Real>(special_vec::NaNs);
     }
     normalize(tangent);
-    //std::cout << "\tTangent, postnormalization = " << tangent << "\n";
+    #if DRT_DEBUG_KO_METHOD
+    std::cout << "\tTangent, postnormalization = " << tangent << "\n";
+    #endif
 
     vec<Real,2> b;
     b[0] = dot(tangent, sigma_u);
@@ -84,7 +95,8 @@ vec<Real,3> ko_method(hittable<Real>& h, ray<Real> const & r, bounds<Real,3> con
     M(0,1) = dot(sigma_u, sigma_v);
     M(1,0) = M(0,1);
     M(1,1) = dot(sigma_v, sigma_v);
-    vec<Real,2> w = M.solve(b);
+    auto M_inv = inverse(M);
+    vec<Real,2> w = M_inv*b;
     Real uprime = w[0];
     Real vprime = w[1];
 
@@ -99,6 +111,10 @@ vec<Real,3> ko_method(hittable<Real>& h, ray<Real> const & r, bounds<Real,3> con
     }
 
     Real kappa_b = e*uprime*uprime + 2*f*uprime*vprime + g*vprime*vprime;
+    #if DRT_DEBUG_KO_METHOD
+    std::cout << "\t(u̇,v̇) = (" << uprime << ", " << vprime << ").\n";
+    std::cout << "\tSecond fundamental forms (e,f,g) = (" << e << ", " << f << ", " << g << ")\n";
+    #endif
     Real costheta = dot(surface_normal, plane_normal);
     if (costheta >= 1) {
         std::cerr << __FILE__ << ":" << __LINE__ << " The plane normal and the surface normal are parallel.\n";
@@ -110,12 +126,19 @@ vec<Real,3> ko_method(hittable<Real>& h, ray<Real> const & r, bounds<Real,3> con
     Real kappa = norm(kappaN);
     vec<Real> n = kappaN/kappa;
 
+    #if DRT_DEBUG_KO_METHOD
+    std::cout << "\tκ_b = " << kappa_b << ", κ = " << kappa << ", cos(θ) = " << costheta << "\n";
+    #endif
 
     Real a = kappa/2;
     Real tmp = dot(D,n);
     Real dt = dot(D,tangent);
     Real b_ = -tmp/dt;
     Real c = tmp*dot(O-P, tangent)/dt - dot(O-P,n);
+
+    #if DRT_DEBUG_KO_METHOD
+    std::cout << "\td·n = " << tmp << ", d·t = " << dt << ", a = " << a << ", b = " << b_ << ", c = " << c << "\n";
+    #endif
 
     auto roots = quadratic_roots(a,b_,c);
 
@@ -134,6 +157,8 @@ vec<Real,3> ko_method(hittable<Real>& h, ray<Real> const & r, bounds<Real,3> con
     if (!contains0 && !contains1) {
         #if DRT_DEBUG_KO_METHOD
         std::cout << "\tNeither root generates an in-bounds update.\n";
+        std::cout << "\tRoots are " << roots[0] << " and " << roots[1] << ".\n";
+        std::cout << "\tUpdates are " << sol0 << " and " << sol1 << "\n";
         #endif
         return vec<Real>(special_vec::NaNs);
     }
@@ -152,7 +177,7 @@ vec<Real,3> ko_method(hittable<Real>& h, ray<Real> const & r, bounds<Real,3> con
         }
     }
 
-    converged = ((s*uprime)*(s*uprime) + (s*vprime)*(s*vprime)) < std::numeric_limits<Real>::epsilon()*std::numeric_limits<Real>::epsilon();
+    //converged = ((s*uprime)*(s*uprime) + (s*vprime)*(s*vprime)) < std::numeric_limits<Real>::epsilon()*std::numeric_limits<Real>::epsilon();
     u0 += s*uprime;
     v0 += s*vprime;
 
@@ -168,8 +193,12 @@ vec<Real,3> ko_method(hittable<Real>& h, ray<Real> const & r, bounds<Real,3> con
     else if (contains1) {
         std::cout << "\tOnly root " << roots[1] << " generates an in-bounds update.\n";
     }
-    std::cout << "\t(u̇,v̇) = (" << uprime << ", " << vprime << ") and s = " << s << ".\n";
-    std::cout << "\tThis gives the correction (δu, δv) = (" << s*uprime << ", " << s*vprime << ").\n";
+    std::cout << "\tUpdates are " << sol0 << " and " << sol1 << "\n";
+    std::cout << "\tThis gives the correction (δu, δv) = (" << s*uprime << ", " << s*vprime << ") which has norm " << abs(s)*sqrt(uprime*uprime + vprime*vprime) << "\n";
+    if (converged) {
+        std::cout << "\tWe are converged.\n";
+    }
+    std::cin.get();
     #endif
 
 
