@@ -14,7 +14,7 @@ vec<Real,3> ko_method(hittable<Real>& h, ray<Real> const & r, bounds<Real,3> con
     vec<Real> O = r.origin();
     vec<Real> D = r.direction();
     #if DRT_DEBUG_KO_METHOD
-    std::cout << "\n\n\n\nThe ray is " << r << "\n";
+    std::cout << "\n\nThe ray is " << r << "\n";
     #endif
     if (std::isnan(u0)) {
         u0 = (bound[0].first + bound[0].second)/2;
@@ -177,7 +177,6 @@ vec<Real,3> ko_method(hittable<Real>& h, ray<Real> const & r, bounds<Real,3> con
         }
     }
 
-    //converged = ((s*uprime)*(s*uprime) + (s*vprime)*(s*vprime)) < std::numeric_limits<Real>::epsilon()*std::numeric_limits<Real>::epsilon();
     u0 += s*uprime;
     v0 += s*vprime;
 
@@ -204,6 +203,7 @@ vec<Real,3> ko_method(hittable<Real>& h, ray<Real> const & r, bounds<Real,3> con
 
     } while (!converged);
 
+    std::cerr << __FILE__ << ":" << __LINE__ << " We shouldn't be here!!!\n";
     return vec<Real>(special_vec::NaNs);
 }
 

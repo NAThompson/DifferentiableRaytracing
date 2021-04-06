@@ -13,9 +13,10 @@ TEST(KoMethodTest, Sphere) {
     vec<Real> d(-1,0,0);
     ray<Real> r(o, d);
 
-    drt::bounds<Real,3> bound({0,1}, {0,1}, {0,10});
-
-    auto uvt = drt::ko_method(s, r, bound, 0.0, 0.5);
+    drt::bounds<Real,3> bound({-0.1,1}, {-0.1,1}, {0,10});
+    vec<Real> uvt;
+    
+    uvt = drt::ko_method(s, r, bound, 0.0, 0.5);
     EXPECT_FLOAT_EQ(uvt[0], 0.0);
     EXPECT_FLOAT_EQ(uvt[1], 0.5);
     EXPECT_FLOAT_EQ(uvt[2], 1.0);
@@ -34,7 +35,6 @@ TEST(KoMethodTest, Sphere) {
     EXPECT_FLOAT_EQ(uvt[1], 0.5);
     EXPECT_FLOAT_EQ(uvt[2], 1.0);
 
-    bound = drt::bounds<Real,3>({-std::numeric_limits<Real>::epsilon(),1}, {-1,1}, {0,10});
     uvt = drt::ko_method(s, r, bound, Real(1)/Real(128), 0.5);
     EXPECT_TRUE(abs(uvt[0]) < std::numeric_limits<Real>::epsilon());
     EXPECT_FLOAT_EQ(uvt[1], 0.5);
@@ -49,14 +49,16 @@ TEST(KoMethodTest, Sphere) {
     EXPECT_FLOAT_EQ(uvt[1], 0.5);
     EXPECT_FLOAT_EQ(uvt[2], 1.0);
 
-
-    // I think this is an important test, but I have no clue how to fix it:
-    //uvt = drt::ko_method(s, r, bound, 0.25, std::numeric_limits<Real>::epsilon());
-
-    /*uvt = drt::ko_method(s, r, bound, 0.25, 0.99);
+    uvt = drt::ko_method(s, r, bound, Real(1)/Real(8), 0.25);
     EXPECT_TRUE(abs(uvt[0]) < std::numeric_limits<Real>::epsilon());
     EXPECT_FLOAT_EQ(uvt[1], 0.5);
-    EXPECT_FLOAT_EQ(uvt[2], 1.0);*/
+    EXPECT_FLOAT_EQ(uvt[2], 1.0);
+
+    bound = drt::bounds<Real,3>({-1,1}, {-1,1}, {0,10});
+    uvt = drt::ko_method(s, r, bound, Real(1)/Real(8), Real(1)/Real(8));
+    EXPECT_TRUE(abs(uvt[0]) < std::numeric_limits<Real>::epsilon());
+    EXPECT_FLOAT_EQ(uvt[1], 0.5);
+    EXPECT_FLOAT_EQ(uvt[2], 1.0);
 
 }
 
