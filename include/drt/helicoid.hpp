@@ -42,7 +42,9 @@ public:
 
     virtual ~helicoid() {
         #ifdef DEBUG
-        std::cerr << "Helicoid error count = " << helicoid_error_count << "\n";
+        if (helicoid_error_count > 0) {
+            std::cerr << "Helicoid error count = " << helicoid_error_count << "\n";
+        }
         #endif
     };
 
@@ -51,6 +53,45 @@ public:
         w[0] = radius_*v*std::cos(2*M_PI*u);
         w[1] = radius_*v*std::sin(2*M_PI*u);
         w[2] = speed_*(u-0.5);
+        return w;
+    }
+
+    vec<Real,3> operator()(Real u, Real v, matrix<Real,3,3>& J, tensor<Real, 3,2,2>& H) const override {
+        vec<Real> w;
+        w[0] = radius_*v*std::cos(2*M_PI*u);
+        w[1] = radius_*v*std::sin(2*M_PI*u);
+        w[2] = speed_*(u-0.5);
+
+        J(0,2) = std::numeric_limits<Real>::quiet_NaN();
+        J(1,2) = std::numeric_limits<Real>::quiet_NaN();
+        J(2,2) = std::numeric_limits<Real>::quiet_NaN();
+
+        J(0,0) = -2*M_PI*w[1];
+        J(1,0) = 2*M_PI*w[0];
+        J(2,0) = speed_;
+
+        J(0,1) = radius_*std::cos(2*M_PI*u);
+        J(1,1) = radius_*std::sin(2*M_PI*u);
+        J(2,1) = 0;
+
+        H(0,0,0) = -4*M_PI*M_PI*w[0];
+        H(0,0,1) = -2*M_PI*sin(2*M_PI*u);
+
+        H(0,1,0) = H(0,0,1);
+        H(0,1,1) = 0;
+
+        H(1,0,0) = -4*M_PI*M_PI*w[1];
+        H(1,0,1) = 2*M_PI*cos(2*M_PI*u);
+
+        H(1,1,0) = H(1,0,1);
+        H(1,1,1) = 0;
+
+        for (int64_t j = 0; j < 2; ++j) {
+            for (int64_t k = 0; k < 2; ++k) {
+                H(2,j,k) = 0;
+            }
+        }
+
         return w;
     }
 

@@ -9,7 +9,7 @@ namespace drt {
 #define DRT_DEBUG_KO_METHOD 0
 
 template<typename Real>
-vec<Real,3> ko_method(hittable<Real>& h, ray<Real> const & r, bounds<Real,3> const & bound, Real u0 = std::numeric_limits<Real>::quiet_NaN(), Real v0 = std::numeric_limits<Real>::quiet_NaN())
+vec<Real,3> ko_method(hittable<Real> const & h, ray<Real> const & r, bounds<Real,3> const & bound, Real u0 = std::numeric_limits<Real>::quiet_NaN(), Real v0 = std::numeric_limits<Real>::quiet_NaN())
 {
     vec<Real> O = r.origin();
     vec<Real> D = r.direction();
@@ -111,6 +111,17 @@ vec<Real,3> ko_method(hittable<Real>& h, ray<Real> const & r, bounds<Real,3> con
     }
 
     Real kappa_b = e*uprime*uprime + 2*f*uprime*vprime + g*vprime*vprime;
+    if (abs(kappa_b) < std::numeric_limits<Real>::epsilon()*std::numeric_limits<Real>::epsilon()) {
+        Real t = dot(PmO, surface_normal)/dot(D, surface_normal);
+        vec<Real> q = O + t*D;
+        vec<Real> qmP = q - P;
+        b[0] = dot(qmP, sigma_u);
+        b[1] = dot(qmP, sigma_v);
+        vec<Real,2> w = M_inv*b;
+        u0 += w[0];
+        v0 += w[1];
+        continue;
+    }
     #if DRT_DEBUG_KO_METHOD
     std::cout << "\t(u̇,v̇) = (" << uprime << ", " << vprime << ").\n";
     std::cout << "\tSecond fundamental forms (e,f,g) = (" << e << ", " << f << ", " << g << ")\n";

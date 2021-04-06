@@ -2,6 +2,7 @@
 #define KO_METHOD_TEST_HPP
 #include <drt/ko_method.hpp>
 #include <drt/sphere.hpp>
+#include <drt/helicoid.hpp>
 
 using namespace drt;
 
@@ -59,6 +60,32 @@ TEST(KoMethodTest, Sphere) {
     EXPECT_TRUE(abs(uvt[0]) < std::numeric_limits<Real>::epsilon());
     EXPECT_FLOAT_EQ(uvt[1], 0.5);
     EXPECT_FLOAT_EQ(uvt[2], 1.0);
+}
+
+TEST(KoMethodTest, Helicoid) {
+    using Real = double;
+    Real radius = 1;
+    Real speed = 3;
+    auto heli = helicoid<Real>(radius, speed);
+    vec<Real> o(0,2,0);
+    vec<Real> d(0,-1,0);
+    ray<Real> r(o, d);
+
+    drt::bounds<Real,3> bound({0,1}, {0,1}, {0,10});
+    // Intersection point occurs at (x,y,z) = (0,0,0) with (u,v,t) = (1/2,0,2).
+    vec<Real> uvt;
+    uvt = drt::ko_method(heli, r, bound, 0.5, 0.0);
+    EXPECT_FLOAT_EQ(uvt[0], 0.5);
+    EXPECT_FLOAT_EQ(uvt[1], 0.0);
+    EXPECT_FLOAT_EQ(uvt[2], 2.0);
+
+    for (Real u0 = 0.0; u0 < 0.99; u0 += 0.1) {
+        uvt = drt::ko_method(heli, r, bound, u0, 0.0);
+        EXPECT_FLOAT_EQ(uvt[0], 0.5);
+        EXPECT_FLOAT_EQ(uvt[1], 0.0);
+        EXPECT_FLOAT_EQ(uvt[2], 2.0);
+    }
+
 
 }
 
