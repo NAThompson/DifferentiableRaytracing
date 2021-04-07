@@ -148,7 +148,7 @@ $$\mathbf{o} + t\mathbf{d} = \sigma(u,v)$$
 
 ![left](figures/helicoid_bounded.png)
 
-Any method we use to compute the parameters $$(u,v,t)$$ will require a good initial guess and bounds on the parameterss.
+Any method we use to compute the parameters $$(u,v,t)$$ will require a good initial guess and bounds on the parameters.
 
 Let's surround the helicoid with a cylinder $$x^2 + y^2 = r^2$$.
 
@@ -212,7 +212,20 @@ This generates a visual artifact known as [shadow acne](https://digitalrune.gith
 
 ---
 
-![inline](figures/bad_mkay.jpg)
+## Let's examine three methods to render parametric surfaces
+
+- Newton's method with backtracking.
+- The multivariate Halley iterate.
+- A second order geometric method of Ko et. al.
+
+
+---
+
+## Newton's method
+
+Given $$\mathbf{f}(u,v,t) := \sigma(u,v) - \mathbf{o} - t\mathbf{d}$$, the Newton's method is
+
+$$(u_{k+1}, v_{k+1}, t_{k+1}) = (u_{k}, v_{k}, t_{k}) -\mathbf{J}_{\mathbf{f}}^{-1}\mathbf{f}(u_k,v_k,t_k)$$
 
 ---
 
@@ -401,7 +414,33 @@ Can we find a new method that explicitly exploits the geometry of the ray inters
 
 ---
 
-## A geometric method from [Ko et. al.](https://doi.org/10.1016/j.cagd.2013.07.001)
+## A geometric surface intersection algorithm from [Ko et. al.](https://doi.org/10.1016/j.cagd.2013.07.001)
+
+![left](figures/ko_method_graphic_problem.png)
+
+Where does the orange ray intersect the surface?
+
+---
+
+![left](figures/ko_method_initial_guess.png)
+
+Start with an initial guess $$\mathbf{p}_0 = \sigma(u_0, v_0)$$.
+
+---
+
+![left](figures/ko_method_ray_plane.png)
+
+Compute the plane containing the ray $$\mathbf{o} + t \mathbf{d}$$ and $$\mathbf{p}_0 = \sigma(u_0, v_0)$$.
+
+Its normal is $$(\mathbf{p}_0-\mathbf{o})\times \mathbf{d}$$.
+
+The solution lies on this plane, but we don't know where!
+
+We want to construct a curve $$\gamma$$ that lies in the plane and the surface.
+
+---
+
+## Formalizing
 
 Given a parametric surface $$\sigma \colon \Omega \subset \mathbb{R}^2 \to \mathbb{R}^3$$ and an initial guess $$(u_0, v_0)$$ for an intersection with a ray $$\mathbf{o} + t\mathbf{d}$$, consider a unit speed curve
 
@@ -431,11 +470,11 @@ $$\dot{\gamma}(0)$$ must be orthogonal to both of them, so take $$\dot{\gamma}(0
 
 ---
 
-$$\hat{\mathbf{t}} := \dot{\gamma}(0) \in \mathcal{T}_{\gamma(0)}\sigma$$, so there exist constants $$\dot{u}, \dot{v} \in \mathbb{R}$$ such that $$\hat{\mathbf{t}} = \dot{u}\sigma_{u} + \dot{v}\sigma_v$$. Dot with $$\sigma_u$$, then with $$\sigma_v$$ to obtain
+$$\hat{\mathbf{t}} := \dot{\gamma}(0) \in \mathcal{T}_{\gamma(0)}\sigma$$, so there exist constants $$\dot{u}, \dot{v} \in \mathbb{R}$$ such that $$\hat{\mathbf{t}} = \dot{u}\partial_{u}\sigma + \dot{v}\partial_{v}\sigma$$. Dot with $$\partial_{u}\sigma$$, then $$\partial_v\sigma$$ to obtain
 
 $$\begin{pmatrix}
-\hat{\mathbf{t}}\cdot \sigma_{u} \\
-\hat{\mathbf{t}}\cdot \sigma_{v}
+\hat{\mathbf{t}}\cdot \partial_u\sigma \\
+\hat{\mathbf{t}}\cdot \partial_v\sigma
 \end{pmatrix}=\begin{pmatrix}
 E & F \\
 F & G
@@ -444,7 +483,7 @@ F & G
 \dot{v}
 \end{pmatrix}$$
 
-where $$E := \left\|\sigma_u\right\|^2, F := \left<\sigma_u, \sigma_v \right>, G:= \left\|\sigma_v\right\|^2$$ are the first fundamental forms.
+where $$E := \left\|\partial_u\sigma\right\|^2, F := \left<\partial_u\sigma, \partial_v\sigma \right>, G:= \left\|\partial_v\sigma\right\|^2$$ are the first fundamental forms.
 
 *This matrix only fails to be invertible when the surface is irregular*.
 
@@ -484,7 +523,7 @@ are the [second fundamental forms](https://en.wikipedia.org/wiki/Second_fundamen
 
 $$\gamma(0) + s\hat{\mathbf{t}} + \frac{\kappa}{2}s^2 \hat{\mathbf{n}} = \mathbf{o} + t\mathbf{d}$$
 
-Dot with $$\hat{\mathbf{t}}$$ and $$\hat{\mathbf{d}}$$ and eliminate $$t$$ to obtain
+Dot with $$\hat{\mathbf{t}}$$ and $$\mathbf{d}$$ and eliminate $$t$$ to obtain
 
 $$
 \frac{\kappa}{2}s^2 - \frac{\mathbf{d}\cdot\hat{\mathbf{n}}}{\mathbf{d}\cdot\hat{\mathbf{t}}} s = (\mathbf{o} - \gamma(0))\cdot \hat{\mathbf{n}} -  \frac{\mathbf{d}\cdot\hat{\mathbf{n}}}{\mathbf{d}\cdot\hat{\mathbf{t}}}(\mathbf{o} -\gamma(0))\cdot\hat{\mathbf{t}}
@@ -499,6 +538,21 @@ Choose root than minimizes $$t$$.
 The update is
 
 $$u_{k+1} := u_{k} + s\dot{u}, v_{k+1} := v_{k} + s\dot{v}$$.
+
+---
+
+![left](figures/helicoid_ko_method.png)
+
+A helicoid rendered via the geometric method of Ko et. al.
+
+No Jacobians are inverted in this calculation, yet the non-minimal $$t$$ solutions are found where the Jacobian is close to singular.
+
+---
+
+![left](figures/helicoid_ko_method.png)
+![right](figures/helicoid_condition_number.png)
+
+[.footer: A well-conditioned root *behind* a poorly-conditioned root causes the worst problems.]
 
 ---
 

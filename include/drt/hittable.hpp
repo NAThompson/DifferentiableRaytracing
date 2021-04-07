@@ -90,7 +90,7 @@ public:
 
     virtual vec<Real,3> operator()(Real u, Real v) const = 0;
 
-    virtual vec<Real,3> operator()(Real, Real, matrix<Real,3,3> & J) {
+    virtual vec<Real,3> operator()(Real, Real, matrix<Real,3,3> & J) const {
         for (int64_t i = 0; i < 3; ++i) {
             for (int64_t j = 0; j < 3; ++j) {
                 J(i,j) = std::numeric_limits<Real>::quiet_NaN();

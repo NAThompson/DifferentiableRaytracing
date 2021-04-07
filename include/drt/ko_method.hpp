@@ -25,7 +25,8 @@ vec<Real,3> ko_method(hittable<Real> const & h, ray<Real> const & r, bounds<Real
 
     matrix<Real,3,3> J;
     tensor<Real, 3, 2, 2> H;
-    bool converged = false;
+    int64_t i = 0;
+    int64_t randomizations = 0;
     do {
     vec<Real> P = h(u0,v0, J, H);
 
@@ -154,10 +155,16 @@ vec<Real,3> ko_method(hittable<Real> const & h, ray<Real> const & r, bounds<Real
     auto roots = quadratic_roots(a,b_,c);
 
     if (roots.size() == 0) {
-        #if DRT_DEBUG_KO_METHOD
-        std::cout << "\tNo real roots found; giving up.\n";
-        #endif
-        return vec<Real>(special_vec::NaNs);
+        if (randomizations++ > 20) {
+            #if DRT_DEBUG_KO_METHOD
+            std::cout << "\tNo real roots found 5 times; giving up.\n";
+            #endif
+            return vec<Real>(special_vec::NaNs);
+        }
+        auto wrand = bound.random();
+        u0 = wrand[0];
+        v0 = wrand[1];
+        continue;
     }
 
     vec<Real> sol0(u0 + roots[0]*uprime, v0 + roots[0]*vprime, (roots[0] + dot(PmO, tangent))/dt);
@@ -171,7 +178,16 @@ vec<Real,3> ko_method(hittable<Real> const & h, ray<Real> const & r, bounds<Real
         std::cout << "\tRoots are " << roots[0] << " and " << roots[1] << ".\n";
         std::cout << "\tUpdates are " << sol0 << " and " << sol1 << "\n";
         #endif
-        return vec<Real>(special_vec::NaNs);
+        if (randomizations++ > 20) {
+            #if DRT_DEBUG_KO_METHOD
+            std::cout << "\tNo real roots found 5 times; giving up.\n";
+            #endif
+            return vec<Real>(special_vec::NaNs);
+        }
+        auto wrand = bound.random();
+        u0 = wrand[0];
+        v0 = wrand[1];
+        continue;
     }
     else if (!contains0) 
     {
@@ -205,16 +221,16 @@ vec<Real,3> ko_method(hittable<Real> const & h, ray<Real> const & r, bounds<Real
     }
     std::cout << "\tUpdates are " << sol0 << " and " << sol1 << "\n";
     std::cout << "\tThis gives the correction (δu, δv) = (" << s*uprime << ", " << s*vprime << ") which has norm " << abs(s)*sqrt(uprime*uprime + vprime*vprime) << "\n";
-    if (converged) {
-        std::cout << "\tWe are converged.\n";
-    }
+
+    Real t = dot(PmO, D)/dot(D,D);
+    std::cout << "\tResidual is " << norm(O + t*D - h(u0, v0)) << "\n";
     std::cin.get();
     #endif
 
 
-    } while (!converged);
+    } while (++i < 50);
 
-    std::cerr << __FILE__ << ":" << __LINE__ << " We shouldn't be here!!!\n";
+    //std::cerr << __FILE__ << ":" << __LINE__ << " Ko method iteration did not converge!\n";
     return vec<Real>(special_vec::NaNs);
 }
 

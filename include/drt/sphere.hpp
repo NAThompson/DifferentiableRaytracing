@@ -55,6 +55,29 @@ public:
         return w;
     }
 
+    vec<Real,3> operator()(Real u, Real v, matrix<Real, 3,3>& J) const override {
+        vec<Real,3> w = center_;
+        w[0] += radius_*cos(2*M_PI*u)*sin(M_PI*v);
+        w[1] += radius_*sin(2*M_PI*u)*sin(M_PI*v);
+        w[2] += radius_*cos(M_PI*v);
+        // J(i,j) = ∂ⱼσᵢ.
+        // J(i,0) = ∂ᵤσᵢ.
+        J(0,0) = -2*M_PI*radius_*sin(2*M_PI*u)*sin(M_PI*v);
+        J(1,0) = 2*M_PI*radius_*cos(2*M_PI*u)*sin(M_PI*v);
+        J(2,0) = 0;
+
+        // J(i,1) = ∂ᵥσᵢ.
+        J(0,1) = M_PI*radius_*cos(2*M_PI*u)*cos(M_PI*v);
+        J(1,1) = M_PI*radius_*sin(2*M_PI*u)*cos(M_PI*v);
+        J(2,1) = -M_PI*radius_*sin(M_PI*v);
+
+        J(0,2) = std::numeric_limits<Real>::quiet_NaN();
+        J(1,2) = std::numeric_limits<Real>::quiet_NaN();
+        J(2,2) = std::numeric_limits<Real>::quiet_NaN();
+
+        return w;
+    }
+
     vec<Real,3> operator()(Real u, Real v, matrix<Real, 3,3>& J, tensor<Real, 3,2,2>& H) const override {
         vec<Real,3> w = center_;
         w[0] += radius_*cos(2*M_PI*u)*sin(M_PI*v);
