@@ -1,6 +1,7 @@
 #ifndef DRT_ROOTS_HPP
 #define DRT_ROOTS_HPP
 #include <cmath>
+#include <iostream>
 #include <utility>
 #include <vector>
 #include <algorithm>

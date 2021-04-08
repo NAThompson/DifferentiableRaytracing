@@ -2,6 +2,7 @@
 #define DRT_DIELECTRIC_HPP
 
 #include <cmath>
+#include <random>
 #include <drt/ray.hpp>
 #include <drt/material.hpp>
 #include <drt/texture.hpp>
