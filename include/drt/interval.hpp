@@ -14,7 +14,7 @@ public:
         }
     }
 
-    friend std::ostream& operator<<(std::ostream& out, interval<Real>& i)
+    friend std::ostream& operator<<(std::ostream& out, interval<Real> const & i)
     {
         out << "[" << i.a_ << ", " << i.b_ << "]";
         return out;
@@ -70,12 +70,32 @@ inline interval<Real> interval<Real>::operator+(const interval<Real>& r) const
 template<typename Real>
 inline interval<Real> operator*(const interval<Real>& x, const interval<Real>& y)
 {
-    using std::min;
-    using std::max;
     std::array<Real, 4> arr{x.lower()*y.lower(), x.lower()*y.upper(), x.upper()*y.lower(), x.upper()*y.upper()};
-    Real a = *std::min(arr.begin(), arr.end());
-    Real b = *std::max(arr.begin(), arr.end());
+    Real a = std::numeric_limits<Real>::infinity();
+    Real b = -std::numeric_limits<Real>::infinity();
+
+    for (size_t i = 0; i < 4; ++i) {
+        if (a > arr[i]) {
+            a = arr[i];
+        }
+        if (b < arr[i]) {
+            b = arr[i];
+        }
+    }
     return interval<Real>(a, b);
+}
+
+
+template<typename Real>
+inline interval<Real> operator/(const interval<Real>& x, const interval<Real>& y)
+{
+    if (y.lower() < 0 && y.upper() > 0) {
+        std::cerr << __FILE__ << ":" << __LINE__ << ":" << __func__ << " Division by an interval containing zero.\n";
+        std::cerr << "\tYou need a mechanism to deal with multi-intervals.\n";
+        return x*interval<Real>(1/y.upper(), std::numeric_limits<Real>::infinity());
+    }
+    interval<Real> inv_y(1/y.upper(), 1/y.lower());
+    return x*inv_y;
 }
 
 

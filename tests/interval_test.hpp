@@ -7,8 +7,6 @@ using namespace drt;
 TEST(IntervalTest, Multiplication) {
     using Real = double;
     auto x = interval<Real>(2.2, 2.4);
-    std::cout << "x = " << x << "\n";
-
     auto y = interval<Real>(2.4, 2.6);
 
     EXPECT_GE(y, x);
@@ -24,9 +22,15 @@ TEST(IntervalTest, Multiplication) {
     EXPECT_EQ(z.lower(), 6);
     EXPECT_EQ(z.upper(), 8);
 
+    // [2,3]x[4,5] = [8,15]
     z = x*y;
     EXPECT_EQ(z.lower(), 8);
     EXPECT_EQ(z.upper(), 15);
+
+    auto z1 = x/y;
+    auto z2 = x*interval<Real>(Real(1)/5, Real(1)/4);
+    EXPECT_EQ(z1.lower(), z2.lower());
+    EXPECT_EQ(z1.upper(), z2.upper());
 }
 
 #endif
