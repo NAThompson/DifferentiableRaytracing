@@ -82,9 +82,12 @@ TEST(IntervalTest, BrouwerFixPoint) {
         if (x.lower() < 1 || x.upper() > 2) {
             std::cerr << "c'mon.\n";
         }
+        const int originalRounding = fegetround();
+        std::fesetround(FE_UPWARD);
         Real f1 = x.lower()/2 + 1/x.lower();
         Real f2 = x.upper()/2 + 1/x.upper();
-        Real f = std::max(f1,f2);
+        std::fesetround(originalRounding);
+        Real f = std::min(f1,f2);
         interval<Real> y = x/interval<Real>(2,2) + interval<Real>(1,1)/x;
         if (y.upper() > f) {
             y.b_ = f;
@@ -98,6 +101,10 @@ TEST(IntervalTest, BrouwerFixPoint) {
         interval<Real> x1 = f(x0);
         x0 = x1;
     }
+    // The upper bound is 1 bit too low!!
+    //std::cout << std::hexfloat;
+    //std::cout << x0 << "\n";
+    //std::cout << "[" << sqrt(2) << ", " << sqrt(2) << "]\n";
     EXPECT_LE(x0.lower(), sqrt(2));
 }
 
