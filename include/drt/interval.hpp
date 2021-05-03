@@ -1,12 +1,16 @@
 #ifndef DRT_INTERVAL_HPP
 #define DRT_INTERVAL_HPP
 #include <iostream>
+#include <cfenv>
 
 namespace drt {
 
 template<typename Real>
 class interval {
 public:
+    interval() : a_{std::numeric_limits<Real>::quiet_NaN()}, b_{std::numeric_limits<Real>::quiet_NaN()}
+    {}
+
     interval(Real a, Real b) : a_{a}, b_{b} {
         if (b_ < a_) {
             std::cerr << __FILE__ << ":" << __LINE__ << ":" << __func__ << " An empty interval has been created.\n";
@@ -21,7 +25,7 @@ public:
     }
 
     inline bool empty() const {
-        return !(a_ <= b_);
+        return b_ < a_;
     }
 
     inline Real lower() const {
@@ -32,11 +36,25 @@ public:
         return b_;
     }
 
+    inline Real width() const {
+        return b_ - a_;
+    }
+
+    inline interval<Real>& operator-=(const interval<Real>& r)
+    {
+        const int originalRounding = fegetround();
+        std::fesetround(FE_DOWNWARD);
+        a_ -= r.b_;
+        std::fesetround(FE_UPWARD);
+        b_ -= r.a_;
+        std::fesetround(originalRounding);
+        return *this;
+    }
+
     inline bool operator>=(const interval<Real>& r) const;
 
     inline interval<Real> operator+(const interval<Real>& r) const;
 
-private:
     Real a_;
     Real b_;
 };
@@ -64,7 +82,26 @@ inline bool interval<Real>::operator>= (const interval<Real>& r) const
 template<typename Real>
 inline interval<Real> interval<Real>::operator+(const interval<Real>& r) const
 {
-    return interval<Real>(a_ + r.a_, b_ + r.b_);
+    // Need to check the speed of resetting the rounding mode.
+    const int originalRounding = fegetround();
+    std::fesetround(FE_DOWNWARD);
+    Real a = a_ + r.a_;
+    std::fesetround(FE_UPWARD);
+    Real b = b_ + r.b_;
+    std::fesetround(originalRounding);
+    return interval<Real>(a, b);
+}
+
+template<typename Real>
+inline interval<Real> operator-(const interval<Real>& x, const interval<Real>& y)
+{
+    const int originalRounding = fegetround();
+    std::fesetround(FE_DOWNWARD);
+    Real a = x.lower() - y.upper();
+    std::fesetround(FE_UPWARD);
+    Real b = x.upper() - y.lower();
+    std::fesetround(originalRounding);
+    return interval<Real>(a, b);
 }
 
 template<typename Real>
@@ -89,15 +126,48 @@ inline interval<Real> operator*(const interval<Real>& x, const interval<Real>& y
 template<typename Real>
 inline interval<Real> operator/(const interval<Real>& x, const interval<Real>& y)
 {
-    if (y.lower() < 0 && y.upper() > 0) {
-        std::cerr << __FILE__ << ":" << __LINE__ << ":" << __func__ << " Division by an interval containing zero.\n";
-        std::cerr << "\tYou need a mechanism to deal with multi-intervals.\n";
+    if (y.lower() <= 0 && y.upper() > 0) {
+        // Division by zero in intervals is just fine,
+        // the problem is that they undergo mitosis.
+        if (y.lower() < 0) {
+            std::cerr << __FILE__ << ":" << __LINE__ << ":" << __func__ << " Division by an interval containing zero.\n";
+            std::cerr << "\tYou need a mechanism to deal with multi-intervals.\n";
+        }
         return x*interval<Real>(1/y.upper(), std::numeric_limits<Real>::infinity());
     }
     interval<Real> inv_y(1/y.upper(), 1/y.lower());
     return x*inv_y;
 }
 
+template<typename Real>
+inline interval<Real> pow(const interval<Real>& x, int p)
+{
+    if ( ((p & 1) == 0) && x.lower() <= 0)
+    {
+        return interval<Real>(0, std::pow(x.upper(), p));
+    }
+    return interval<Real>(std::pow(x.lower(), p), std::pow(x.upper(), p));
+}
+
+template<typename Real>
+inline interval<Real> abs(const interval<Real>& x)
+{
+    Real a = min(abs(x.lower()), abs(x.upper()));
+    Real b = max(abs(x.lower()), abs(x.upper()));
+    return interval<Real>(a,b);
+}
+
+template<typename Real>
+inline interval<Real> intersection(const interval<Real>& x, const interval<Real>& y)
+{
+    if ( (y.lower() > x.upper()) || (x.lower() > y.upper())) {
+        // Default contstructor is nan's:
+        return interval<Real>();
+    }
+    Real a = std::max(x.lower(), y.lower());
+    Real b = std::min(x.upper(), y.upper());
+    return interval<Real>(a,b);
+}
 
 }
 #endif
