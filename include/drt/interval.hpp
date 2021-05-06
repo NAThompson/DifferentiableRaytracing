@@ -40,6 +40,10 @@ public:
         return b_ - a_;
     }
 
+    inline Real degenerate() const {
+        return a_ == b_;
+    }
+
     inline interval<Real>& operator-=(const interval<Real>& r)
     {
         const int originalRounding = fegetround();
@@ -153,6 +157,9 @@ template<typename Real>
 inline interval<Real> abs(const interval<Real>& x)
 {
     Real a = min(abs(x.lower()), abs(x.upper()));
+    if (x.lower() < 0 && x.upper() > 0) {
+        a = 0;
+    }
     Real b = max(abs(x.lower()), abs(x.upper()));
     return interval<Real>(a,b);
 }
@@ -161,11 +168,62 @@ template<typename Real>
 inline interval<Real> intersection(const interval<Real>& x, const interval<Real>& y)
 {
     if ( (y.lower() > x.upper()) || (x.lower() > y.upper())) {
-        // Default contstructor is nan's:
+        // Default contstructor is nan's; is that a reasonable empty set?
         return interval<Real>();
     }
     Real a = std::max(x.lower(), y.lower());
     Real b = std::min(x.upper(), y.upper());
+    return interval<Real>(a,b);
+}
+
+// The union of two intervals is no necessarily an interval; there could be a gap in the middle.
+// The hull is the union + gaps.
+template<typename Real>
+inline interval<Real> hull(const interval<Real>& x, const interval<Real>& y)
+{
+    Real a = std::min(x.lower(), y.lower());
+    Real b = std::min(x.upper(), y.upper());
+    return interval<Real>(a,b);
+}
+
+template<typename Real>
+inline interval<Real> exp(const interval<Real>& x)
+{
+    const int originalRounding = fegetround();
+    std::fesetround(FE_DOWNWARD);
+    Real a = std::exp(x.lower());
+    std::fesetround(FE_UPWARD);
+    Real b = std::exp(x.upper());
+    std::fesetround(originalRounding);
+    return interval<Real>(a,b);
+}
+
+template<typename Real>
+inline interval<Real> log(const interval<Real>& x)
+{
+    const int originalRounding = fegetround();
+    std::fesetround(FE_DOWNWARD);
+    Real a = std::log(x.lower());
+    std::fesetround(FE_UPWARD);
+    Real b = std::log(x.upper());
+    std::fesetround(originalRounding);
+    return interval<Real>(a,b);
+}
+
+template<typename Real>
+inline interval<Real> sqrt(const interval<Real>& x)
+{
+    const int originalRounding = fegetround();
+    std::fesetround(FE_DOWNWARD);
+    // If x.lower() < 0, this spits out a NaN.
+    // There are policies for this that some libraries set out,
+    // for example, you can set the a = 0 if x.lower() < 0.
+    // This makes some computations proceed without harm,
+    // but also makes others wrong!
+    Real a = std::sqrt(x.lower());
+    std::fesetround(FE_UPWARD);
+    Real b = std::sqrt(x.upper());
+    std::fesetround(originalRounding);
     return interval<Real>(a,b);
 }
 
