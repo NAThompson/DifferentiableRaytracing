@@ -146,8 +146,14 @@ inline interval<Real> operator/(const interval<Real>& x, const interval<Real>& y
 template<typename Real>
 inline interval<Real> pow(const interval<Real>& x, int p)
 {
-    if ( ((p & 1) == 0) && x.lower() <= 0)
+    if ( ((p & 1) == 0))
     {
+        if (x.lower() >= 0) {
+            return interval<Real>(std::pow(x.lower(), p), std::pow(x.upper(), p));
+        }
+        if (x.upper() <= 0) {
+            return interval<Real>(std::pow(x.upper(), p), std::pow(x.lower(), p));
+        }
         return interval<Real>(0, std::pow(x.upper(), p));
     }
     return interval<Real>(std::pow(x.lower(), p), std::pow(x.upper(), p));
