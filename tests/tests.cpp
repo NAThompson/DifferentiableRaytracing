@@ -12,6 +12,13 @@
 #include "ko_method_test.hpp"
 #include "interval_test.hpp"
 
+TEST(NanTest, Nans) {
+   EXPECT_TRUE(std::isnan(std::numeric_limits<double>::quiet_NaN())) << " You must compile with NaNs enabled.";
+
+   double x = 1.0/0.0;
+   EXPECT_TRUE(std::isnan(x)) << " You must compile with NaNs enabled.";
+}
+
 int main(int argc, char **argv) {
   ::testing::InitGoogleTest(&argc, argv);
   return RUN_ALL_TESTS();
