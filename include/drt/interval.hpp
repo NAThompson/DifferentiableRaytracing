@@ -233,5 +233,15 @@ inline interval<Real> sqrt(const interval<Real>& x)
     return interval<Real>(a,b);
 }
 
+// Turn intervals into a metric space, see Introduction to Interval Analysis, ch 6.
+// This definition is used for "Finite Convergence", in Definition 6.6.
+template<typename Real>
+inline Real distance(const interval<Real>& x, const interval<Real>& y)
+{
+    Real a = abs(x.lower() - y.lower());
+    Real b = abs(x.upper() - y.upper());
+    return std::max(a, b);
+}
+
 }
 #endif
